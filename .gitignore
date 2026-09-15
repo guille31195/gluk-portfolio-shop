@@ -1,0 +1,11 @@
+.env
+*.pyc
+__pycache__/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.xlsx.bak
+.claude/
+node_modules/
+data/raw/
+data/working/
