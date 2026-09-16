@@ -10,3 +10,5 @@ node_modules/
 data/raw/
 data/working/
 .worktrees/
+dist/
+.astro/
