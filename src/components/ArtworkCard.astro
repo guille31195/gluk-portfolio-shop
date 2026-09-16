@@ -1,0 +1,25 @@
+---
+import type { Artwork } from '../data/placeholder-artworks';
+
+interface Props {
+  artwork: Artwork;
+}
+
+const { artwork } = Astro.props;
+---
+<a class="card" href={`/artwork/${artwork.slug}`}>
+  <img src={artwork.images[0]} alt={artwork.title} />
+  <p>{artwork.title}</p>
+</a>
+
+<style>
+  .card {
+    text-decoration: none;
+    color: var(--color-black);
+  }
+  .card img {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+  }
+</style>

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArtworkCard from '../../components/ArtworkCard.astro';
 import { artworks, MEDIUMS, formatMedium } from '../../data/placeholder-artworks';
 ---
 <BaseLayout title="Portfolio">
@@ -12,10 +13,7 @@ import { artworks, MEDIUMS, formatMedium } from '../../data/placeholder-artworks
     </nav>
     <div class="grid">
       {artworks.map((artwork) => (
-        <a class="card" href={`/artwork/${artwork.slug}`}>
-          <img src={artwork.images[0]} alt={artwork.title} />
-          <p>{artwork.title}</p>
-        </a>
+        <ArtworkCard artwork={artwork} />
       ))}
     </div>
   </section>
@@ -35,14 +33,5 @@ import { artworks, MEDIUMS, formatMedium } from '../../data/placeholder-artworks
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 1.5rem;
-  }
-  .card {
-    text-decoration: none;
-    color: var(--color-black);
-  }
-  .card img {
-    width: 100%;
-    aspect-ratio: 3 / 4;
-    object-fit: cover;
   }
 </style>
