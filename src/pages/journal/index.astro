@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { journalPosts } from '../../data/placeholder-journal';
+---
+<BaseLayout title="Journal">
+  <section class="page">
+    <h1>Journal</h1>
+    <ul>
+      {journalPosts.map((post) => (
+        <li>
+          <a href={`/journal/${post.slug}`}>{post.title}</a>
+          <span> — {post.date}</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .page {
+    padding: 3rem 2rem;
+    max-width: 60ch;
+    margin: 0 auto;
+  }
+  li {
+    margin-bottom: 0.75rem;
+  }
+</style>

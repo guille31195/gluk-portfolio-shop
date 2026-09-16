@@ -1,0 +1,35 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { journalPosts } from '../../data/placeholder-journal';
+
+export function getStaticPaths() {
+  return journalPosts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+---
+<BaseLayout title={post.title}>
+  <article class="page">
+    <h1>{post.title}</h1>
+    <p class="meta">{post.date}</p>
+    <img src={post.coverImage} alt={post.title} />
+    <p>{post.body}</p>
+  </article>
+</BaseLayout>
+
+<style>
+  .page {
+    padding: 3rem 2rem;
+    max-width: 60ch;
+    margin: 0 auto;
+  }
+  .meta {
+    color: var(--color-deep-blue);
+  }
+  img {
+    width: 100%;
+  }
+</style>
