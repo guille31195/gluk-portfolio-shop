@@ -1,0 +1,68 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { artworks } from '../../data/placeholder-artworks';
+import { formatPrice } from '../../data/format-price';
+
+export function getStaticPaths() {
+  return artworks.map((artwork) => ({
+    params: { slug: artwork.slug },
+    props: { artwork },
+  }));
+}
+
+const { artwork } = Astro.props;
+---
+<BaseLayout title={artwork.title}>
+  <section class="detail">
+    <img src={artwork.image} alt={artwork.title} />
+    <div class="info">
+      <h1>{artwork.title}</h1>
+      <p class="meta">{artwork.year} — {artwork.dimensions}</p>
+      <p>{artwork.description}</p>
+
+      {artwork.availableAsOriginal && (
+        <a class="button" href="/contact">Inquire about the original</a>
+      )}
+
+      {artwork.printOptions.length > 0 && (
+        <div class="prints">
+          <h2>Available prints</h2>
+          <ul>
+            {artwork.printOptions.map((option) => (
+              <li>
+                {option.size} — {formatPrice(option.price)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .detail {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    padding: 3rem 2rem;
+  }
+  .detail img {
+    width: 100%;
+  }
+  .meta {
+    color: var(--color-deep-blue);
+  }
+  .button {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--color-blue);
+    color: #fff;
+    text-decoration: none;
+  }
+  .prints ul {
+    list-style: none;
+    padding: 0;
+  }
+</style>
