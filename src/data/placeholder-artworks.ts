@@ -1,4 +1,5 @@
-export type Medium = 'oil-painting' | 'tattoo' | 'sculpture' | 'mixed-media';
+export const MEDIUMS = ['oil-painting', 'tattoo', 'sculpture', 'mixed-media'] as const;
+export type Medium = typeof MEDIUMS[number];
 
 export interface PrintOption {
   size: string;
@@ -71,4 +72,8 @@ export const artworks: Artwork[] = [
 
 export function getArtworksByMedium(list: Artwork[], medium: Medium): Artwork[] {
   return list.filter((artwork) => artwork.medium === medium);
+}
+
+export function formatMedium(medium: Medium): string {
+  return medium.replace(/-/g, ' ');
 }

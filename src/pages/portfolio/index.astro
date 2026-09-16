@@ -1,15 +1,13 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { artworks } from '../../data/placeholder-artworks';
-
-const mediums = ['oil-painting', 'tattoo', 'sculpture', 'mixed-media'] as const;
+import { artworks, MEDIUMS, formatMedium } from '../../data/placeholder-artworks';
 ---
 <BaseLayout title="Portfolio">
   <section class="page">
     <h1>Portfolio</h1>
     <nav class="medium-filter">
-      {mediums.map((medium) => (
-        <a href={`/portfolio/${medium}`}>{medium.replace('-', ' ')}</a>
+      {MEDIUMS.map((medium) => (
+        <a href={`/portfolio/${medium}`}>{formatMedium(medium)}</a>
       ))}
     </nav>
     <div class="grid">

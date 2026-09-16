@@ -1,10 +1,9 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { artworks, getArtworksByMedium, type Medium } from '../../data/placeholder-artworks';
+import { artworks, getArtworksByMedium, formatMedium, MEDIUMS, type Medium } from '../../data/placeholder-artworks';
 
 export function getStaticPaths() {
-  const mediums: Medium[] = ['oil-painting', 'tattoo', 'sculpture', 'mixed-media'];
-  return mediums.map((medium) => ({ params: { medium } }));
+  return MEDIUMS.map((medium) => ({ params: { medium } }));
 }
 
 const { medium } = Astro.params as { medium: Medium };
@@ -12,7 +11,7 @@ const filtered = getArtworksByMedium(artworks, medium);
 ---
 <BaseLayout title={`Portfolio — ${medium}`}>
   <section class="page">
-    <h1>{medium.replace('-', ' ')}</h1>
+    <h1>{formatMedium(medium)}</h1>
     <div class="grid">
       {filtered.map((artwork) => (
         <a class="card" href={`/artwork/${artwork.slug}`}>
