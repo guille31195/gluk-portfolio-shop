@@ -13,7 +13,7 @@ export interface Artwork {
   year: number;
   dimensions: string;
   description: string;
-  image: string;
+  images: string[];
   availableAsOriginal: boolean;
   printOptions: PrintOption[];
 }
@@ -26,7 +26,7 @@ export const artworks: Artwork[] = [
     year: 2026,
     dimensions: '60 x 90 cm, oil on canvas',
     description: 'Placeholder description — real artwork content pending.',
-    image: '/placeholder-artwork.svg',
+    images: ['/placeholder-artwork.svg'],
     availableAsOriginal: true,
     printOptions: [
       { size: '12x18 in', price: 4500, stripePriceId: 'price_placeholder_1' },
@@ -39,7 +39,7 @@ export const artworks: Artwork[] = [
     year: 2026,
     dimensions: 'N/A',
     description: 'Placeholder description — real artwork content pending.',
-    image: '/placeholder-artwork.svg',
+    images: ['/placeholder-artwork.svg'],
     availableAsOriginal: false,
     printOptions: [],
   },
@@ -50,7 +50,7 @@ export const artworks: Artwork[] = [
     year: 2026,
     dimensions: '40 x 20 x 20 cm, mixed materials',
     description: 'Placeholder description — real artwork content pending.',
-    image: '/placeholder-artwork.svg',
+    images: ['/placeholder-artwork.svg'],
     availableAsOriginal: true,
     printOptions: [],
   },
@@ -61,7 +61,7 @@ export const artworks: Artwork[] = [
     year: 2026,
     dimensions: '50 x 70 cm',
     description: 'Placeholder description — real artwork content pending.',
-    image: '/placeholder-artwork.svg',
+    images: ['/placeholder-artwork.svg'],
     availableAsOriginal: true,
     printOptions: [
       { size: '8x10 in', price: 3000, stripePriceId: 'price_placeholder_2' },

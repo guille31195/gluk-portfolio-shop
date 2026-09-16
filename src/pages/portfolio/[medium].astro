@@ -16,7 +16,7 @@ const filtered = getArtworksByMedium(artworks, medium);
     <div class="grid">
       {filtered.map((artwork) => (
         <a class="card" href={`/artwork/${artwork.slug}`}>
-          <img src={artwork.image} alt={artwork.title} />
+          <img src={artwork.images[0]} alt={artwork.title} />
           <p>{artwork.title}</p>
         </a>
       ))}

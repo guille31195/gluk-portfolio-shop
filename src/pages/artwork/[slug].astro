@@ -14,7 +14,7 @@ const { artwork } = Astro.props;
 ---
 <BaseLayout title={artwork.title}>
   <section class="detail">
-    <img src={artwork.image} alt={artwork.title} />
+    <img src={artwork.images[0]} alt={artwork.title} />
     <div class="info">
       <h1>{artwork.title}</h1>
       <p class="meta">{artwork.year} — {artwork.dimensions}</p>
