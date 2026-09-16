@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { artworks, getArtworksByMedium, type Medium } from '../../data/placeholder-artworks';
+
+export function getStaticPaths() {
+  const mediums: Medium[] = ['oil-painting', 'tattoo', 'sculpture', 'mixed-media'];
+  return mediums.map((medium) => ({ params: { medium } }));
+}
+
+const { medium } = Astro.params as { medium: Medium };
+const filtered = getArtworksByMedium(artworks, medium);
+---
+<BaseLayout title={`Portfolio — ${medium}`}>
+  <section class="page">
+    <h1>{medium.replace('-', ' ')}</h1>
+    <div class="grid">
+      {filtered.map((artwork) => (
+        <a class="card" href={`/artwork/${artwork.slug}`}>
+          <img src={artwork.image} alt={artwork.title} />
+          <p>{artwork.title}</p>
+        </a>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page {
+    padding: 3rem 2rem;
+    text-transform: capitalize;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+  }
+  .card {
+    text-decoration: none;
+    color: var(--color-black);
+  }
+  .card img {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+  }
+</style>

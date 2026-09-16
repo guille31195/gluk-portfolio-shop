@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { artworks } from '../../data/placeholder-artworks';
+
+const mediums = ['oil-painting', 'tattoo', 'sculpture', 'mixed-media'] as const;
+---
+<BaseLayout title="Portfolio">
+  <section class="page">
+    <h1>Portfolio</h1>
+    <nav class="medium-filter">
+      {mediums.map((medium) => (
+        <a href={`/portfolio/${medium}`}>{medium.replace('-', ' ')}</a>
+      ))}
+    </nav>
+    <div class="grid">
+      {artworks.map((artwork) => (
+        <a class="card" href={`/artwork/${artwork.slug}`}>
+          <img src={artwork.image} alt={artwork.title} />
+          <p>{artwork.title}</p>
+        </a>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page {
+    padding: 3rem 2rem;
+  }
+  .medium-filter {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0 2rem;
+    text-transform: capitalize;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+  }
+  .card {
+    text-decoration: none;
+    color: var(--color-black);
+  }
+  .card img {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+  }
+</style>
