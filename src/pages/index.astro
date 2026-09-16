@@ -2,5 +2,24 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 <BaseLayout title="Home">
-  <h1>Gluk Portfolio &amp; Shop</h1>
+  <section class="hero">
+    <h1>GLUK</h1>
+    <p class="tagline">Precise, streetwise images about Caribbean identity, memory and power.</p>
+  </section>
 </BaseLayout>
+
+<style>
+  .hero {
+    padding: 6rem 2rem;
+    text-align: center;
+  }
+  .hero h1 {
+    font-size: 4rem;
+  }
+  .tagline {
+    font-family: var(--font-body);
+    font-size: 1.25rem;
+    max-width: 40ch;
+    margin: 0 auto;
+  }
+</style>
