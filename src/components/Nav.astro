@@ -1,0 +1,48 @@
+---
+const links = [
+  { href: '/', label: 'Home' },
+  { href: '/portfolio', label: 'Portfolio' },
+  { href: '/about', label: 'About' },
+  { href: '/tattoo', label: 'Tattoo' },
+  { href: '/journal', label: 'Journal' },
+  { href: '/contact', label: 'Contact' },
+];
+---
+<nav class="site-nav">
+  <a class="brand" href="/">GLUK</a>
+  <ul>
+    {links.map((link) => (
+      <li><a href={link.href}>{link.label}</a></li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .site-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 2rem;
+  }
+  .brand {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.25rem;
+    text-decoration: none;
+    color: var(--color-black);
+  }
+  .site-nav ul {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .site-nav a {
+    text-decoration: none;
+    color: var(--color-black);
+  }
+  .site-nav a:hover {
+    color: var(--color-blue);
+  }
+</style>
