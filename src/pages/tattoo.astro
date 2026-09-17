@@ -1,12 +1,18 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getTattooInfo } from '../lib/sanity';
+
+const info = await getTattooInfo();
 ---
 <BaseLayout title="Tattoo">
   <section class="page">
     <h1>Tattoo</h1>
-    <p>
-      Studio info, booking process, and flash — details coming soon.
-    </p>
+    <div set:html={info.body} />
+    {info.images.length > 0 && (
+      <div class="gallery">
+        {info.images.map((src) => <img src={src} alt="" />)}
+      </div>
+    )}
   </section>
 </BaseLayout>
 
@@ -15,5 +21,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     padding: 3rem 2rem;
     max-width: 60ch;
     margin: 0 auto;
+  }
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  .gallery img {
+    width: 100%;
   }
 </style>
