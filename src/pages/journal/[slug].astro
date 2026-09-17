@@ -1,22 +1,21 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { journalPosts } from '../../data/placeholder-journal';
+import { getAllJournalPosts, getJournalPostBySlug } from '../../lib/sanity';
 
-export function getStaticPaths() {
-  return journalPosts.map((post) => ({
-    params: { slug: post.slug },
-    props: { post },
-  }));
+export async function getStaticPaths() {
+  const posts = await getAllJournalPosts();
+  return posts.map((post) => ({ params: { slug: post.slug } }));
 }
 
-const { post } = Astro.props;
+const { slug } = Astro.params;
+const post = await getJournalPostBySlug(slug!);
 ---
-<BaseLayout title={post.title}>
+<BaseLayout title={post!.title}>
   <article class="page">
-    <h1>{post.title}</h1>
-    <p class="meta">{post.date}</p>
-    <img src={post.coverImage} alt={post.title} />
-    <p>{post.body}</p>
+    <h1>{post!.title}</h1>
+    <p class="meta">{new Date(post!.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+    {post!.coverImage && <img src={post!.coverImage} alt={post!.title} />}
+    <div set:html={post!.body} />
   </article>
 </BaseLayout>
 
