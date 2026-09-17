@@ -1,20 +1,20 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArtworkCard from '../../components/ArtworkCard.astro';
-import { artworks, getArtworksByMedium, formatMedium, MEDIUMS, type Medium } from '../../data/placeholder-artworks';
+import { MEDIUMS, formatMedium, getArtworksByMedium, type Medium } from '../../lib/sanity';
 
 export function getStaticPaths() {
   return MEDIUMS.map((medium) => ({ params: { medium } }));
 }
 
 const { medium } = Astro.params as { medium: Medium };
-const filtered = getArtworksByMedium(artworks, medium);
+const artworks = await getArtworksByMedium(medium);
 ---
-<BaseLayout title={`Portfolio — ${medium}`}>
+<BaseLayout title={`Portfolio — ${formatMedium(medium)}`}>
   <section class="page">
     <h1>{formatMedium(medium)}</h1>
     <div class="grid">
-      {filtered.map((artwork) => (
+      {artworks.map((artwork) => (
         <ArtworkCard artwork={artwork} />
       ))}
     </div>

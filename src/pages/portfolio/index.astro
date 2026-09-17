@@ -1,7 +1,9 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArtworkCard from '../../components/ArtworkCard.astro';
-import { artworks, MEDIUMS, formatMedium } from '../../data/placeholder-artworks';
+import { MEDIUMS, formatMedium, getAllArtworks } from '../../lib/sanity';
+
+const artworks = await getAllArtworks();
 ---
 <BaseLayout title="Portfolio">
   <section class="page">
