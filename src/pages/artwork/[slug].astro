@@ -1,34 +1,52 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { artworks } from '../../data/placeholder-artworks';
+import { getAllArtworks, getArtworkBySlug } from '../../lib/sanity';
 import { formatPrice } from '../../data/format-price';
 
-export function getStaticPaths() {
-  return artworks.map((artwork) => ({
-    params: { slug: artwork.slug },
-    props: { artwork },
-  }));
+export async function getStaticPaths() {
+  const artworks = await getAllArtworks();
+  return artworks.map((artwork) => ({ params: { slug: artwork.slug } }));
 }
 
-const { artwork } = Astro.props;
+const { slug } = Astro.params;
+const artwork = await getArtworkBySlug(slug!);
+const images = artwork!.images.slice(0, 8);
 ---
-<BaseLayout title={artwork.title}>
+<BaseLayout title={artwork!.title}>
   <section class="detail">
-    <img src={artwork.images[0]} alt={artwork.title} />
+    <div class="gallery">
+      {images.map((_, i) => (
+        <input type="radio" name="gallery" id={`gallery-${i}`} class="gallery-radio" checked={i === 0} />
+      ))}
+      <div class="gallery-main">
+        {images.map((src, i) => (
+          <img src={src} alt={artwork!.title} class={`gallery-image gallery-image-${i}`} />
+        ))}
+      </div>
+      {images.length > 1 && (
+        <div class="gallery-thumbs">
+          {images.map((src, i) => (
+            <label for={`gallery-${i}`} class="gallery-thumb">
+              <img src={src} alt={`${artwork!.title} thumbnail ${i + 1}`} />
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
     <div class="info">
-      <h1>{artwork.title}</h1>
-      <p class="meta">{artwork.year} — {artwork.dimensions}</p>
-      <p>{artwork.description}</p>
+      <h1>{artwork!.title}</h1>
+      <p class="meta">{artwork!.year} — {artwork!.dimensions}</p>
+      <p>{artwork!.description}</p>
 
-      {artwork.availableAsOriginal && (
+      {artwork!.availableAsOriginal && (
         <a class="button" href="/contact">Inquire about the original</a>
       )}
 
-      {artwork.printOptions.length > 0 && (
+      {artwork!.printOptions.length > 0 && (
         <div class="prints">
           <h2>Available prints</h2>
           <ul>
-            {artwork.printOptions.map((option) => (
+            {artwork!.printOptions.map((option) => (
               <li>
                 {option.size} — {formatPrice(option.price)}
               </li>
@@ -47,8 +65,45 @@ const { artwork } = Astro.props;
     gap: 2rem;
     padding: 3rem 2rem;
   }
-  .detail img {
+  .gallery-radio {
+    display: none;
+  }
+  .gallery-image {
+    display: none;
     width: 100%;
+  }
+  .gallery-radio:nth-of-type(1):checked ~ .gallery-main .gallery-image-0 { display: block; }
+  .gallery-radio:nth-of-type(2):checked ~ .gallery-main .gallery-image-1 { display: block; }
+  .gallery-radio:nth-of-type(3):checked ~ .gallery-main .gallery-image-2 { display: block; }
+  .gallery-radio:nth-of-type(4):checked ~ .gallery-main .gallery-image-3 { display: block; }
+  .gallery-radio:nth-of-type(5):checked ~ .gallery-main .gallery-image-4 { display: block; }
+  .gallery-radio:nth-of-type(6):checked ~ .gallery-main .gallery-image-5 { display: block; }
+  .gallery-radio:nth-of-type(7):checked ~ .gallery-main .gallery-image-6 { display: block; }
+  .gallery-radio:nth-of-type(8):checked ~ .gallery-main .gallery-image-7 { display: block; }
+  .gallery-thumbs {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  .gallery-thumb {
+    display: block;
+    width: 60px;
+    cursor: pointer;
+    opacity: 0.6;
+  }
+  .gallery-thumb img {
+    width: 100%;
+    display: block;
+  }
+  .gallery-radio:nth-of-type(1):checked ~ .gallery-thumbs .gallery-thumb:nth-of-type(1),
+  .gallery-radio:nth-of-type(2):checked ~ .gallery-thumbs .gallery-thumb:nth-of-type(2),
+  .gallery-radio:nth-of-type(3):checked ~ .gallery-thumbs .gallery-thumb:nth-of-type(3),
+  .gallery-radio:nth-of-type(4):checked ~ .gallery-thumbs .gallery-thumb:nth-of-type(4),
+  .gallery-radio:nth-of-type(5):checked ~ .gallery-thumbs .gallery-thumb:nth-of-type(5),
+  .gallery-radio:nth-of-type(6):checked ~ .gallery-thumbs .gallery-thumb:nth-of-type(6),
+  .gallery-radio:nth-of-type(7):checked ~ .gallery-thumbs .gallery-thumb:nth-of-type(7),
+  .gallery-radio:nth-of-type(8):checked ~ .gallery-thumbs .gallery-thumb:nth-of-type(8) {
+    opacity: 1;
   }
   .meta {
     color: var(--color-deep-blue);
