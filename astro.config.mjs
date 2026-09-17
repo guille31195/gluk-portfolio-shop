@@ -15,7 +15,7 @@ export default defineConfig({
     sanity({
       projectId: PUBLIC_SANITY_PROJECT_ID || '48jkcmcb',
       dataset: PUBLIC_SANITY_DATASET || 'production',
-      useCdn: true,
+      useCdn: false,
       apiVersion: '2026-09-16',
     }),
   ],

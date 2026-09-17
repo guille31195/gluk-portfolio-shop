@@ -83,9 +83,9 @@ function mapArtwork(raw: RawArtwork): Artwork {
     year: raw.year,
     dimensions: raw.dimensions,
     description: raw.description,
-    images: raw.images.map(urlFor),
+    images: (raw.images ?? []).map(urlFor),
     availableAsOriginal: raw.availableAsOriginal,
-    printOptions: raw.printOptions,
+    printOptions: raw.printOptions ?? [],
   };
 }
 
@@ -105,7 +105,7 @@ function mapTattooInfo(raw: RawTattooInfo | null): TattooInfo {
   }
   return {
     body: toHTML(raw.body as never),
-    images: raw.images.map(urlFor),
+    images: (raw.images ?? []).map(urlFor),
   };
 }
 
@@ -123,14 +123,14 @@ const ARTWORK_PROJECTION = `{
 
 export async function getAllArtworks(): Promise<Artwork[]> {
   const raw: RawArtwork[] = await sanityClient.fetch(
-    `*[_type == "artwork"] | order(year desc) ${ARTWORK_PROJECTION}`
+    `*[_type == "artwork" && !(_id in path("drafts.**"))] | order(year desc) ${ARTWORK_PROJECTION}`
   );
   return raw.map(mapArtwork);
 }
 
 export async function getArtworksByMedium(medium: Medium): Promise<Artwork[]> {
   const raw: RawArtwork[] = await sanityClient.fetch(
-    `*[_type == "artwork" && medium == $medium] | order(year desc) ${ARTWORK_PROJECTION}`,
+    `*[_type == "artwork" && medium == $medium && !(_id in path("drafts.**"))] | order(year desc) ${ARTWORK_PROJECTION}`,
     { medium }
   );
   return raw.map(mapArtwork);
@@ -138,7 +138,7 @@ export async function getArtworksByMedium(medium: Medium): Promise<Artwork[]> {
 
 export async function getArtworkBySlug(slug: string): Promise<Artwork | null> {
   const raw: RawArtwork | null = await sanityClient.fetch(
-    `*[_type == "artwork" && slug.current == $slug][0] ${ARTWORK_PROJECTION}`,
+    `*[_type == "artwork" && slug.current == $slug && !(_id in path("drafts.**"))][0] ${ARTWORK_PROJECTION}`,
     { slug }
   );
   return raw ? mapArtwork(raw) : null;
@@ -154,14 +154,14 @@ const JOURNAL_PROJECTION = `{
 
 export async function getAllJournalPosts(): Promise<JournalPost[]> {
   const raw: RawJournalPost[] = await sanityClient.fetch(
-    `*[_type == "journalPost"] | order(date desc) ${JOURNAL_PROJECTION}`
+    `*[_type == "journalPost" && !(_id in path("drafts.**"))] | order(date desc) ${JOURNAL_PROJECTION}`
   );
   return raw.map(mapJournalPost);
 }
 
 export async function getJournalPostBySlug(slug: string): Promise<JournalPost | null> {
   const raw: RawJournalPost | null = await sanityClient.fetch(
-    `*[_type == "journalPost" && slug.current == $slug][0] ${JOURNAL_PROJECTION}`,
+    `*[_type == "journalPost" && slug.current == $slug && !(_id in path("drafts.**"))][0] ${JOURNAL_PROJECTION}`,
     { slug }
   );
   return raw ? mapJournalPost(raw) : null;
@@ -169,7 +169,7 @@ export async function getJournalPostBySlug(slug: string): Promise<JournalPost | 
 
 export async function getTattooInfo(): Promise<TattooInfo> {
   const raw: RawTattooInfo | null = await sanityClient.fetch(
-    `*[_type == "tattooInfo"][0]{ body, images }`
+    `*[_type == "tattooInfo" && !(_id in path("drafts.**"))][0]{ body, images }`
   );
   return mapTattooInfo(raw);
 }
