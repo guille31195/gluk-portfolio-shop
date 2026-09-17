@@ -15,7 +15,7 @@
 - Public artist name is "GLUK" in site copy (unaffected by this plan — no copy changes).
 - Site stays fully static — no SSR adapter, no server runtime. GROQ queries run inside `getStaticPaths`/page frontmatter at build time only.
 - Env vars: `PUBLIC_SANITY_PROJECT_ID`, `PUBLIC_SANITY_DATASET` — public (no API token needed for reads from a public dataset).
-- **The real Sanity project does not exist yet.** Every file that needs a Project ID uses the literal string `REPLACE_WITH_SANITY_PROJECT_ID` with an inline comment. `npm run check` (type-checking) must pass on every task regardless. `npm run build` will fail at the network-fetch step until real credentials are in `.env` — that failure is expected for Tasks 4-7 and is called out explicitly in each task's verification step. Do not attempt to work around it; document it and move on.
+- **Real Sanity Project ID: `48jkcmcb`, dataset: `production`** (Sanity's default dataset, created automatically with the project). The Studio has not been deployed yet and no content exists in the dataset yet — that's separate manual follow-up work (see the bottom of this plan). Fetching against an existing-but-empty dataset succeeds and returns empty results (`[]` for list queries), it does not error — so `npm run build` is expected to **succeed** for every task in this plan, just with zero portfolio/journal items until real content is entered later. The one exception is the `tattooInfo` singleton query (Task 6), which returns `null` rather than an empty array when no document exists yet — `getTattooInfo()` must handle that case without crashing (see Task 3).
 - `Artwork` interface fields: `slug, title, medium, year, dimensions, description, images (string[]), availableAsOriginal, printOptions (PrintOption[])`. `PrintOption`: `{ size: string, price: number, stripePriceId: string }`. `Medium`: `'oil-painting' | 'tattoo' | 'sculpture' | 'mixed-media'` (`MEDIUMS` const array is the source of truth). These must stay identical in shape to Plan 1's interfaces so `ArtworkCard.astro` and `formatPrice.ts` need no changes beyond an import path.
 - No new automated tests for the Sanity query functions or for `MEDIUMS`/`formatMedium` (their logic is unchanged from Plan 1, only their file location) — per the spec's Testing section.
 
@@ -285,8 +285,7 @@ import { structure } from './sanity/structure';
 export default defineConfig({
   name: 'default',
   title: 'Gluk Portfolio & Shop',
-  // Guillermo: replace with your real Sanity Project ID once created (see spec's Prerequisite section)
-  projectId: process.env.PUBLIC_SANITY_PROJECT_ID || 'REPLACE_WITH_SANITY_PROJECT_ID',
+  projectId: process.env.PUBLIC_SANITY_PROJECT_ID || '48jkcmcb',
   dataset: process.env.PUBLIC_SANITY_DATASET || 'production',
   plugins: [structureTool({ structure })],
   schema: {
@@ -302,8 +301,7 @@ import { defineCliConfig } from 'sanity/cli';
 
 export default defineCliConfig({
   api: {
-    // Guillermo: replace with your real Sanity Project ID once created
-    projectId: process.env.PUBLIC_SANITY_PROJECT_ID || 'REPLACE_WITH_SANITY_PROJECT_ID',
+    projectId: process.env.PUBLIC_SANITY_PROJECT_ID || '48jkcmcb',
     dataset: process.env.PUBLIC_SANITY_DATASET || 'production',
   },
 });
@@ -319,9 +317,7 @@ PUBLIC_SANITY_DATASET=production
 - [ ] **Step 11: Create `.env`**
 
 ```
-# Guillermo: replace REPLACE_WITH_SANITY_PROJECT_ID below once you've created your Sanity project
-# (see docs/superpowers/specs/2026-09-16-sanity-cms-design.md's Prerequisite section)
-PUBLIC_SANITY_PROJECT_ID=REPLACE_WITH_SANITY_PROJECT_ID
+PUBLIC_SANITY_PROJECT_ID=48jkcmcb
 PUBLIC_SANITY_DATASET=production
 ```
 
@@ -372,7 +368,7 @@ export default defineConfig({
   integrations: [
     react(),
     sanity({
-      projectId: PUBLIC_SANITY_PROJECT_ID || 'REPLACE_WITH_SANITY_PROJECT_ID',
+      projectId: PUBLIC_SANITY_PROJECT_ID || '48jkcmcb',
       dataset: PUBLIC_SANITY_DATASET || 'production',
       useCdn: true,
       apiVersion: '2026-09-16',
@@ -511,7 +507,10 @@ function mapJournalPost(raw: RawJournalPost): JournalPost {
   };
 }
 
-function mapTattooInfo(raw: RawTattooInfo): TattooInfo {
+function mapTattooInfo(raw: RawTattooInfo | null): TattooInfo {
+  if (!raw) {
+    return { body: '', images: [] };
+  }
   return {
     body: toHTML(raw.body as never),
     images: raw.images.map(urlFor),
@@ -577,7 +576,7 @@ export async function getJournalPostBySlug(slug: string): Promise<JournalPost | 
 }
 
 export async function getTattooInfo(): Promise<TattooInfo> {
-  const raw: RawTattooInfo = await sanityClient.fetch(
+  const raw: RawTattooInfo | null = await sanityClient.fetch(
     `*[_type == "tattooInfo"][0]{ body, images }`
   );
   return mapTattooInfo(raw);
@@ -706,7 +705,7 @@ Run: `npm run check`
 Expected: exits 0, 0 errors.
 
 Run: `npm run build`
-Expected: **this will fail** at the `getAllArtworks()`/`getArtworksByMedium()` fetch call, because `.env` still has the `REPLACE_WITH_SANITY_PROJECT_ID` placeholder and there is no real Sanity project to reach. This is the expected failure mode described in Global Constraints — confirm the error is a network/fetch error from the Sanity client (not a type error, not a syntax error, not an import-resolution error), and note that in the task report. Do not attempt to make the build pass without real credentials.
+Expected: exits 0. The `production` dataset has no `artwork` documents yet (Studio isn't deployed and no content has been entered — that's separate manual follow-up), so `dist/portfolio/index.html` and each medium subpage render with an empty grid — that's correct, not a bug. Confirm the build completes without a fetch/network error, which would indicate the Project ID or dataset is wrong.
 
 - [ ] **Step 5: Commit**
 
@@ -809,7 +808,7 @@ Run: `npm run check`
 Expected: exits 0, 0 errors.
 
 Run: `npm run build`
-Expected: fails at the Sanity fetch step, same expected failure as Task 4 — confirm it's the same network/fetch error class, not a new kind of failure.
+Expected: exits 0. No `journalPost` documents exist yet, so `getStaticPaths` returns an empty array and `dist/journal/` only gets an index page (with an empty list) and no post subpages — that's correct for an empty dataset, not a bug.
 
 - [ ] **Step 4: Commit**
 
@@ -873,7 +872,7 @@ Run: `npm run check`
 Expected: exits 0, 0 errors.
 
 Run: `npm run build`
-Expected: fails at the Sanity fetch step, same expected failure class as Tasks 4-5.
+Expected: exits 0. No `tattooInfo` document exists yet, so `getTattooInfo()` returns the `{ body: '', images: [] }` default from Task 3's null-handling — `dist/tattoo/index.html` renders with an empty body and no gallery, which is correct until Guillermo creates the singleton document in the deployed Studio.
 
 - [ ] **Step 3: Commit**
 
@@ -1030,7 +1029,7 @@ Run: `npm run check`
 Expected: exits 0, 0 errors.
 
 Run: `npm run build`
-Expected: fails at the Sanity fetch step, same expected failure class as Tasks 4-6.
+Expected: exits 0. No `artwork` documents exist yet, so `getStaticPaths` returns an empty array and no `dist/artwork/*` pages generate at all — that's correct for an empty dataset, not a bug.
 
 - [ ] **Step 3: Commit**
 
@@ -1094,12 +1093,10 @@ git commit -m "Remove placeholder data modules, document required Netlify env va
 
 ## Manual Follow-Up (not part of this plan's tasks)
 
-Once this plan's 8 tasks are complete and reviewed, these steps need Guillermo's own accounts/browser access before the site can build against real content — see the spec's "Prerequisite: Manual Account Setup" section:
+The Sanity project (`48jkcmcb`, `production` dataset) already exists. Once this plan's 8 tasks are complete and reviewed, these steps need Guillermo's own accounts/browser access before the site has real content:
 
-1. Create the Sanity project (if not already done) and get the real Project ID.
-2. Replace `REPLACE_WITH_SANITY_PROJECT_ID` in `.env` with the real Project ID.
-3. Run `npx sanity deploy` to publish the Studio.
-4. Log into the deployed Studio and enter content (at minimum, one `tattooInfo` document with document ID `tattooInfo` — the site's `getTattooInfo()` query expects exactly one to exist).
-5. Run `npm run build` again — this should now succeed and generate real pages.
-6. Create a Netlify build hook and add it as a Sanity webhook target so future publishes trigger a rebuild.
-7. Set `PUBLIC_SANITY_PROJECT_ID`/`PUBLIC_SANITY_DATASET` in Netlify's dashboard build environment variables.
+1. Run `npx sanity deploy` to publish the Studio.
+2. Log into the deployed Studio and enter content — at minimum, one `tattooInfo` document (Task 3's `getTattooInfo()` handles zero documents gracefully, but the `/tattoo` page will stay empty until one exists), plus real artwork and journal posts.
+3. Run `npm run build` again to confirm real content now generates real pages (portfolio grids populated, artwork/journal detail pages generated per document).
+4. Create a Netlify build hook and add it as a Sanity webhook target so future publishes trigger a rebuild.
+5. Set `PUBLIC_SANITY_PROJECT_ID=48jkcmcb` and `PUBLIC_SANITY_DATASET=production` in Netlify's dashboard build environment variables.
