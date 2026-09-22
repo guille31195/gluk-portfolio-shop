@@ -5,4 +5,8 @@ export default defineCliConfig({
     projectId: process.env.PUBLIC_SANITY_PROJECT_ID || '48jkcmcb',
     dataset: process.env.PUBLIC_SANITY_DATASET || 'production',
   },
+  studioHost: 'gluk-studio',
+  deployment: {
+    appId: 'olma86rfi2kh7w785hml0nzy',
+  },
 });

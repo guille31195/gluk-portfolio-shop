@@ -12,3 +12,4 @@ data/working/
 .worktrees/
 dist/
 .astro/
+.sanity/
