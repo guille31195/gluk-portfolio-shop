@@ -54,9 +54,12 @@ New idempotent script `scripts/seed-home-page.mjs` (npm script
 `seed:home`), same conventions as `seed-artworks.mjs` (reads
 `SANITY_WRITE_TOKEN` from `.env`, skips work already done):
 
-- Uploads `C:/Users/Guillermo/Desktop/cuadros HD/Gluk_Photoshoot-153.tif`
-  (4240×2832, black-and-white, 36 MB) as the portrait, with alt text
-  "Gluk, silhouetted between two studio lights".
+- Converts `C:/Users/Guillermo/Desktop/cuadros HD/Gluk_Photoshoot-153.tif`
+  (4240×2832, black-and-white, 36 MB) to a full-resolution JPEG (quality 90)
+  and uploads it as the portrait — so every browser gets a web format, never
+  a TIFF fallback — with alt text "Gluk, silhouetted between two studio
+  lights" and a hotspot centered on the silhouette. The TIFF on disk is not
+  modified.
 - Sets `featuredWorks`, in this order, by slug: `motopirueta-1`,
   `johnny-efectivo`, `contemplacion-violenta-1`, `bajale-2-gallito`,
   `pobrecita-la-vaquita-que-bonita-la-cartera`. Guillermo approved any
@@ -71,7 +74,9 @@ mapped-type pattern:
 
 ```ts
 export interface HomePage {
-  portrait: { url: string; alt: string } | null;
+  // src/srcset from the Sanity image builder; focalPoint is a CSS
+  // object-position derived from the Studio hotspot (default "50% 50%").
+  portrait: { src: string; srcset: string; alt: string; focalPoint: string } | null;
   featuredWorks: Artwork[];
 }
 ```
@@ -155,11 +160,11 @@ Adding motion to new content is mostly adding attributes.
    settles to 1.0× over ~1.4s; "GLUK" fades up in the dark center; tagline
    follows ~0.3s later. Nav overlays the photo in white. On narrow screens the
    landscape photo is cropped to portrait around the Sanity hotspot (set on
-   the silhouette).
+   the silhouette). The nav is not sticky, so on the home page it simply
+   sits over the photo (white) and scrolls away with it.
 2. **Hero scroll (scrubbed ScrollTrigger):** as the hero scrolls away the
    photo scales up slightly and fades toward the page background; the title
-   drifts up faster than the photo (parallax). Fully reversible. Nav returns
-   to its normal dark colors once past the hero.
+   drifts up faster than the photo (parallax). Fully reversible.
 3. **Featured works:** generous spacing, alternating left/right on desktop,
    single column on mobile. Each image frame opens with a slow vertical
    clip-path "curtain", then its title fades in.
@@ -173,7 +178,8 @@ Adding motion to new content is mostly adding attributes.
 
 ### Artwork detail (`/artwork/[slug]`)
 - Main image arrives via the morph; text fades up in sequence after it
-  (title → year/dimensions → description → prints).
+  (title → year/dimensions → description). The inquiry button and the
+  prints/prices block stay still (see "Never animated").
 - Existing CSS radio-button gallery keeps working; the instant image swap
   becomes a soft CSS opacity crossfade.
 
@@ -188,10 +194,14 @@ Adding motion to new content is mostly adding attributes.
 
 ## Accessibility & Robustness
 
-- **No-JS safe:** elements are put into their pre-animation (hidden) state
-  only by JavaScript immediately before animating. With scripts blocked or
-  failing, every page shows all content, unanimated. Context `revert()`
-  guarantees no element is left hidden after navigating away/back.
+- **No-JS safe:** elements are hidden before animating only when JavaScript
+  runs. A tiny inline `<head>` script adds a `js-motion` class to `<html>`;
+  CSS hides `[data-reveal]`/`[data-intro]`/`[data-hero-intro]` only under
+  that class (so there is no flash of content that then vanishes). If the
+  motion bundle hasn't signalled ready within 2.5s the class is removed and
+  everything shows. With scripts blocked, every page shows all content,
+  unanimated. Context `revert()` guarantees no element is left hidden after
+  navigating away/back.
 - **Reduced motion:** handled centrally with `gsap.matchMedia()` on
   `(prefers-reduced-motion: reduce)`: opacity-only fades, no translation,
   scale, parallax, or scrubbed effects; the morph becomes a plain crossfade
