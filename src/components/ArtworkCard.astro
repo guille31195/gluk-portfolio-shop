@@ -1,5 +1,6 @@
 ---
 import type { Artwork } from '../lib/sanity';
+import { CARD_WIDTH, CARD_WIDTHS, imageSrcset, sizedImage } from '../lib/image-url';
 
 interface Props {
   artwork: Artwork;
@@ -10,7 +11,9 @@ const { artwork } = Astro.props;
 <a class="card" href={`/artwork/${artwork.slug}`} data-reveal data-cursor="view">
   <div class="card-frame">
     <img
-      src={artwork.images[0]}
+      src={sizedImage(artwork.images[0], CARD_WIDTH)}
+      srcset={imageSrcset(artwork.images[0], CARD_WIDTHS)}
+      sizes="(max-width: 600px) 100vw, 320px"
       alt={artwork.title}
       loading="lazy"
       decoding="async"

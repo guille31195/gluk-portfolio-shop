@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getAllArtworks, getArtworkBySlug } from '../../lib/sanity';
 import { formatPrice } from '../../data/format-price';
+import { DETAIL_WIDTH, THUMB_WIDTH, sizedImage } from '../../lib/image-url';
 
 export async function getStaticPaths() {
   const artworks = await getAllArtworks();
@@ -22,13 +23,13 @@ const images = artwork!.images.slice(0, 8);
         {images.map((src, i) =>
           i === 0 ? (
             <img
-              src={src}
+              src={sizedImage(src, DETAIL_WIDTH)}
               alt={artwork!.title}
               class="gallery-image gallery-image-0"
               transition:name={`artwork-${artwork!.slug}`}
             />
           ) : (
-            <img src={src} alt={artwork!.title} class={`gallery-image gallery-image-${i}`} />
+            <img src={sizedImage(src, DETAIL_WIDTH)} alt={artwork!.title} class={`gallery-image gallery-image-${i}`} />
           )
         )}
       </div>
@@ -36,7 +37,7 @@ const images = artwork!.images.slice(0, 8);
         <div class="gallery-thumbs">
           {images.map((src, i) => (
             <label for={`gallery-${i}`} class="gallery-thumb">
-              <img src={src} alt={`${artwork!.title} thumbnail ${i + 1}`} />
+              <img src={sizedImage(src, THUMB_WIDTH)} alt={`${artwork!.title} thumbnail ${i + 1}`} />
             </label>
           ))}
         </div>

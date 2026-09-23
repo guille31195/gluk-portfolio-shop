@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getTattooInfo } from '../lib/sanity';
+import { CARD_WIDTH, sizedImage } from '../lib/image-url';
 
 const info = await getTattooInfo();
 ---
@@ -10,7 +11,7 @@ const info = await getTattooInfo();
     <div data-intro set:html={info.body} />
     {info.images.length > 0 && (
       <div class="gallery" data-reveal-stagger>
-        {info.images.map((src) => <img src={src} alt="" data-reveal />)}
+        {info.images.map((src) => <img src={sizedImage(src, CARD_WIDTH)} alt="" data-reveal />)}
       </div>
     )}
   </section>

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getHomePage } from '../lib/sanity';
+import { CARD_WIDTH, CARD_WIDTHS, imageSrcset, sizedImage } from '../lib/image-url';
 
 const { portrait, featuredWorks } = await getHomePage();
 ---
@@ -40,7 +41,9 @@ const { portrait, featuredWorks } = await getHomePage();
                 <figure data-reveal="curtain">
                   <div class="featured-frame" data-reveal-frame>
                     <img
-                      src={artwork.images[0]}
+                      src={sizedImage(artwork.images[0], CARD_WIDTH)}
+                      srcset={imageSrcset(artwork.images[0], CARD_WIDTHS)}
+                      sizes="(max-width: 600px) 100vw, 34rem"
                       alt={artwork.title}
                       loading="lazy"
                       decoding="async"
