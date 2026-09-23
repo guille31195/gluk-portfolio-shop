@@ -30,3 +30,13 @@ h1, h2, h3, h4 {
 a {
   color: var(--color-blue);
 }
+
+/* Motion guard. The inline script in BaseLayout adds .js-motion to <html>
+   only when JavaScript runs (and removes it if the motion bundle never
+   loads), so these elements are hidden only when GSAP will reveal them.
+   Without JS everything stays visible. */
+.js-motion [data-reveal],
+.js-motion [data-intro],
+.js-motion [data-hero-intro] {
+  visibility: hidden;
+}
