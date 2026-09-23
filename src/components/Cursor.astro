@@ -1,0 +1,80 @@
+---
+// Desktop-only custom cursor. Persisted across page transitions; the
+// behaviour module is only downloaded on fine-pointer devices with motion
+// allowed (see src/motion/media.ts).
+---
+<div class="cursor" id="gluk-cursor" aria-hidden="true" transition:persist>
+  <span class="cursor-dot"></span>
+  <span class="cursor-ring"><span class="cursor-label">View</span></span>
+</div>
+
+<script>
+  import { shouldEnableCursor } from '../motion/media';
+
+  const el = document.getElementById('gluk-cursor');
+  if (el && shouldEnableCursor((query) => window.matchMedia(query))) {
+    import('../motion/cursor').then(({ mountCursor }) => mountCursor(el));
+  }
+</script>
+
+<style>
+  .cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    pointer-events: none;
+    visibility: hidden;
+    opacity: 0;
+    color: #fff;
+    mix-blend-mode: difference;
+  }
+  .cursor-dot,
+  .cursor-ring {
+    position: absolute;
+    border-radius: 50%;
+    transition:
+      transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .cursor-dot {
+    width: 8px;
+    height: 8px;
+    margin: -4px 0 0 -4px;
+    background: currentColor;
+  }
+  .cursor-ring {
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    margin: -36px 0 0 -36px;
+    border: 1px solid currentColor;
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  .cursor-label {
+    font-family: var(--font-body);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .cursor.is-view .cursor-dot {
+    opacity: 0;
+    transform: scale(0);
+  }
+  .cursor.is-view .cursor-ring {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  :global(.has-custom-cursor),
+  :global(.has-custom-cursor *) {
+    cursor: none;
+  }
+  :global(.has-custom-cursor input),
+  :global(.has-custom-cursor textarea),
+  :global(.has-custom-cursor select) {
+    cursor: auto;
+  }
+</style>
