@@ -16,6 +16,7 @@ let events: EventTarget;
 let pageKey: string | null;
 let scopes: FakeScope[];
 let runs: string[];
+let errors: unknown[];
 
 function createScope(setup: MotionSetup): FakeScope {
   const before = runs.length;
@@ -31,14 +32,40 @@ function createScope(setup: MotionSetup): FakeScope {
   return scope;
 }
 
+function createScopeWithThrowingRevert(setup: MotionSetup): FakeScope {
+  const before = runs.length;
+  setup({ reduced: false });
+  const scope: FakeScope = {
+    label: runs.slice(before).join(','),
+    reverted: 0,
+    revert() {
+      this.reverted += 1;
+      throw new Error('revert failed');
+    },
+  };
+  scopes.push(scope);
+  return scope;
+}
+
 function setup(name: string): MotionSetup {
   return () => {
     runs.push(name);
   };
 }
 
-function lifecycle() {
-  return createLifecycle({ events, getPageKey: () => pageKey, createScope });
+function throwingSetup(message: string): MotionSetup {
+  return () => {
+    throw new Error(message);
+  };
+}
+
+function lifecycle(customCreateScope?: typeof createScope) {
+  return createLifecycle({
+    events,
+    getPageKey: () => pageKey,
+    createScope: customCreateScope || createScope,
+    onError: (error) => errors.push(error),
+  });
 }
 
 const pageLoad = () => events.dispatchEvent(new Event(PAGE_LOAD_EVENT));
@@ -49,6 +76,7 @@ beforeEach(() => {
   pageKey = null;
   scopes = [];
   runs = [];
+  errors = [];
 });
 
 describe('createLifecycle', () => {
@@ -137,5 +165,57 @@ describe('createLifecycle', () => {
     pageKey = 'home';
     pageLoad();
     expect(runs).toEqual(['hero']);
+  });
+
+  it('keeps running later setups when one throws', () => {
+    const motion = lifecycle();
+    motion.registerGlobal(throwingSetup('setup failed'));
+    motion.registerGlobal(setup('reveal'));
+    motion.registerPage('home', setup('hero'));
+    pageKey = 'home';
+    pageLoad();
+    expect(runs).toEqual(['reveal', 'hero']);
+    expect(errors).toHaveLength(1);
+    expect((errors[0] as Error).message).toBe('setup failed');
+  });
+
+  it('reverts every scope even if one revert throws', () => {
+    // Use a custom createScope that makes the first scope's revert throw
+    let callCount = 0;
+    const customCreateScope = (setup: MotionSetup): FakeScope => {
+      const scope =
+        callCount === 0
+          ? createScopeWithThrowingRevert(setup)
+          : createScope(setup);
+      callCount += 1;
+      return scope;
+    };
+    const motion = lifecycle(customCreateScope);
+    motion.registerGlobal(setup('reveal'));
+    motion.registerPage('home', setup('hero'));
+    pageKey = 'home';
+    pageLoad();
+
+    // Both scopes should be reverted, even though the first throws
+    beforeSwap();
+    expect(scopes[0].reverted).toBe(1);
+    expect(scopes[1].reverted).toBe(1);
+    expect(errors).toHaveLength(1);
+    expect((errors[0] as Error).message).toBe('revert failed');
+
+    // Scopes should be cleared, so a second page load must not try to revert the old scopes
+    pageLoad();
+    expect(scopes[0].reverted).toBe(1); // still 1, not 2
+    expect(scopes[1].reverted).toBe(1); // still 1, not 2
+  });
+
+  it('runs a global registered after page-load immediately', () => {
+    const motion = lifecycle();
+    pageLoad();
+    motion.registerGlobal(setup('late-global'));
+    expect(runs).toEqual(['late-global']);
+
+    beforeSwap();
+    expect(scopes[0].reverted).toBe(1);
   });
 });

@@ -17,6 +17,7 @@ export interface LifecycleDeps {
   events: Pick<EventTarget, 'addEventListener'>;
   getPageKey: () => string | null;
   createScope: (setup: MotionSetup) => MotionScope;
+  onError?: (error: unknown) => void;
 }
 
 export interface MotionLifecycle {
@@ -32,19 +33,34 @@ export function createLifecycle(deps: LifecycleDeps): MotionLifecycle {
   const pages = new Map<string, MotionSetup>();
   let scopes: MotionScope[] = [];
   let loaded = false;
+  const onError = deps.onError ?? ((error) => console.error('[motion]', error));
+
+  function run(setup: MotionSetup): void {
+    try {
+      scopes.push(deps.createScope(setup));
+    } catch (error) {
+      onError(error);
+    }
+  }
 
   function teardown(): void {
-    for (const scope of scopes) scope.revert();
+    for (const scope of scopes) {
+      try {
+        scope.revert();
+      } catch (error) {
+        onError(error);
+      }
+    }
     scopes = [];
   }
 
   function start(): void {
     teardown();
     loaded = true;
-    for (const setup of globals) scopes.push(deps.createScope(setup));
+    for (const setup of globals) run(setup);
     const key = deps.getPageKey();
     const page = key ? pages.get(key) : undefined;
-    if (page) scopes.push(deps.createScope(page));
+    if (page) run(page);
   }
 
   deps.events.addEventListener(PAGE_LOAD_EVENT, start);
@@ -56,13 +72,13 @@ export function createLifecycle(deps: LifecycleDeps): MotionLifecycle {
   return {
     registerGlobal(setup) {
       globals.push(setup);
-      if (loaded) scopes.push(deps.createScope(setup));
+      if (loaded) run(setup);
     },
     registerPage(key, setup) {
       if (pages.has(key)) return;
       pages.set(key, setup);
       // Page scripts can execute after the first page-load has already fired.
-      if (loaded && deps.getPageKey() === key) scopes.push(deps.createScope(setup));
+      if (loaded && deps.getPageKey() === key) run(setup);
     },
   };
 }
