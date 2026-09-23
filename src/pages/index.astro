@@ -1,25 +1,191 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getHomePage } from '../lib/sanity';
+
+const { portrait, featuredWorks } = await getHomePage();
 ---
-<BaseLayout title="Home">
-  <section class="hero">
-    <h1>GLUK</h1>
-    <p class="tagline">Precise, streetwise images about Caribbean identity, memory and power.</p>
-  </section>
+<BaseLayout title="Home" overlayNav={portrait !== null}>
+  <div data-motion-page="home">
+    <section class:list={['hero', { 'hero--photo': portrait }]} data-hero>
+      {portrait && (
+        <div class="hero-media" data-hero-media>
+          <img
+            class="hero-image"
+            data-hero-image
+            src={portrait.src}
+            srcset={portrait.srcset}
+            sizes="100vw"
+            alt={portrait.alt}
+            style={`object-position: ${portrait.focalPoint}`}
+            fetchpriority="high"
+            loading="eager"
+            decoding="async"
+          />
+        </div>
+      )}
+      <div class="hero-text" data-hero-text>
+        <h1 data-hero-intro>GLUK</h1>
+        <p class="tagline" data-hero-intro>
+          Precise, streetwise images about Caribbean identity, memory and power.
+        </p>
+      </div>
+    </section>
+
+    {featuredWorks.length > 0 && (
+      <section class="featured" aria-label="Selected work">
+        <ol class="featured-list">
+          {featuredWorks.map((artwork) => (
+            <li class="featured-item">
+              <a class="featured-link" href={`/artwork/${artwork.slug}`} data-cursor="view">
+                <figure data-reveal="curtain">
+                  <div class="featured-frame" data-reveal-frame>
+                    <img
+                      src={artwork.images[0]}
+                      alt={artwork.title}
+                      loading="lazy"
+                      decoding="async"
+                      transition:name={`artwork-${artwork.slug}`}
+                    />
+                  </div>
+                  <figcaption data-reveal-caption>
+                    {artwork.title}
+                    {artwork.year && <span class="featured-year">{artwork.year}</span>}
+                  </figcaption>
+                </figure>
+              </a>
+            </li>
+          ))}
+        </ol>
+        <p class="view-all" data-reveal><a href="/portfolio">View all work</a></p>
+      </section>
+    )}
+  </div>
 </BaseLayout>
+
+<script>
+  import { motion } from '../motion/runtime';
+  import { setupHomeHero } from '../motion/home-hero';
+
+  motion.registerPage('home', setupHomeHero);
+</script>
 
 <style>
   .hero {
     padding: 6rem 2rem;
     text-align: center;
   }
+  .hero--photo {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: 100svh;
+    min-height: 32rem;
+    padding: 0;
+    overflow: hidden;
+    color: #fff;
+  }
+  .hero-media {
+    position: absolute;
+    inset: 0;
+  }
+  .hero-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .hero-text {
+    position: relative;
+    padding: 0 2rem;
+  }
   .hero h1 {
     font-size: 4rem;
+  }
+  .hero--photo h1 {
+    font-size: clamp(3.5rem, 12vw, 9rem);
+    letter-spacing: 0.02em;
+    margin: 0 0 0.25em;
   }
   .tagline {
     font-family: var(--font-body);
     font-size: 1.25rem;
     max-width: 40ch;
     margin: 0 auto;
+  }
+  .hero--photo .tagline {
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.5);
+  }
+
+  .featured {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 8rem 2rem 6rem;
+  }
+  .featured-list {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(5rem, 12vw, 10rem);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .featured-item {
+    width: min(100%, 34rem);
+  }
+  .featured-item:nth-child(even) {
+    align-self: flex-end;
+  }
+  .featured-link {
+    display: block;
+    color: var(--color-black);
+    text-decoration: none;
+  }
+  figure {
+    margin: 0;
+  }
+  .featured-frame {
+    overflow: hidden;
+  }
+  .featured-frame img {
+    display: block;
+    width: 100%;
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .featured-link:hover .featured-frame img {
+    transform: scale(1.03);
+  }
+  figcaption {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1rem;
+    font-family: var(--font-display);
+    font-weight: 800;
+  }
+  .featured-year {
+    font-family: var(--font-body);
+    font-weight: 400;
+    color: var(--color-deep-blue);
+  }
+  .view-all {
+    margin-top: 6rem;
+    text-align: center;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.25rem;
+  }
+  .view-all a {
+    color: var(--color-black);
+  }
+
+  @media (max-width: 640px) {
+    .featured-item:nth-child(even) {
+      align-self: auto;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .featured-frame img {
+      transition: none;
+    }
   }
 </style>
