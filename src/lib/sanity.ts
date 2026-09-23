@@ -1,6 +1,7 @@
 import { sanityClient } from 'sanity:client';
 import imageUrlBuilder from '@sanity/image-url';
 import { toHTML } from '@portabletext/to-html';
+import { mapHomePage, type HomePage, type RawHomePage, type RawPortrait } from './home-page';
 
 export const MEDIUMS = ['oil-painting', 'tattoo', 'sculpture', 'mixed-media'] as const;
 export type Medium = (typeof MEDIUMS)[number];
@@ -172,4 +173,27 @@ export async function getTattooInfo(): Promise<TattooInfo> {
     `*[_type == "tattooInfo" && !(_id in path("drafts.**"))][0]{ body, images }`
   );
   return mapTattooInfo(raw);
+}
+
+export type HomePageContent = HomePage<Artwork>;
+
+function portraitUrl(portrait: RawPortrait, width: number): string {
+  return imageBuilder
+    .image(portrait as Parameters<typeof imageBuilder.image>[0])
+    .width(width)
+    .auto('format')
+    .quality(80)
+    .url();
+}
+
+export async function getHomePage(): Promise<HomePageContent> {
+  // `_id == "homePage"` matches only the published singleton (drafts are "drafts.homePage").
+  const raw: RawHomePage<RawArtwork> | null = await sanityClient.fetch(
+    `*[_id == "homePage"][0]{
+      portrait{ asset, hotspot },
+      portraitAlt,
+      "featuredWorks": featuredWorks[]-> ${ARTWORK_PROJECTION}
+    }`
+  );
+  return mapHomePage(raw, { portraitUrl, mapArtwork });
 }
