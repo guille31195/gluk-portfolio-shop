@@ -3,7 +3,7 @@
 // navigations (transition:persist), so this mounts once and is never torn
 // down — it deliberately lives outside the page lifecycle.
 import { gsap } from 'gsap';
-import { DURATION } from './tokens';
+import { DURATION, CURSOR_TRAIL } from './tokens';
 
 const ACTIVE_CLASS = 'has-custom-cursor';
 const VIEW_CLASS = 'is-view';
@@ -28,8 +28,8 @@ export function mountCursor(el: HTMLElement): void {
     setViewing(false);
   });
 
-  const xTo = gsap.quickTo(el, 'x', { duration: 0.35, ease: 'power3.out' });
-  const yTo = gsap.quickTo(el, 'y', { duration: 0.35, ease: 'power3.out' });
+  const xTo = gsap.quickTo(el, 'x', { ...CURSOR_TRAIL });
+  const yTo = gsap.quickTo(el, 'y', { ...CURSOR_TRAIL });
 
   window.addEventListener(
     'pointermove',
