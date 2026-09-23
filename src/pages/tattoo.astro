@@ -6,11 +6,11 @@ const info = await getTattooInfo();
 ---
 <BaseLayout title="Tattoo">
   <section class="page">
-    <h1>Tattoo</h1>
-    <div set:html={info.body} />
+    <h1 data-intro>Tattoo</h1>
+    <div data-intro set:html={info.body} />
     {info.images.length > 0 && (
-      <div class="gallery">
-        {info.images.map((src) => <img src={src} alt="" />)}
+      <div class="gallery" data-reveal-stagger>
+        {info.images.map((src) => <img src={src} alt="" data-reveal />)}
       </div>
     )}
   </section>

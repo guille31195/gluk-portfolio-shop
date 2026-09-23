@@ -6,10 +6,10 @@ const posts = await getAllJournalPosts();
 ---
 <BaseLayout title="Journal">
   <section class="page">
-    <h1>Journal</h1>
-    <ul>
+    <h1 data-intro>Journal</h1>
+    <ul data-reveal-stagger>
       {posts.map((post) => (
-        <li>
+        <li data-reveal>
           <a href={`/journal/${post.slug}`}>{post.title}</a>
           <span> — {new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
         </li>
