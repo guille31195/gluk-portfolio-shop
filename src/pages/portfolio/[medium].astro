@@ -12,8 +12,8 @@ const artworks = await getArtworksByMedium(medium);
 ---
 <BaseLayout title={`Portfolio — ${formatMedium(medium)}`}>
   <section class="page">
-    <h1>{formatMedium(medium)}</h1>
-    <div class="grid">
+    <h1 data-intro>{formatMedium(medium)}</h1>
+    <div class="grid" data-reveal-stagger>
       {artworks.map((artwork) => (
         <ArtworkCard artwork={artwork} />
       ))}

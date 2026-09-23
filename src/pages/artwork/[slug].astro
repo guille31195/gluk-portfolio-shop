@@ -19,9 +19,18 @@ const images = artwork!.images.slice(0, 8);
         <input type="radio" name="gallery" id={`gallery-${i}`} class="gallery-radio" checked={i === 0} />
       ))}
       <div class="gallery-main">
-        {images.map((src, i) => (
-          <img src={src} alt={artwork!.title} class={`gallery-image gallery-image-${i}`} />
-        ))}
+        {images.map((src, i) =>
+          i === 0 ? (
+            <img
+              src={src}
+              alt={artwork!.title}
+              class="gallery-image gallery-image-0"
+              transition:name={`artwork-${artwork!.slug}`}
+            />
+          ) : (
+            <img src={src} alt={artwork!.title} class={`gallery-image gallery-image-${i}`} />
+          )
+        )}
       </div>
       {images.length > 1 && (
         <div class="gallery-thumbs">
@@ -34,9 +43,9 @@ const images = artwork!.images.slice(0, 8);
       )}
     </div>
     <div class="info">
-      <h1>{artwork!.title}</h1>
-      <p class="meta">{artwork!.year} — {artwork!.dimensions}</p>
-      <p>{artwork!.description}</p>
+      <h1 data-intro>{artwork!.title}</h1>
+      <p class="meta" data-intro>{artwork!.year} — {artwork!.dimensions}</p>
+      <p data-intro>{artwork!.description}</p>
 
       {artwork!.availableAsOriginal && (
         <a class="button" href="/contact">Inquire about the original</a>
@@ -68,18 +77,36 @@ const images = artwork!.images.slice(0, 8);
   .gallery-radio {
     display: none;
   }
-  .gallery-image {
-    display: none;
-    width: 100%;
+  /* Images stack in one grid cell and crossfade; hidden ones are also
+     visibility:hidden so screen readers skip them, as display:none did. */
+  .gallery-main {
+    display: grid;
+    align-items: start;
   }
-  .gallery-radio:nth-of-type(1):checked ~ .gallery-main .gallery-image-0 { display: block; }
-  .gallery-radio:nth-of-type(2):checked ~ .gallery-main .gallery-image-1 { display: block; }
-  .gallery-radio:nth-of-type(3):checked ~ .gallery-main .gallery-image-2 { display: block; }
-  .gallery-radio:nth-of-type(4):checked ~ .gallery-main .gallery-image-3 { display: block; }
-  .gallery-radio:nth-of-type(5):checked ~ .gallery-main .gallery-image-4 { display: block; }
-  .gallery-radio:nth-of-type(6):checked ~ .gallery-main .gallery-image-5 { display: block; }
-  .gallery-radio:nth-of-type(7):checked ~ .gallery-main .gallery-image-6 { display: block; }
-  .gallery-radio:nth-of-type(8):checked ~ .gallery-main .gallery-image-7 { display: block; }
+  .gallery-image {
+    grid-area: 1 / 1;
+    width: 100%;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease, visibility 0s linear 0.5s;
+  }
+  .gallery-radio:nth-of-type(1):checked ~ .gallery-main .gallery-image-0,
+  .gallery-radio:nth-of-type(2):checked ~ .gallery-main .gallery-image-1,
+  .gallery-radio:nth-of-type(3):checked ~ .gallery-main .gallery-image-2,
+  .gallery-radio:nth-of-type(4):checked ~ .gallery-main .gallery-image-3,
+  .gallery-radio:nth-of-type(5):checked ~ .gallery-main .gallery-image-4,
+  .gallery-radio:nth-of-type(6):checked ~ .gallery-main .gallery-image-5,
+  .gallery-radio:nth-of-type(7):checked ~ .gallery-main .gallery-image-6,
+  .gallery-radio:nth-of-type(8):checked ~ .gallery-main .gallery-image-7 {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.5s ease;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .gallery-image {
+      transition: none;
+    }
+  }
   .gallery-thumbs {
     display: flex;
     gap: 0.5rem;
