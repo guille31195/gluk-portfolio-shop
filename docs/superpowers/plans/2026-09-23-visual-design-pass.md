@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-23-visual-design-pass-design.md`
 
+**Status:** Self-reviewed 2026-09-23 (spec coverage, placeholders, cross-task names); awaiting Guillermo's review.
+
 ## Global Constraints
 
 - Work happens in the worktree `C:/Users/Guillermo/dev/gluk-portfolio-shop/.worktrees/gsap-motion` on branch `feat/gsap-motion`. Never commit to `main`.
@@ -61,6 +63,7 @@
 | `src/lib/contact-prefill.ts` (+ test) | Create | interests + query-string prefill |
 | `src/lib/sanity.ts` | Modify | fetch + wire modules; `getAllArtworks` resolves halos |
 | `scripts/build-brand-assets.mjs` | Create | brand images → `public/brand/*` |
+| `src/lib/brand.ts` | Create | wordmark intrinsic size (`WORDMARK_WIDTH`/`WORDMARK_HEIGHT`) |
 | `docs/brand-kit/fields/*` | Create | source gradient fields + rupture rule |
 | `public/brand/*` | Create (generated) | optimized fields, veil, rules, wordmark |
 | `src/styles/theme.css` | Rewrite | tokens, dark base, type utilities, guard |
@@ -1769,7 +1772,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ### Task 5: Brand assets, theme and backdrop
 
 **Files:**
-- Create: `docs/brand-kit/fields/gradient-1.jpg`, `gradient-2.jpg`, `gradient-3.jpg`, `rupture-rule.jpg`; `scripts/build-brand-assets.mjs`; `public/brand/*` (generated); `src/components/Backdrop.astro`
+- Create: `docs/brand-kit/fields/gradient-1.jpg`, `gradient-2.jpg`, `gradient-3.jpg`, `rupture-rule.jpg`; `scripts/build-brand-assets.mjs`; `public/brand/*` (generated); `src/lib/brand.ts`; `src/components/Backdrop.astro`
 - Rewrite: `src/styles/theme.css`
 - Modify: `src/layouts/BaseLayout.astro`, `package.json`, `docs/brand-kit/README.md`
 
@@ -1841,7 +1844,14 @@ console.log('brand assets written to public/brand/');
 Add to `package.json` `scripts`: `"brand:assets": "node scripts/build-brand-assets.mjs"`.
 
 Run: `npm run brand:assets && ls -la public/brand`
-Expected: 8 files; note the printed wordmark size `800x<H>` — use `<H>` as `WORDMARK_HEIGHT` in Task 7.
+Expected: 8 files; the script prints `wordmark-white.png 800x348` (measured 2026-09-23 from `a-wordmark-plain-white.png`). If it prints a different height, use that value in `src/lib/brand.ts` below.
+
+`src/lib/brand.ts` (single source for the wordmark's intrinsic size, used by `Nav` and `Footer` in Task 7):
+```ts
+// Intrinsic size of public/brand/wordmark-white.png (printed by `npm run brand:assets`).
+export const WORDMARK_WIDTH = 800;
+export const WORDMARK_HEIGHT = 348;
+```
 
 - [ ] **Step 3: Rewrite the theme**
 
@@ -2099,7 +2109,7 @@ Expected (open the PNG): dark veil background with grain, bone-colored text.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add docs/brand-kit scripts/build-brand-assets.mjs public/brand package.json src/styles/theme.css src/components/Backdrop.astro src/layouts/BaseLayout.astro src/pages/index.astro
+git add docs/brand-kit scripts/build-brand-assets.mjs public/brand package.json src/lib/brand.ts src/styles/theme.css src/components/Backdrop.astro src/layouts/BaseLayout.astro src/pages/index.astro
 git commit -m "Add brand fields, veil and dark theme tokens
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
@@ -2331,7 +2341,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Modify: `src/components/Cursor.astro`, `src/layouts/BaseLayout.astro`
 
 **Interfaces:**
-- Consumes: `getSiteSettings(): Promise<SiteSettings>` (Task 2), `NumberedIndex`, `RuptureRule` (Task 6), `WORDMARK_HEIGHT` printed in Task 5 Step 2.
+- Consumes: `getSiteSettings(): Promise<SiteSettings>` (Task 2), `NumberedIndex`, `RuptureRule` (Task 6), `WORDMARK_WIDTH`/`WORDMARK_HEIGHT` from `src/lib/brand.ts` (Task 5).
 - Produces: `Nav` props `{ settings: SiteSettings }`; `Footer` props `{ settings: SiteSettings }`; DOM hooks `[data-menu-toggle]`, `[data-menu-label]`, `[data-mobile-menu]`; `initMobileMenu(): void`.
 
 - [ ] **Step 1: Mobile menu behaviour**
@@ -2339,13 +2349,17 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 `src/scripts/mobile-menu.ts`:
 ```ts
 // Phone menu: the toggle opens a full-screen numbered index (spec §5.1).
-// Re-binds on every page load because the nav is re-rendered per page.
+// Re-binds on every page load because the nav is re-rendered per page; the
+// document-level listener is removed on swap so listeners never pile up.
 
 function initMobileMenu(): void {
   const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
   const menu = document.querySelector<HTMLElement>('[data-mobile-menu]');
   const label = document.querySelector<HTMLElement>('[data-menu-label]');
   if (!toggle || !menu) return;
+  // The toggle ships hidden so phones without JS keep the plain link row.
+  toggle.hidden = false;
+  const listeners = new AbortController();
 
   const setOpen = (open: boolean, returnFocus = false) => {
     toggle.setAttribute('aria-expanded', String(open));
@@ -2357,11 +2371,22 @@ function initMobileMenu(): void {
   };
 
   toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') setOpen(false, true);
-  });
-  // Leaving the page with the menu open: reset state for the next page.
-  document.addEventListener('astro:before-swap', () => setOpen(false), { once: true });
+  document.addEventListener(
+    'keydown',
+    (event) => {
+      if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') setOpen(false, true);
+    },
+    { signal: listeners.signal }
+  );
+  // Leaving the page: reset state and drop the document listener.
+  document.addEventListener(
+    'astro:before-swap',
+    () => {
+      setOpen(false);
+      listeners.abort();
+    },
+    { once: true }
+  );
 }
 
 document.addEventListener('astro:page-load', initMobileMenu);
@@ -2369,12 +2394,13 @@ document.addEventListener('astro:page-load', initMobileMenu);
 
 - [ ] **Step 2: Nav**
 
-Replace `src/components/Nav.astro` (use the `WORDMARK_HEIGHT` from Task 5 for `height`):
+Replace `src/components/Nav.astro`:
 ```astro
 ---
 import NumberedIndex from './NumberedIndex.astro';
 import RuptureRule from './RuptureRule.astro';
 import type { SiteSettings } from '../lib/sanity';
+import { WORDMARK_HEIGHT, WORDMARK_WIDTH } from '../lib/brand';
 
 interface Props {
   settings: SiteSettings;
@@ -2391,8 +2417,6 @@ const links = [
 ];
 const isActive = (href: string) =>
   path === href || path.startsWith(`${href}/`) || (href === '/portfolio' && path.startsWith('/artwork/'));
-const WORDMARK_WIDTH = 800;
-const WORDMARK_HEIGHT = 373; // replace with the height printed by `npm run brand:assets`
 ---
 <header class="site-nav">
   <a class="brand" href="/" aria-label="GLUK — home">
@@ -2409,7 +2433,7 @@ const WORDMARK_HEIGHT = 373; // replace with the height printed by `npm run bran
       ))}
     </ul>
   </nav>
-  <button class="menu-toggle label" type="button" aria-expanded="false" aria-controls="mobile-menu" data-menu-toggle>
+  <button class="menu-toggle label" type="button" aria-expanded="false" aria-controls="mobile-menu" data-menu-toggle hidden>
     <span data-menu-label>Menu</span>
   </button>
   <div class="mobile-menu" id="mobile-menu" data-mobile-menu hidden>
@@ -2511,7 +2535,18 @@ const WORDMARK_HEIGHT = 373; // replace with the height printed by `npm run bran
   @media (max-width: 760px) {
     .nav-desktop { display: none; }
     .menu-toggle { display: block; }
+    .menu-toggle[hidden] { display: none; }
     .brand { position: relative; z-index: 2; }
+    /* No JavaScript: the toggle stays hidden, so keep the links as a small wrapping row. */
+    .site-nav:has(.menu-toggle[hidden]) {
+      flex-wrap: wrap;
+      height: auto;
+      min-height: var(--nav-height);
+      row-gap: 0.6rem;
+      padding-block: 1rem;
+    }
+    .site-nav:has(.menu-toggle[hidden]) .nav-desktop { display: block; }
+    .site-nav:has(.menu-toggle[hidden]) .nav-desktop ul { flex-wrap: wrap; gap: 0.4rem 1.2rem; }
   }
   @media (prefers-reduced-motion: reduce) {
     .nav-desktop a { transition: none; }
@@ -2530,6 +2565,7 @@ Replace `src/components/Footer.astro`:
 ---
 import RuptureRule from './RuptureRule.astro';
 import type { SiteSettings } from '../lib/sanity';
+import { WORDMARK_HEIGHT, WORDMARK_WIDTH } from '../lib/brand';
 
 interface Props {
   settings: SiteSettings;
@@ -2540,7 +2576,7 @@ const year = new Date().getFullYear();
 ---
 <footer class="site-footer">
   <div class="footer-mark">
-    <img src="/brand/wordmark-white.png" alt="GLUK" width="800" height="373" />
+    <img src="/brand/wordmark-white.png" alt="GLUK" width={WORDMARK_WIDTH} height={WORDMARK_HEIGHT} />
     <RuptureRule weight="base" class="footer-rule" />
   </div>
   <div class="footer-cols">
@@ -2623,7 +2659,6 @@ const year = new Date().getFullYear();
   }
 </style>
 ```
-Use the same `WORDMARK_HEIGHT` value as in `Nav.astro` for the `height` attribute.
 
 - [ ] **Step 4: Cursor restyle**
 
@@ -2643,7 +2678,7 @@ and change `<Nav />` → `<Nav settings={settings} />`, `<Footer />` → `<Foote
 Run: `npm run check && npm test && npm run build`
 Expected: all pass.
 
-With `npm run preview` running, screenshot `/about` at 1440×900 and at 390×844, then (at 390×844) confirm in DevTools device mode: tapping `Menu` shows the numbered index, the label reads `Close`, `Escape` closes it and focus returns to the toggle.
+With `npm run preview` running, screenshot `/about` at 1440×900 and at 390×844, then (at 390×844) confirm in DevTools device mode: tapping `Menu` shows the numbered index, the label reads `Close`, `Escape` closes it and focus returns to the toggle. Then disable JavaScript (DevTools → Settings → Debugger) and reload at 390×844: no `Menu` button, the five page links show as a wrapped row under the wordmark.
 
 - [ ] **Step 7: Commit**
 
@@ -3203,13 +3238,15 @@ import { CARACAS, MEXICO_CITY, SEA_POINTS, formatElevation, formatRoute } from '
   .egg-panel-inner {
     overflow: hidden;
   }
-  .egg[data-open] .egg-panel,
-  .egg:focus-within .egg-panel {
+  /* Open state is driven only by [data-open] (click / Enter / Space) and hover.
+     No :focus-within — the clicked button keeps focus, so the panel could not
+     close again and would disagree with aria-expanded. */
+  .egg[data-open] .egg-panel {
     grid-template-rows: 1fr;
     opacity: 1;
   }
   .egg[data-open] .egg-toggle,
-  .egg:focus-within .egg-toggle {
+  .egg-toggle:focus-visible {
     opacity: 1;
   }
   @media (hover: hover) {
@@ -4116,7 +4153,7 @@ Note: the nav overlays the portrait; the wordmark is white on the photo, which i
 
 - [ ] **Step 2: Gates + visual check**
 
-Run: `npm run check && npm test && npm run build` → all pass. Before the seed there is no portrait: the page shows the text column alone. Screenshot `/about` (1440×900, 390×844).
+Run: `npm run check && npm test && npm run build` → all pass. Before the seed there is no portrait: the page shows the text column alone. Screenshot `/about` (1440×900, 390×844); after the seed, compare with `about-v2.html` AB1 (`05 AI/CLAUDE CODE/workspace/about-check2.png`).
 
 - [ ] **Step 3: Commit**
 
@@ -4248,7 +4285,7 @@ const [info, settings] = await Promise.all([getTattooInfo(), getSiteSettings()])
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getAllJournalPosts } from '../../lib/sanity';
-import { DETAIL_WIDTH, sizedImage } from '../../lib/image-url';
+import { sizedImage } from '../../lib/image-url';
 import { pad2 } from '../../lib/numerals';
 
 const posts = await getAllJournalPosts();
@@ -4325,7 +4362,6 @@ const formatDate = (iso: string) =>
   }
 </style>
 ```
-Remove the unused `DETAIL_WIDTH` import if `astro check` flags it.
 
 - [ ] **Step 3: Journal entry**
 
@@ -4686,7 +4722,7 @@ Run: `grep -c 'data-netlify="true"' dist/contact/index.html` → `1`; `grep -c '
 
 - [ ] **Step 8: Visual + prefill check**
 
-Screenshot `/contact?interest=original&artwork=Motopirueta%204` at 1440×900 and 390×844 (use `--virtual-time-budget=6000` so scripts run). Expected: "An original" chip filled, message field starts with `About: Motopirueta 4`, studio time visible.
+Screenshot `/contact?interest=original&artwork=Motopirueta%204` at 1440×900 and 390×844 (use `--virtual-time-budget=6000` so scripts run). Expected: "An original" chip filled, message field starts with `About: Motopirueta 4`, studio time visible. Compare with `small-pages-v2.html` "Contact" (open the mockup in the companion; `small-check2.png` only shows the Tattoo section).
 
 - [ ] **Step 9: Commit**
 
@@ -4752,8 +4788,10 @@ const FEATURED_SLUGS = [
   'pobrecita-la-vaquita-que-bonita-la-cartera',
 ];
 
-// Shoot #82 (Gluk_Photoshoot-82.tif) from Guillermo's Drive folder.
+// Shoot #82 (Gluk_Photoshoot-82.tif) from Guillermo's Drive folder. If the
+// Drive download is refused, download the TIFF by hand and pass PORTRAIT_PATH.
 const PORTRAIT_DRIVE_ID = '1Om7p2e091hAuBXNyY9hu6XXPNq5mqUWp';
+const PORTRAIT_PATH = process.env.PORTRAIT_PATH;
 const PORTRAIT_ALT = 'Portrait of GLUK in the studio';
 
 const slugs = SERIES.flatMap((s) => s.members).concat(FEATURED_SLUGS);
@@ -4812,15 +4850,19 @@ const about = await client.fetch(`*[_id == "aboutPage"][0]{ _id, "hasPortrait": 
 if (about?.hasPortrait) {
   console.log('aboutPage already has a portrait — skipped.');
 } else {
-  console.log('Downloading shoot #82 from Google Drive...');
-  const res = await fetch(`https://drive.usercontent.google.com/download?id=${PORTRAIT_DRIVE_ID}&export=download&confirm=t`);
-  const tiff = Buffer.from(await res.arrayBuffer());
-  const magic = tiff.subarray(0, 4).toString('hex');
-  if (!res.ok || (magic !== '49492a00' && magic !== '4d4d002a')) {
-    console.error('Drive did not return the TIFF. Download Gluk_Photoshoot-82.tif manually and re-run with PORTRAIT_PATH=<file>.');
-    process.exit(1);
+  let source = PORTRAIT_PATH;
+  if (!source) {
+    console.log('Downloading shoot #82 from Google Drive...');
+    const res = await fetch(`https://drive.usercontent.google.com/download?id=${PORTRAIT_DRIVE_ID}&export=download&confirm=t`);
+    const tiff = Buffer.from(await res.arrayBuffer());
+    const magic = tiff.subarray(0, 4).toString('hex');
+    if (!res.ok || (magic !== '49492a00' && magic !== '4d4d002a')) {
+      console.error('Drive did not return the TIFF. Download Gluk_Photoshoot-82.tif manually and re-run with PORTRAIT_PATH=<file>.');
+      process.exit(1);
+    }
+    source = tiff;
   }
-  const jpeg = await sharp(tiff).rotate().resize({ width: 2400, withoutEnlargement: true }).jpeg({ quality: 88, mozjpeg: true }).toBuffer();
+  const jpeg = await sharp(source).rotate().resize({ width: 2400, withoutEnlargement: true }).jpeg({ quality: 88, mozjpeg: true }).toBuffer();
   const asset = await client.assets.upload('image', jpeg, { filename: 'gluk-about-82.jpg', contentType: 'image/jpeg' });
   await client.createIfNotExists({ _id: 'aboutPage', _type: 'aboutPage' });
   await client
@@ -4831,11 +4873,6 @@ if (about?.hasPortrait) {
   console.log(`aboutPage portrait uploaded -> ${asset._id}`);
 }
 ```
-Replace the Drive-fallback message handling: before the download block add
-```js
-const PORTRAIT_PATH = process.env.PORTRAIT_PATH;
-```
-and, when `PORTRAIT_PATH` is set, read the file with `sharp(PORTRAIT_PATH)` instead of downloading (same resize/jpeg/upload steps).
 
 - [ ] **Step 2: Package scripts**
 
@@ -4901,10 +4938,12 @@ Add these checks to `gsap-motion-check.mjs` after check 7, reusing its `load`, `
     const openH = panel.getBoundingClientRect().height;
     const expanded = t.getAttribute('aria-expanded');
     t.click(); await new Promise(r => setTimeout(r, 700));
-    return { openH, expanded, after: t.getAttribute('aria-expanded'), clock: document.querySelector('[data-clock]').textContent };
+    // Focus stays on the button after the second click: the panel must still close.
+    const closedH = panel.getBoundingClientRect().height;
+    return { openH, closedH, expanded, after: t.getAttribute('aria-expanded'), clock: document.querySelector('[data-clock]').textContent };
   })()`);
-  record('9. Data egg toggles by tap and shows the clock',
-    egg.openH > 40 && egg.expanded === 'true' && egg.after === 'false' && /^\\d{2}:\\d{2}$/.test(egg.clock), JSON.stringify(egg));
+  record('9. Data egg opens and closes by tap and shows the clock',
+    egg.openH > 40 && egg.closedH < 2 && egg.expanded === 'true' && egg.after === 'false' && /^\\d{2}:\\d{2}$/.test(egg.clock), JSON.stringify(egg));
 
   // 10. Mobile menu: opens, focuses first link, Escape closes
   await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 3, mobile: true });
