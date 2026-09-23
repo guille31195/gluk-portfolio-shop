@@ -121,7 +121,7 @@ the per-page comparison in §11.
 - Right: mono label `Guillermo Carrasquero — GLUK`, large light statement, short rupture
   rule, body paragraph, `Photography — <name>` credit.
 - Until Guillermo rewrites it, the text is the brand book's positioning verbatim. The
-  final text is out of scope (§11).
+  final text is out of scope (§12).
 
 ### 5.6 Tattoo (`small-pages-v2.html`, "Tattoo")
 - Giant `TATUAJE`, statement beside it, rupture rule, staggered row of tattoo photos,
