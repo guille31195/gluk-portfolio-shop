@@ -121,6 +121,19 @@ const last = heroList.length - 1;
   .hero-word {
     display: block;
   }
+  /* A stroked acute accent is a thin sliver whose two outlined edges read as
+     a double acute (Ó looks like Ő). Fill the band above cap height solid so
+     accents render as one mark while the letters stay outlined. */
+  .hero-word.display--outline {
+    --hero-accent-band: 0.115em;
+    background: linear-gradient(
+      to bottom,
+      var(--color-bone) 0 var(--hero-accent-band),
+      transparent var(--hero-accent-band)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
   .hero-rule {
     position: absolute;
     left: -3%;
