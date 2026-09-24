@@ -18,3 +18,12 @@ export function imageSrcset(url: string, widths: number[]): string | undefined {
   if (!url.startsWith(SANITY_CDN)) return undefined;
   return widths.map((w) => `${sizedImage(url, w)} ${w}w`).join(', ');
 }
+
+// Sanity asset filenames carry the original's pixel size (…-5000x6250.jpg),
+// so a layout can know each image's proportions without fetching it.
+export function imageAspect(url: string): number | null {
+  const match = /-(\d+)x(\d+)\.[a-z]+(?:\?|$)/i.exec(url);
+  if (!match) return null;
+  const [w, h] = [Number(match[1]), Number(match[2])];
+  return w > 0 && h > 0 ? w / h : null;
+}

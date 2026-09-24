@@ -1,9 +1,12 @@
 ---
-// Desktop-only custom cursor. Persisted across page transitions; the
+// Desktop-only custom cursor. Persisted across page transitions under an
+// explicit name: an unnamed transition:persist is keyed by the element's
+// position in the page, which differs between pages, so the cursor was
+// replaced on navigation and the mounted one left hidden. The
 // behaviour module is only downloaded on fine-pointer devices with motion
 // allowed (see src/motion/media.ts).
 ---
-<div class="cursor" id="gluk-cursor" aria-hidden="true" transition:persist>
+<div class="cursor" id="gluk-cursor" aria-hidden="true" transition:persist="gluk-cursor">
   <span class="cursor-dot"></span>
   <span class="cursor-ring"><span class="cursor-label">View</span></span>
 </div>

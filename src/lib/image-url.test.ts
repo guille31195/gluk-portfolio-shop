@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { sizedImage, imageSrcset } from './image-url';
+import { sizedImage, imageSrcset, imageAspect } from './image-url';
 
-const ORIGINAL = 'https://cdn.sanity.io/images/48jkcmcb/production/abc-4453x7707.jpg';
+const CDN = 'https://cdn.sanity.io/images/48jkcmcb/production/';
+const ORIGINAL = `${CDN}abc-4453x7707.jpg`;
 
 describe('sizedImage', () => {
   it('asks the Sanity CDN for a resized, auto-format image', () => {
@@ -30,5 +31,17 @@ describe('imageSrcset', () => {
 
   it('returns undefined for non-Sanity URLs so no srcset attribute is rendered', () => {
     expect(imageSrcset('/placeholder-artwork.svg', [400, 800])).toBeUndefined();
+  });
+});
+
+describe('imageAspect', () => {
+  it('reads width / height from the Sanity asset filename', () => {
+    expect(imageAspect(`${CDN}abc123-5000x6250.jpg`)).toBe(0.8);
+    expect(imageAspect(`${CDN}abc123-3160x2010.jpg?w=800&auto=format`)).toBeCloseTo(1.572, 3);
+  });
+
+  it('returns null when the URL carries no dimensions', () => {
+    expect(imageAspect('/placeholder/artwork.jpg')).toBeNull();
+    expect(imageAspect('')).toBeNull();
   });
 });
