@@ -1,0 +1,23 @@
+---
+import { MEXICO_CITY } from '../lib/route-data';
+---
+<p class="studio-clock mono" data-live hidden>
+  <span class="studio-clock-dot" aria-hidden="true"></span>Studio time <time data-clock={MEXICO_CITY.timeZone}>--:--</time>
+</p>
+
+<script>
+  import '../scripts/live-data';
+</script>
+
+<style>
+  .studio-clock[hidden] { display: none; }
+  .studio-clock-dot {
+    display: inline-block;
+    width: 0.45rem;
+    height: 0.45rem;
+    margin-right: 0.7rem;
+    border-radius: 50%;
+    background: var(--color-orange);
+    vertical-align: middle;
+  }
+</style>

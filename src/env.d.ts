@@ -7,3 +7,7 @@ interface Window {
   // Set by the inline js-motion guard in BaseLayout so it runs once per full page load.
   __glukMotionGuard?: boolean;
 }
+
+interface ImportMetaEnv {
+  readonly PUBLIC_LIVE_WEATHER?: 'on' | 'off';
+}

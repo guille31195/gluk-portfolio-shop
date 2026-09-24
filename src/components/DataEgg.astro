@@ -1,0 +1,118 @@
+---
+// Home-page easter egg (spec §5.2, §8): one faint line of two local times that
+// unfolds into a tiny table. Hidden entirely without JavaScript.
+import { CARACAS, MEXICO_CITY, SEA_POINTS, formatElevation, formatRoute } from '../lib/route-data';
+---
+<div class="egg" data-egg data-live hidden>
+  <div class="egg-panel" id="egg-panel">
+    <div class="egg-panel-inner">
+      <table class="egg-table mono">
+        <thead>
+          <tr><th></th><th scope="col" class="label">Caracas</th><th scope="col" class="label">CDMX</th></tr>
+        </thead>
+        <tbody>
+          <tr data-weather-row hidden><th scope="row" class="label">Air</th><td data-w="ccs-air">—</td><td data-w="cdmx-air">—</td></tr>
+          <tr data-weather-row hidden><th scope="row" class="label">Humidity</th><td data-w="ccs-humidity">—</td><td data-w="cdmx-humidity">—</td></tr>
+          <tr><th scope="row" class="label">Elevation</th><td>{formatElevation(CARACAS.elevation)}</td><td>{formatElevation(MEXICO_CITY.elevation)}</td></tr>
+          <tr data-weather-row hidden><th scope="row" class="label">Sea</th><td data-w="ccs-sea">—</td><td data-w="cdmx-sea">—</td></tr>
+        </tbody>
+      </table>
+      <p class="egg-note label" data-weather-note hidden>{SEA_POINTS.caribbean.name} · {SEA_POINTS.pacific.name}</p>
+      <p class="egg-route label">{formatRoute(CARACAS, MEXICO_CITY)}</p>
+    </div>
+  </div>
+  <button class="egg-toggle label" type="button" aria-expanded="false" aria-controls="egg-panel" data-egg-toggle>
+    <span class="egg-dot" aria-hidden="true"></span>
+    {CARACAS.short} <time data-clock={CARACAS.timeZone}>--:--</time> / {MEXICO_CITY.short} <time data-clock={MEXICO_CITY.timeZone}>--:--</time>
+  </button>
+</div>
+
+<script>
+  import '../scripts/live-data';
+</script>
+
+<style>
+  .egg {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+  }
+  .egg[hidden] {
+    display: none;
+  }
+  .egg-toggle {
+    border: 0;
+    padding: 0.4rem 0;
+    background: none;
+    color: var(--color-bone);
+    font: inherit;
+    font-size: var(--text-label);
+    letter-spacing: 0.18em;
+    opacity: 0.55;
+    cursor: pointer;
+    transition: opacity 0.4s var(--ease-out);
+  }
+  .egg-dot {
+    display: inline-block;
+    width: 0.45rem;
+    height: 0.45rem;
+    margin-right: 0.6rem;
+    border-radius: 50%;
+    background: var(--color-orange);
+    vertical-align: middle;
+  }
+  .egg-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition: grid-template-rows 0.5s var(--ease-out), opacity 0.4s var(--ease-out);
+  }
+  .egg-panel-inner {
+    overflow: hidden;
+  }
+  /* Open state is driven only by [data-open] (click / Enter / Space) and hover.
+     No :focus-within — the clicked button keeps focus, so the panel could not
+     close again and would disagree with aria-expanded. */
+  .egg[data-open] .egg-panel {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+  .egg[data-open] .egg-toggle,
+  .egg-toggle:focus-visible {
+    opacity: 1;
+  }
+  @media (hover: hover) {
+    .egg:hover .egg-panel { grid-template-rows: 1fr; opacity: 1; }
+    .egg:hover .egg-toggle { opacity: 1; }
+  }
+  .egg-table {
+    border-collapse: collapse;
+    margin-left: auto;
+  }
+  .egg-table th,
+  .egg-table td {
+    padding: 0.45rem 0 0.45rem 2rem;
+    border-top: var(--rule-hair) solid var(--color-hairline);
+    text-align: right;
+    font-weight: 400;
+  }
+  .egg-table thead th {
+    border-top: 0;
+    opacity: 0.7;
+  }
+  .egg-table th[scope='row'] {
+    padding-left: 0;
+    opacity: 0.5;
+    text-align: left;
+  }
+  .egg-note,
+  .egg-route {
+    margin: 0.8rem 0 0;
+    opacity: 0.55;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .egg-panel { transition: opacity 0.2s linear; }
+    .egg-toggle { transition: none; }
+  }
+</style>
