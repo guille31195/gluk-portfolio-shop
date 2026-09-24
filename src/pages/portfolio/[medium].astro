@@ -1,10 +1,9 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Room from '../../components/Room.astro';
-import RuptureRule from '../../components/RuptureRule.astro';
+import PortfolioHead from '../../components/PortfolioHead.astro';
 import { MEDIUMS, getAllArtworks, mediumLabel, type Medium } from '../../lib/sanity';
 import { groupIntoRooms, mediumCounts } from '../../lib/rooms';
-import { pad2 } from '../../lib/numerals';
 
 export function getStaticPaths() {
   return MEDIUMS.map((medium) => ({ params: { medium } }));
@@ -17,47 +16,13 @@ const rooms = groupIntoRooms(all.filter((artwork) => artwork.medium === medium))
 ---
 <BaseLayout title={`Work — ${mediumLabel(medium)}`}>
   <section class="page">
-    <div class="portfolio-head">
-      <h1 class="display" data-intro>OBRA</h1>
-      <nav class="filters label" aria-label="Filter by medium" data-intro>
-        <a href="/portfolio"><span class="dim">{pad2(counts.total)}</span> All</a>
-        {counts.mediums.map((entry) => (
-          <a href={`/portfolio/${entry.medium}`} class:list={{ 'is-on': entry.medium === medium }} aria-current={entry.medium === medium ? 'page' : undefined}>
-            <span class="dim">{pad2(entry.count)}</span> {mediumLabel(entry.medium)}
-          </a>
-        ))}
-      </nav>
-    </div>
-    <RuptureRule weight="base" class="portfolio-rule" />
+    <PortfolioHead counts={counts} active={medium} />
     {rooms.length === 0 && <p class="label dim portfolio-empty">No entries yet</p>}
     {rooms.map((room) => <Room room={room} />)}
   </section>
 </BaseLayout>
 
 <style>
-  .portfolio-head {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 1.5rem;
-  }
-  .filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.6rem;
-  }
-  .filters a {
-    text-decoration: none;
-    opacity: 0.45;
-  }
-  .filters a.is-on,
-  .filters a:hover {
-    opacity: 1;
-  }
-  :global(.portfolio-rule) {
-    margin: 2.4rem 0 1rem;
-  }
   .portfolio-empty {
     padding: clamp(3rem, 6vw, 5rem) 0;
   }
