@@ -86,7 +86,11 @@
 | `src/pages/index.astro` | Rewrite | F2 hero + egg + featured |
 | `src/pages/portfolio/index.astro`, `[medium].astro` | Rewrite | rooms |
 | `src/pages/artwork/[slug].astro` | Rewrite | wall label |
-| `src/pages/about.astro`, `tattoo.astro`, `journal/index.astro`, `journal/[slug].astro`, `contact.astro` | Rewrite | new pages |
+| `src/pages/about.astro`, `tattoo.astro`, `journal/index.astro`, `contact.astro` | Rewrite | new pages |
+| `src/pages/journal/[slug].astro`, `sanity/schemaTypes/journalPost.ts` | Delete | journal moves to Substack |
+| `src/lib/substack.ts` (+ test) | Create | Substack RSS → journal entries (build time) |
+| `.github/workflows/daily-rebuild.yml` | Create | daily Netlify rebuild for new Substack posts |
+| `scripts/seed-tattoo-images.mjs` | Create | upload a local folder of tattoo photos to Tattoo Info |
 | `src/pages/contact/thanks.astro` | Create | form success |
 | `scripts/seed-design-content.mjs` | Create | idempotent initial content (series, settings, about, home) |
 | `scripts/seed-home-page.mjs` | Delete | superseded |
@@ -102,7 +106,7 @@
 - Modify: `sanity/schemaTypes/artwork.ts`, `sanity/schemaTypes/printOption.ts`, `sanity/schemaTypes/homePage.ts`, `sanity/schemaTypes/tattooInfo.ts`, `sanity/schemaTypes/index.ts`, `sanity/structure.ts`
 
 **Interfaces:**
-- Produces (Sanity field names later tasks query): `series{name, slug, order, kind, halo}`; `artwork.series` (reference), `artwork.seriesPosition`, `artwork.halo`, `artwork.originalStatus` (`available|sold|notForSale`, replaces `availableAsOriginal`), `printOption.soldOut`; `homePage.heroList`, `homePage.heroFootnote`, `homePage.featuredWorks`; `aboutPage{portrait, portraitAlt, statement, body, photoCredit}` with `_id: "aboutPage"`; `siteSettings{email, instagramHandle, studioCity}` with `_id: "siteSettings"`; `tattooInfo.statement`, `tattooInfo.process`.
+- Produces (Sanity field names later tasks query): `series{name, slug, order, kind, halo}`; `artwork.series` (reference), `artwork.seriesPosition`, `artwork.halo`, `artwork.originalStatus` (`available|sold|notForSale`, replaces `availableAsOriginal`), `printOption.soldOut`; `homePage.heroList`, `homePage.heroFootnote`, `homePage.featuredWorks`; `aboutPage{portrait, portraitAlt, statement, body, photoCredit}` with `_id: "aboutPage"`; `siteSettings{email, instagramHandle, studioCity, tattooInstagramHandle, substackUrl}` with `_id: "siteSettings"`; `journalPost` type removed; `tattooInfo.statement`, `tattooInfo.process`.
 
 - [ ] **Step 1: Shared halo option list**
 
@@ -300,6 +304,18 @@ export const siteSettings = defineType({
       description: 'Without the @.',
     }),
     defineField({ name: 'studioCity', title: 'Studio city', type: 'string' }),
+    defineField({
+      name: 'tattooInstagramHandle',
+      title: 'Tattoo Instagram handle',
+      type: 'string',
+      description: 'Without the @. Linked from the Tattoo page.',
+    }),
+    defineField({
+      name: 'substackUrl',
+      title: 'Substack address',
+      type: 'url',
+      description: 'e.g. https://name.substack.com — the Journal page lists its posts (updated on each site build).',
+    }),
   ],
   preview: { prepare: () => ({ title: 'Site Settings' }) },
 });
@@ -326,7 +342,6 @@ In `sanity/schemaTypes/tattooInfo.ts`, insert before the `body` field:
 import { artwork } from './artwork';
 import { series } from './series';
 import { printOption } from './printOption';
-import { journalPost } from './journalPost';
 import { tattooInfo } from './tattooInfo';
 import { homePage } from './homePage';
 import { aboutPage } from './aboutPage';
@@ -336,7 +351,6 @@ export const schemaTypes = [
   artwork,
   series,
   printOption,
-  journalPost,
   tattooInfo,
   homePage,
   aboutPage,
@@ -361,10 +375,11 @@ export const structure: StructureResolver = (S) =>
       S.divider(),
       S.documentTypeListItem('artwork').title('Artwork'),
       S.documentTypeListItem('series').title('Series'),
-      S.documentTypeListItem('journalPost').title('Journal Posts'),
       singleton(S, 'Tattoo Info', 'tattooInfo'),
     ]);
 ```
+
+The journal now comes from Substack (Task 13), so delete the `journalPost` type: `git rm sanity/schemaTypes/journalPost.ts`. Before deleting, confirm the dataset holds no journal posts (read-only query): `npx sanity documents query '*[_type == "journalPost"]._id'` → Expected: `[]`. If it returns ids, stop and ask Guillermo.
 
 - [ ] **Step 8: Validate**
 
@@ -411,7 +426,7 @@ Note: the deployed Studio only shows these after `npx sanity deploy` (post-merge
   ```
 - `src/lib/home-page.ts`: `DEFAULT_HERO_LIST`, `DEFAULT_HERO_FOOTNOTE`, `interface RawHomePage { heroList; heroFootnote; featuredSlugs }`, `interface HomePage<Art> { heroList: string[]; heroFootnote: string; featuredWorks: Art[] }`, `mapHomePage<Art extends { slug: string }>(raw, artworks: Art[]): HomePage<Art>`.
 - `src/lib/about-page.ts`: `DEFAULT_ABOUT`, `focalPoint(hotspot)`, `interface AboutPortrait { src; srcset; alt; focalPoint }`, `interface AboutPage { portrait: AboutPortrait | null; statement: string; bodyHtml: string; photoCredit: string | null; photoCreditUrl: string | null }`, `ABOUT_PORTRAIT_WIDTHS`, `mapAboutPage(raw, deps: { imageUrl(image, width): string; toHtml(blocks: unknown[]): string }): AboutPage`.
-- `src/lib/site-settings.ts`: `DEFAULT_SITE_SETTINGS`, `interface SiteSettings { email; instagramHandle; instagramUrl; studioCity }`, `mapSiteSettings(raw): SiteSettings`.
+- `src/lib/site-settings.ts`: `DEFAULT_SITE_SETTINGS`, `interface SiteSettings { email; instagramHandle; instagramUrl; studioCity; tattooInstagramHandle; tattooInstagramUrl; substackUrl: string | null }`, `mapSiteSettings(raw): SiteSettings`.
 - `src/lib/tattoo-info.ts`: `interface TattooInfo { statement: string | null; process: string[]; bodyHtml: string; images: string[] }`, `mapTattooInfo(raw, deps: { urlFor; toHtml }): TattooInfo`.
 - `src/lib/sanity.ts` exports: everything above plus `getAllArtworks(): Promise<Artwork[]>`, `getArtworksByMedium(m)`, `getArtworkBySlug(slug)`, `getHomePage(): Promise<HomePage<Artwork>>`, `getAboutPage()`, `getSiteSettings()`, `getTattooInfo()`, `getAllJournalPosts()`, `getJournalPostBySlug()`, `formatMedium` (kept), `JournalPost` type.
 
@@ -672,8 +687,25 @@ describe('mapSiteSettings', () => {
       instagramHandle: 'gluk______',
       instagramUrl: 'https://www.instagram.com/gluk______/',
       studioCity: 'Ciudad de México',
+      tattooInstagramHandle: 'gluk.tattooo',
+      tattooInstagramUrl: 'https://www.instagram.com/gluk.tattooo/',
+      substackUrl: DEFAULT_SITE_SETTINGS.substackUrl,
     });
     expect(DEFAULT_SITE_SETTINGS.instagramHandle).toBe('gluk______');
+  });
+
+  it('normalizes the Substack address to its origin and ignores non-https values', () => {
+    expect(mapSiteSettings({ substackUrl: ' https://name.substack.com/archive?x=1 ' }).substackUrl).toBe(
+      'https://name.substack.com'
+    );
+    expect(mapSiteSettings({ substackUrl: 'javascript:alert(1)' }).substackUrl).toBe(DEFAULT_SITE_SETTINGS.substackUrl);
+    expect(mapSiteSettings({ substackUrl: 'not a url' }).substackUrl).toBe(DEFAULT_SITE_SETTINGS.substackUrl);
+  });
+
+  it('strips @ from the tattoo handle too', () => {
+    const result = mapSiteSettings({ tattooInstagramHandle: '@ink.account' });
+    expect(result.tattooInstagramHandle).toBe('ink.account');
+    expect(result.tattooInstagramUrl).toBe('https://www.instagram.com/ink.account/');
   });
 
   it('strips a leading @ and whitespace from the handle', () => {
@@ -1019,16 +1051,28 @@ export function mapAboutPage(raw: RawAboutPage | null, deps: AboutDeps): AboutPa
 ```ts
 // Contact details used by the footer, nav and Contact page (spec §7).
 
-export const DEFAULT_SITE_SETTINGS = {
+export const DEFAULT_SITE_SETTINGS: {
+  email: string;
+  instagramHandle: string;
+  studioCity: string;
+  tattooInstagramHandle: string;
+  substackUrl: string | null;
+} = {
   email: 'gluk.caribe@gmail.com',
   instagramHandle: 'gluk______',
   studioCity: 'Ciudad de México',
-} as const;
+  tattooInstagramHandle: 'gluk.tattooo',
+  // PENDING: Guillermo's Substack address (https://<name>.substack.com). Until it is
+  // filled in here or in Studio, the Journal shows "No entries yet".
+  substackUrl: null,
+};
 
 export interface RawSiteSettings {
   email?: string | null;
   instagramHandle?: string | null;
   studioCity?: string | null;
+  tattooInstagramHandle?: string | null;
+  substackUrl?: string | null;
 }
 
 export interface SiteSettings {
@@ -1036,15 +1080,34 @@ export interface SiteSettings {
   instagramHandle: string;
   instagramUrl: string;
   studioCity: string;
+  tattooInstagramHandle: string;
+  tattooInstagramUrl: string;
+  substackUrl: string | null;
+}
+
+const cleanHandle = (value: string | null | undefined) => value?.trim().replace(/^@+/, '') || '';
+
+// Only https addresses are used, reduced to their origin (the feed lives at <origin>/feed).
+function cleanSubstackUrl(value: string | null | undefined): string | null {
+  try {
+    const url = new URL(value?.trim() ?? '');
+    return url.protocol === 'https:' ? url.origin : null;
+  } catch {
+    return null;
+  }
 }
 
 export function mapSiteSettings(raw: RawSiteSettings | null): SiteSettings {
-  const handle = raw?.instagramHandle?.trim().replace(/^@+/, '') || DEFAULT_SITE_SETTINGS.instagramHandle;
+  const handle = cleanHandle(raw?.instagramHandle) || DEFAULT_SITE_SETTINGS.instagramHandle;
+  const tattooHandle = cleanHandle(raw?.tattooInstagramHandle) || DEFAULT_SITE_SETTINGS.tattooInstagramHandle;
   return {
     email: raw?.email?.trim() || DEFAULT_SITE_SETTINGS.email,
     instagramHandle: handle,
     instagramUrl: `https://www.instagram.com/${handle}/`,
     studioCity: raw?.studioCity?.trim() || DEFAULT_SITE_SETTINGS.studioCity,
+    tattooInstagramHandle: tattooHandle,
+    tattooInstagramUrl: `https://www.instagram.com/${tattooHandle}/`,
+    substackUrl: cleanSubstackUrl(raw?.substackUrl) ?? DEFAULT_SITE_SETTINGS.substackUrl,
   };
 }
 ```
@@ -1186,7 +1249,7 @@ export async function getAboutPage(): Promise<AboutPage> {
 
 export async function getSiteSettings(): Promise<SiteSettings> {
   const raw = await sanityClient.fetch<RawSiteSettings | null>(
-    `*[_id == "siteSettings"][0]{ email, instagramHandle, studioCity }`
+    `*[_id == "siteSettings"][0]{ email, instagramHandle, studioCity, tattooInstagramHandle, substackUrl }`
   );
   return mapSiteSettings(raw);
 }
@@ -4320,10 +4383,14 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ### Task 13: Tattoo and Journal pages
 
 **Files:**
-- Rewrite: `src/pages/tattoo.astro`, `src/pages/journal/index.astro`, `src/pages/journal/[slug].astro`
+- Rewrite: `src/pages/tattoo.astro`, `src/pages/journal/index.astro`
+- Create: `src/lib/substack.ts`, `src/lib/substack.test.ts`, `.github/workflows/daily-rebuild.yml`
+- Delete: `src/pages/journal/[slug].astro`; journal code in `src/lib/sanity.ts`
+- Modify: `package.json` (`fast-xml-parser`)
 
 **Interfaces:**
-- Consumes: `getTattooInfo(): Promise<TattooInfo>`, `getSiteSettings()`, `getAllJournalPosts()`, `getJournalPostBySlug()`, `RuptureRule`, `pad2`, `sizedImage`, `CARD_WIDTH`, `DETAIL_WIDTH`.
+- Consumes: `getTattooInfo(): Promise<TattooInfo>`, `getSiteSettings()` (incl. `tattooInstagramUrl`, `substackUrl`), `RuptureRule`, `pad2`, `sizedImage`, `CARD_WIDTH`.
+- Produces: `interface JournalEntry { title; url; date; cover }`, `feedUrl(origin)`, `parseFeed(xml): JournalEntry[]`, `loadJournal(origin | null, deps?): Promise<JournalEntry[]>`.
 
 - [ ] **Step 1: Tattoo**
 
@@ -4348,8 +4415,8 @@ const [info, settings] = await Promise.all([getTattooInfo(), getSiteSettings()])
     {info.bodyHtml && <div class="tattoo-body" data-reveal set:html={info.bodyHtml} />}
     {info.images.length > 0 && (
       <div class="tattoo-gallery" data-reveal-stagger>
-        {info.images.map((src) => (
-          <img src={sizedImage(src, CARD_WIDTH)} alt="" loading="lazy" decoding="async" data-reveal />
+        {info.images.map((src, i) => (
+          <img src={sizedImage(src, CARD_WIDTH)} alt={`Tattoo by GLUK ${pad2(i + 1)}`} loading="lazy" decoding="async" data-reveal />
         ))}
       </div>
     )}
@@ -4364,6 +4431,7 @@ const [info, settings] = await Promise.all([getTattooInfo(), getSiteSettings()])
       <div class="tattoo-cta" data-reveal>
         <a class="button" href="/contact?interest=tattoo">Request a session</a>
         <p class="mono dim">Studio · {settings.studioCity}</p>
+        <p class="mono"><a href={settings.tattooInstagramUrl} rel="noopener">Instagram — @{settings.tattooInstagramHandle}</a></p>
       </div>
     </div>
   </section>
@@ -4429,19 +4497,168 @@ const [info, settings] = await Promise.all([getTattooInfo(), getSiteSettings()])
 </style>
 ```
 
-- [ ] **Step 2: Journal index**
+- [ ] **Step 2: Substack feed module (decided 2026-09-24: the journal is Guillermo's Substack)**
+
+Run: `npm install fast-xml-parser@^5.11.1 --save`
+
+`src/lib/substack.test.ts`:
+```ts
+import { describe, it, expect, vi } from 'vitest';
+import { feedUrl, loadJournal, parseFeed } from './substack';
+
+// Synthetic feed in the shape Substack serves at <origin>/feed (RSS 2.0).
+const FEED = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel><title>Test</title>
+  <item>
+    <title><![CDATA[Older entry]]></title>
+    <link>https://name.substack.com/p/older</link>
+    <pubDate>Mon, 01 Sep 2026 10:00:00 GMT</pubDate>
+  </item>
+  <item>
+    <title><![CDATA[Newer & bolder]]></title>
+    <link>https://name.substack.com/p/newer</link>
+    <pubDate>Mon, 22 Sep 2026 10:00:00 GMT</pubDate>
+    <enclosure url="https://substackcdn.com/image/fetch/cover.jpg" length="0" type="image/jpeg"/>
+  </item>
+  <item>
+    <title><![CDATA[Bad link]]></title>
+    <link>javascript:alert(1)</link>
+    <pubDate>Mon, 22 Sep 2026 10:00:00 GMT</pubDate>
+  </item>
+</channel></rss>`;
+
+describe('parseFeed', () => {
+  it('reads entries newest first, with cover when present', () => {
+    expect(parseFeed(FEED)).toEqual([
+      {
+        title: 'Newer & bolder',
+        url: 'https://name.substack.com/p/newer',
+        date: '2026-09-22T10:00:00.000Z',
+        cover: 'https://substackcdn.com/image/fetch/cover.jpg',
+      },
+      { title: 'Older entry', url: 'https://name.substack.com/p/older', date: '2026-09-01T10:00:00.000Z', cover: null },
+    ]);
+  });
+
+  it('handles a single-item feed and an empty or broken one', () => {
+    // One <item> parses as an object, not an array.
+    const one = `<rss><channel><item><title>Solo</title><link>https://name.substack.com/p/solo</link><pubDate>Mon, 01 Sep 2026 10:00:00 GMT</pubDate></item></channel></rss>`;
+    expect(parseFeed(one).map((e) => e.title)).toEqual(['Solo']);
+    expect(parseFeed('<rss><channel></channel></rss>')).toEqual([]);
+    expect(parseFeed('not xml at all')).toEqual([]);
+  });
+});
+
+describe('loadJournal', () => {
+  it('returns [] without fetching when no Substack address is set', async () => {
+    const fetchImpl = vi.fn();
+    expect(await loadJournal(null, { fetch: fetchImpl })).toEqual([]);
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it('fetches <origin>/feed and parses it', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({ ok: true, text: async () => FEED });
+    const entries = await loadJournal('https://name.substack.com', { fetch: fetchImpl });
+    expect(fetchImpl).toHaveBeenCalledWith(feedUrl('https://name.substack.com'));
+    expect(feedUrl('https://name.substack.com')).toBe('https://name.substack.com/feed');
+    expect(entries).toHaveLength(2);
+  });
+
+  it('returns [] and warns when Substack is unreachable, never throws', async () => {
+    const warn = vi.fn();
+    const failing = vi.fn().mockRejectedValue(new Error('offline'));
+    expect(await loadJournal('https://name.substack.com', { fetch: failing, warn })).toEqual([]);
+    const notOk = vi.fn().mockResolvedValue({ ok: false, status: 503, text: async () => '' });
+    expect(await loadJournal('https://name.substack.com', { fetch: notOk, warn })).toEqual([]);
+    expect(warn).toHaveBeenCalledTimes(2);
+  });
+});
+```
+
+Run: `npx vitest run src/lib/substack.test.ts` → Expected: FAIL (module not found).
+
+`src/lib/substack.ts`:
+```ts
+// The journal lives on Guillermo's Substack. At build time we read its public
+// RSS feed; failures never break the build (the page shows "No entries yet").
+import { XMLParser } from 'fast-xml-parser';
+
+export interface JournalEntry {
+  title: string;
+  url: string;
+  date: string; // ISO 8601
+  cover: string | null;
+}
+
+export const feedUrl = (origin: string) => `${origin}/feed`;
+
+const isHttps = (value: unknown): value is string => typeof value === 'string' && value.startsWith('https://');
+
+export function parseFeed(xml: string): JournalEntry[] {
+  let doc: unknown;
+  try {
+    doc = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@_' }).parse(xml);
+  } catch {
+    return [];
+  }
+  const raw = (doc as { rss?: { channel?: { item?: unknown } } })?.rss?.channel?.item;
+  const items = (Array.isArray(raw) ? raw : raw ? [raw] : []) as Record<string, unknown>[];
+  const entries: JournalEntry[] = [];
+  for (const item of items) {
+    const title = String(item.title ?? '').trim();
+    const url = String(item.link ?? '').trim();
+    const time = Date.parse(String(item.pubDate ?? ''));
+    if (!title || !isHttps(url) || Number.isNaN(time)) continue;
+    const enclosure = item.enclosure as Record<string, unknown> | undefined;
+    const type = String(enclosure?.['@_type'] ?? '');
+    const cover = isHttps(enclosure?.['@_url']) && type.startsWith('image/') ? (enclosure!['@_url'] as string) : null;
+    entries.push({ title, url, date: new Date(time).toISOString(), cover });
+  }
+  return entries.sort((a, b) => b.date.localeCompare(a.date));
+}
+
+interface TextResponse {
+  ok: boolean;
+  status?: number;
+  text(): Promise<string>;
+}
+
+export interface JournalDeps {
+  fetch?: (url: string) => Promise<TextResponse>;
+  warn?: (message: string) => void;
+}
+
+export async function loadJournal(origin: string | null, deps: JournalDeps = {}): Promise<JournalEntry[]> {
+  if (!origin) return [];
+  const fetchImpl = deps.fetch ?? ((url: string) => globalThis.fetch(url) as Promise<TextResponse>);
+  const warn = deps.warn ?? ((message: string) => console.warn(message));
+  try {
+    const res = await fetchImpl(feedUrl(origin));
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return parseFeed(await res.text());
+  } catch (error) {
+    warn(`[journal] could not read ${feedUrl(origin)}: ${(error as Error).message}`);
+    return [];
+  }
+}
+```
+
+Run: `npx vitest run src/lib/substack.test.ts` → Expected: PASS.
+
+- [ ] **Step 3: Journal index from Substack; remove the Sanity journal**
 
 `src/pages/journal/index.astro`:
 ```astro
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getAllJournalPosts } from '../../lib/sanity';
-import { sizedImage } from '../../lib/image-url';
+import { getSiteSettings } from '../../lib/sanity';
+import { loadJournal } from '../../lib/substack';
 import { pad2 } from '../../lib/numerals';
 
-const posts = await getAllJournalPosts();
+const settings = await getSiteSettings();
+const posts = await loadJournal(settings.substackUrl);
 const formatDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: '2-digit' });
+  new Date(iso).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: '2-digit', timeZone: 'UTC' });
 ---
 <BaseLayout title="Journal">
   <section class="page">
@@ -4452,14 +4669,12 @@ const formatDate = (iso: string) =>
       <ol class="journal-list" data-reveal-stagger>
         {posts.map((post, i) => (
           <li data-reveal>
-            <a class="journal-row" href={`/journal/${post.slug}`}>
+            <a class="journal-row" href={post.url} rel="noopener">
               <span class="mono dim">{pad2(posts.length - i)}</span>
               <span class="mono dim">{formatDate(post.date)}</span>
               <span class="journal-title">{post.title}</span>
               <span class="label dim">Read →</span>
-              {post.coverImage && (
-                <img class="journal-cover" src={sizedImage(post.coverImage, 600)} alt="" loading="lazy" decoding="async" />
-              )}
+              {post.cover && <img class="journal-cover" src={post.cover} alt="" loading="lazy" decoding="async" />}
             </a>
           </li>
         ))}
@@ -4467,16 +4682,11 @@ const formatDate = (iso: string) =>
     )}
   </section>
 </BaseLayout>
-
-<style>
-  .journal-empty {
-    margin-top: 3rem;
-  }
-  .journal-list {
-    margin: 4rem 0 0;
-    padding: 0;
-    list-style: none;
-  }
+```
+Keep the `<style>` block exactly as in the previous version of this step (`.journal-empty`, `.journal-list`, `.journal-row`, `.journal-title`, `.journal-cover`, hover and phone rules):
+```css
+  .journal-empty { margin-top: 3rem; }
+  .journal-list { margin: 4rem 0 0; padding: 0; list-style: none; }
   .journal-row {
     position: relative;
     display: grid;
@@ -4511,68 +4721,47 @@ const formatDate = (iso: string) =>
     .journal-row .label { display: none; }
     .journal-cover { display: none; }
   }
-</style>
 ```
 
-- [ ] **Step 3: Journal entry**
+Entries open on Substack, so the on-site entry page and the Sanity journal code go:
+- `git rm "src/pages/journal/[slug].astro"`
+- In `src/lib/sanity.ts` delete `JournalPost`, `RawJournalPost`, `JOURNAL_PROJECTION`, `mapJournalPost`, `getAllJournalPosts`, `getJournalPostBySlug`.
+- `grep -rn "JournalPost\|journalPost" src sanity` → Expected: no matches.
 
-`src/pages/journal/[slug].astro`:
-```astro
----
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import RuptureRule from '../../components/RuptureRule.astro';
-import { getAllJournalPosts, getJournalPostBySlug } from '../../lib/sanity';
-import { DETAIL_WIDTH, sizedImage } from '../../lib/image-url';
+- [ ] **Step 4: Daily rebuild so new Substack posts appear**
 
-export async function getStaticPaths() {
-  const posts = await getAllJournalPosts();
-  return posts.map((post) => ({ params: { slug: post.slug } }));
-}
+The site only rebuilds when Sanity content is published, so a scheduled GitHub job calls the existing Netlify build hook once a day.
 
-const { slug } = Astro.params;
-const post = (await getJournalPostBySlug(slug!))!;
-const date = new Date(post.date).toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
----
-<BaseLayout title={post.title}>
-  <article class="page entry">
-    <p class="mono dim" data-intro>{date}</p>
-    <h1 class="title" data-intro>{post.title}</h1>
-    <RuptureRule weight="thin" class="entry-rule" />
-    {post.coverImage && <img class="entry-cover" src={sizedImage(post.coverImage, DETAIL_WIDTH)} alt="" data-reveal />}
-    <div class="entry-body" data-reveal set:html={post.body} />
-  </article>
-</BaseLayout>
-
-<style>
-  .entry {
-    max-width: 44rem;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1.6rem;
-  }
-  :global(.entry-rule) {
-    width: 9rem !important;
-  }
-  .entry-cover {
-    width: 100%;
-    box-shadow: var(--shadow-painting);
-  }
-  .entry-body :global(p) {
-    margin: 0 0 1.2em;
-  }
-</style>
+`.github/workflows/daily-rebuild.yml`:
+```yaml
+# Rebuilds the site daily so new Substack posts reach the Journal page.
+name: Daily rebuild
+on:
+  schedule:
+    - cron: '0 12 * * *' # 06:00 in Mexico City
+  workflow_dispatch:
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger the Netlify build hook
+        env:
+          HOOK: ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK" ]; then echo "NETLIFY_BUILD_HOOK_URL secret is not set"; exit 1; fi
+          curl -fsS -X POST -d '{}' "$HOOK"
 ```
+GitHub runs scheduled workflows only from the default branch, so this starts after the merge. **Needs Guillermo (post-merge):** copy the build hook URL from Netlify → Site configuration → Build & deploy → Build hooks, then run `gh secret set NETLIFY_BUILD_HOOK_URL` and paste it. Trigger once by hand (`gh workflow run "Daily rebuild"`) and confirm a Netlify deploy "triggered by build hook".
 
-- [ ] **Step 4: Gates + visual check**
+- [ ] **Step 5: Gates + visual check**
 
-Run: `npm run check && npm test && npm run build` → all pass. Screenshot `/tattoo` and `/journal` (1440×900, 390×844); compare with `small-pages-v2.html` (`05 AI/CLAUDE CODE/workspace/small-check.png`). Expected with empty content: TATUAJE + rule + Request a session + studio line; DIARIO + "No entries yet".
+Run: `npm run check && npm test && npm run build` → all pass; no `dist/journal/*/` entry pages. Screenshot `/tattoo` and `/journal` (1440×900, 390×844); compare with `small-pages-v2.html` (`05 AI/CLAUDE CODE/workspace/small-check.png`). Expected with empty content: TATUAJE + rule + Request a session + studio line + `Instagram — @gluk.tattooo`; DIARIO + "No entries yet" until the Substack address is set, then the list of posts. Once Guillermo gives the address, verify its feed first: `curl -fsS <address>/feed | head -c 400` shows `<rss`.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
-git add src/pages/tattoo.astro src/pages/journal
-git commit -m "Tattoo and Journal pages in the brand system
+git add src/pages/tattoo.astro src/pages/journal src/lib/substack.ts src/lib/substack.test.ts src/lib/sanity.ts .github/workflows/daily-rebuild.yml package.json package-lock.json
+git commit -m "Tattoo page with Instagram link; Journal reads the Substack feed
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
@@ -4945,6 +5134,10 @@ const PORTRAIT_DRIVE_ID = '1Om7p2e091hAuBXNyY9hu6XXPNq5mqUWp';
 const PORTRAIT_PATH = process.env.PORTRAIT_PATH;
 const PORTRAIT_ALT = 'Portrait of GLUK in the studio';
 const PHOTO_CREDIT = '@topomaseda';
+// Given by Guillermo 2026-09-24 (spelling to be confirmed before running).
+const TATTOO_INSTAGRAM_HANDLE = 'gluk.tattooo';
+// PENDING: Guillermo's Substack address, e.g. 'https://name.substack.com'. Left null → not written.
+const SUBSTACK_URL = null;
 
 const slugs = SERIES.flatMap((s) => s.members).concat(FEATURED_SLUGS);
 const artworks = await client.fetch(
@@ -4982,6 +5175,12 @@ tx.createIfNotExists({
   instagramHandle: 'gluk______',
   studioCity: 'Ciudad de México',
 });
+tx.patch('siteSettings', (p) =>
+  p.setIfMissing({
+    tattooInstagramHandle: TATTOO_INSTAGRAM_HANDLE,
+    ...(SUBSTACK_URL ? { substackUrl: SUBSTACK_URL } : {}),
+  })
+);
 tx.createIfNotExists({
   _id: 'homePage',
   _type: 'homePage',
@@ -5036,6 +5235,63 @@ In `package.json` `scripts`: remove `"seed:home"`, add `"seed:design": "node --e
 
 Syntax check (no network, no writes): `node --check scripts/seed-design-content.mjs` → no output.
 
+- [ ] **Step 2b: Tattoo photo upload script**
+
+Guillermo is collecting his tattoo photos in a local folder (path to be given). `scripts/seed-tattoo-images.mjs`:
+```js
+// Uploads every image in TATTOO_DIR to Tattoo Info (spec §5.6), in file-name order.
+// Idempotent: Sanity stores identical files once, and refs already on the document
+// are skipped. Run ONLY with Guillermo's explicit OK:
+//   TATTOO_DIR="C:/path/to/folder" npm run seed:tattoo
+import { createClient } from '@sanity/client';
+import sharp from 'sharp';
+import { readdir } from 'node:fs/promises';
+import { join } from 'node:path';
+
+const dir = process.env.TATTOO_DIR;
+if (!process.env.SANITY_WRITE_TOKEN || !dir) {
+  console.error('Needs SANITY_WRITE_TOKEN in .env and TATTOO_DIR=<folder>.');
+  process.exit(1);
+}
+
+const client = createClient({
+  projectId: process.env.PUBLIC_SANITY_PROJECT_ID || '48jkcmcb',
+  dataset: process.env.PUBLIC_SANITY_DATASET || 'production',
+  apiVersion: '2024-01-01',
+  token: process.env.SANITY_WRITE_TOKEN,
+  useCdn: false,
+});
+
+const files = (await readdir(dir))
+  .filter((name) => /\.(jpe?g|png|tiff?|webp)$/i.test(name))
+  .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+const skipped = (await readdir(dir)).filter((name) => /\.(heic|heif)$/i.test(name));
+if (skipped.length) console.warn(`Skipped (HEIC not supported — export as JPEG): ${skipped.join(', ')}`);
+if (files.length === 0) {
+  console.error(`No JPEG/PNG/TIFF/WebP images in ${dir}.`);
+  process.exit(1);
+}
+
+const existing = await client.fetch(`*[_type == "tattooInfo" && !(_id in path("drafts.**"))][0]{ _id, "refs": images[].asset._ref }`);
+const docId = existing?._id ?? 'tattooInfo';
+const have = new Set(existing?.refs ?? []);
+await client.createIfNotExists({ _id: docId, _type: 'tattooInfo' });
+
+const added = [];
+for (const name of files) {
+  const jpeg = await sharp(join(dir, name)).rotate().resize({ width: 2400, withoutEnlargement: true }).jpeg({ quality: 86, mozjpeg: true }).toBuffer();
+  const asset = await client.assets.upload('image', jpeg, { filename: name.replace(/\.[^.]+$/, '.jpg'), contentType: 'image/jpeg' });
+  if (have.has(asset._id)) continue;
+  have.add(asset._id);
+  added.push({ _type: 'image', _key: asset._id.slice(-12), asset: { _type: 'reference', _ref: asset._id } });
+}
+if (added.length) {
+  await client.patch(docId).setIfMissing({ images: [] }).append('images', added).commit();
+}
+console.log(`Tattoo Info: ${added.length} new image(s), ${files.length - added.length} already present.`);
+```
+In `package.json` `scripts` add `"seed:tattoo": "node --env-file=.env scripts/seed-tattoo-images.mjs"`. Syntax check: `node --check scripts/seed-tattoo-images.mjs` → no output. Commit it with Step 4's files (`git add scripts/seed-tattoo-images.mjs`).
+
 - [ ] **Step 3: Pre-seed build check (Review Focus 1)**
 
 Run: `npm run check && npm test && npm run build`
@@ -5044,8 +5300,8 @@ Expected: all pass with the live dataset as it is now (no series, no homePage/ab
 - [ ] **Step 4: Commit**
 
 ```bash
-git add scripts/seed-design-content.mjs package.json
-git commit -m "Add idempotent design content seed; retire the home portrait seed
+git add scripts/seed-design-content.mjs scripts/seed-tattoo-images.mjs package.json
+git commit -m "Add idempotent design content and tattoo photo seeds; retire the home portrait seed
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
@@ -5056,6 +5312,8 @@ Tell Guillermo exactly what the seed writes to the live `production` dataset (4 
 - `grep -o 'class="room"' dist/portfolio/index.html | wc -l` → `5`
 - `grep -l "gallery-halo" dist/artwork/*/index.html` → johnny-efectivo, violenta-i, violenta-ii
 - `/about` shows portrait #82.
+
+Before running, confirm with Guillermo: the tattoo handle spelling (`gluk.tattooo`) and his Substack address (fill `SUBSTACK_URL`; verify `curl -fsS <address>/feed | head -c 400` shows `<rss`). The tattoo upload (`npm run seed:tattoo` with `TATTOO_DIR`) is a separate run with its own OK, once his folder is ready; afterwards `/tattoo` shows the photos.
 
 ---
 

@@ -130,14 +130,22 @@ the per-page comparison in §11.
 ### 5.6 Tattoo (`small-pages-v2.html`, "Tattoo")
 - Giant `TATUAJE`, statement beside it, rupture rule, staggered row of tattoo photos,
   numbered process list, one action `Request a session` (→ Contact, "A tattoo"
-  preselected), `Studio · Ciudad de México`.
+  preselected), `Studio · Ciudad de México`, `Instagram — @gluk.tattooo` (his tattoo
+  account; handle in Site Settings).
 - Treated as a fine-art practice, never a "tattoo shop" (brand book). Empty fields render
   gracefully (sections hide when there is no content).
+- Photos come from a local folder Guillermo prepares, uploaded to Tattoo Info by a script
+  (not scraped from Instagram). Alt text `Tattoo by GLUK NN`.
 
 ### 5.7 Journal (`small-pages-v2.html`, "Journal")
+- Guillermo publishes his writing on Substack (decided 2026-09-24). The page reads the
+  Substack RSS feed at build time; the address lives in Site Settings.
 - Giant `DIARIO`; entries as a `NumberedIndex` table (Nº, date, title, `Read →`), newest
-  first; hovering an entry reveals its cover. Entry page = single narrow reading column
-  with the cover on the veil. Empty state when there are no posts.
+  first; hovering an entry reveals its cover. Entries open on Substack (no on-site entry
+  pages; the Sanity `journalPost` type is removed). Empty state `No entries yet` when
+  no address is set or the feed can't be read (never fails the build).
+- A daily scheduled GitHub workflow calls the Netlify build hook so new posts appear
+  within a day.
 
 ### 5.8 Contact (`small-pages-v2.html`, "Contact")
 - Giant `CONTACTO`, short rule, email `gluk.caribe@gmail.com`, `Studio · Ciudad de
@@ -176,7 +184,8 @@ Dark-edged paintings disappear on the veil, so they get a halo.
 | `homePage` | Remove `portrait` / `portraitAlt` from the design (the home seed stops uploading a portrait); add `heroList` (array of strings, default Óleo · Tinta · Código) and `heroFootnote` (string, default "Oil, ink and code, put in friction."). Keep `featuredWorks`. |
 | New `aboutPage` singleton | `portrait` (image with hotspot), `portraitAlt`, `statement` (text), `body` (portable text), `photoCredit` (string). |
 | `tattooInfo` | Add `statement` (text) and `process` (array of strings); keep `body`, `images`. |
-| New `siteSettings` singleton | `email`, `instagramHandle`, `studioCity`; used by footer and Contact. |
+| New `siteSettings` singleton | `email`, `instagramHandle`, `studioCity`, `tattooInstagramHandle`, `substackUrl`; used by footer, Contact, Tattoo and Journal. |
+| `journalPost` | Removed — the journal is Guillermo's Substack. |
 
 **Initial content (write to the live `production` dataset — requires Guillermo's explicit
 OK at run time):**
