@@ -12,7 +12,7 @@ function createScope(setup: MotionSetup): MotionScope {
   mm.add(
     { reduced: REDUCED_MOTION_QUERY, full: NO_MOTION_PREFERENCE_QUERY },
     (context) => {
-      setup({ reduced: Boolean(context.conditions?.reduced) });
+      return setup({ reduced: Boolean(context.conditions?.reduced) });
     }
   );
   return mm;

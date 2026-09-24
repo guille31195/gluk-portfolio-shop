@@ -9,7 +9,6 @@ import { CARD_WIDTH, CARD_WIDTHS } from '../lib/image-url';
 
 const { heroList, heroFootnote, featuredWorks } = await getHomePage();
 const middle = Math.floor(heroList.length / 2);
-const last = heroList.length - 1;
 ---
 <BaseLayout title="Home" backdrop="field-2">
   <div data-motion-page="home">
@@ -22,11 +21,10 @@ const last = heroList.length - 1;
           <span class="hero-line">
             <span class="hero-numeral mono" data-hero-intro>{toRoman(i + 1)}</span>
             <span class="hero-mask">
-              <span
-                class:list={['hero-word', { 'display--outline': i === last && last > 0 }]}
-                data-hero-word
-                data-hero-outline={i === last && last > 0 ? '' : undefined}
-              >{word.toUpperCase()}</span>
+              <span class="hero-word" data-hero-word>
+                <span class="visually-hidden">{word.toUpperCase()}</span>
+                <span aria-hidden="true" data-hero-glyphs>{word.toUpperCase()}</span>
+              </span>
             </span>
             {i === middle && (
               <span class="hero-rule" data-hero-rule>
@@ -120,19 +118,7 @@ const last = heroList.length - 1;
   }
   .hero-word {
     display: block;
-  }
-  /* A stroked acute accent is a thin sliver whose two outlined edges read as
-     a double acute (Ó looks like Ő). Fill the band above cap height solid so
-     accents render as one mark while the letters stay outlined. */
-  .hero-word.display--outline {
-    --hero-accent-band: 0.115em;
-    background: linear-gradient(
-      to bottom,
-      var(--color-bone) 0 var(--hero-accent-band),
-      transparent var(--hero-accent-band)
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
+    white-space: pre;
   }
   .hero-rule {
     position: absolute;

@@ -7,7 +7,9 @@ export interface MotionEnv {
   reduced: boolean;
 }
 
-export type MotionSetup = (env: MotionEnv) => void;
+// A setup may return a cleanup for anything GSAP does not track (timers,
+// listeners); it runs when the page is torn down.
+export type MotionSetup = (env: MotionEnv) => void | (() => void);
 
 export interface MotionScope {
   revert(): void;

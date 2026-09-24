@@ -20,3 +20,12 @@ export const CURSOR_TRAIL = { duration: 0.35, ease: 'power3.out' } as const;
 // Home hero opening (spec §10): the list rises word by word, ~1.5 s in total.
 export const HERO_INTRO = { delay: 0.1, stagger: 0.15 } as const;
 export const HERO_DRIFT = 12; // % the hero list drifts up while scrolling away
+
+// Home hero "decoding" words: each word resolves from code glyphs as it rises,
+// then rests with one letter spelled in code; now and then a letter flickers.
+export const HERO_DECODE = {
+  duration: 0.8, // s for one word to resolve, left to right
+  tick: 0.05, // s between glyph reshuffles, so the scramble reads rather than blurs
+  flickerEvery: 2.8, // s between resting flickers
+  flickerHold: 0.14, // s a flickered glyph stays before the letter returns
+} as const;
