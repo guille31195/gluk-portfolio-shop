@@ -1,0 +1,31 @@
+---
+// The orange → black → blue rupture rule from the brand book (spec §4).
+interface Props {
+  orientation?: 'horizontal' | 'vertical';
+  weight?: 'hair' | 'thin' | 'base' | 'bold';
+  class?: string;
+}
+
+const { orientation = 'horizontal', weight = 'thin', class: className } = Astro.props;
+---
+<span class:list={['rule', `rule--${orientation}`, `rule--${weight}`, className]} aria-hidden="true"></span>
+
+<style>
+  .rule {
+    display: block;
+    background: url(/brand/rupture-rule.webp) center / 100% 100% no-repeat;
+  }
+  .rule--vertical {
+    background-image: url(/brand/rupture-rule-v.webp);
+  }
+  .rule--horizontal { width: 100%; }
+  .rule--vertical { height: 100%; }
+  .rule--horizontal.rule--hair { height: var(--rule-hair); }
+  .rule--horizontal.rule--thin { height: var(--rule-thin); }
+  .rule--horizontal.rule--base { height: var(--rule-base); }
+  .rule--horizontal.rule--bold { height: var(--rule-bold); }
+  .rule--vertical.rule--hair { width: var(--rule-hair); }
+  .rule--vertical.rule--thin { width: var(--rule-thin); }
+  .rule--vertical.rule--base { width: var(--rule-base); }
+  .rule--vertical.rule--bold { width: var(--rule-bold); }
+</style>
