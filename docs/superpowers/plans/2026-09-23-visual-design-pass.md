@@ -5262,9 +5262,32 @@ const client = createClient({
   useCdn: false,
 });
 
-const files = (await readdir(dir))
-  .filter((name) => /\.(jpe?g|png|tiff?|webp)$/i.test(name))
-  .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+// Selection for the Tattoo page, in display order (chosen 2026-09-24 from the
+// numbered contact sheet 05 AI/CLAUDE CODE/workspace/tattoo-contact-sheet.jpg;
+// no client faces). Empty array → upload every image in file-name order.
+const SELECTION = [
+  '09040FBE-9AF6-47E8-82BD-33EE903791B3.JPG', //  1 key and head, chest
+  '9F2D380B-68E6-4D0A-BFFF-6702A61E2224.JPG', // 17 profile with red sun, upper arm
+  'D7AC3EA1-68CD-4932-B377-4BB9BD01B649.JPG', // 26 tiger head
+  'AA4C2964-88F3-433D-9C80-F32249B7495B.JPG', // 20 surreal hand, thigh
+  'BBB9F582-DECD-444A-81A1-FB94657298F6.JPG', // 24 red mushroom, calf
+  'A3EBA439-8548-4017-8049-5661074E7637.JPG', // 18 dotwork face, forearm
+  'DB64DE05-F578-4F74-AADC-00F73BE4F34E.JPG', // 27 lighthouse landscape, upper arm
+  '79352105-0C29-4E9F-BEDF-9F524540E6D7.JPG', // 12 switchblade, shin
+];
+
+const onDisk = new Set(await readdir(dir));
+const missing = SELECTION.filter((name) => !onDisk.has(name));
+if (missing.length) {
+  console.error(`Not found in ${dir}: ${missing.join(', ')}`);
+  process.exit(1);
+}
+const files =
+  SELECTION.length > 0
+    ? SELECTION
+    : [...onDisk]
+        .filter((name) => /\.(jpe?g|png|tiff?|webp)$/i.test(name))
+        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 const skipped = (await readdir(dir)).filter((name) => /\.(heic|heif)$/i.test(name));
 if (skipped.length) console.warn(`Skipped (HEIC not supported — export as JPEG): ${skipped.join(', ')}`);
 if (files.length === 0) {
