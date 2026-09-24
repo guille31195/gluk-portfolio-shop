@@ -5,6 +5,14 @@ export const tattooInfo = defineType({
   title: 'Tattoo Info',
   type: 'document',
   fields: [
+    defineField({ name: 'statement', title: 'Statement', type: 'text', rows: 3 }),
+    defineField({
+      name: 'process',
+      title: 'Process steps',
+      type: 'array',
+      of: [{ type: 'string' }],
+      description: 'Shown as a numbered list.',
+    }),
     defineField({
       name: 'body',
       title: 'Body',

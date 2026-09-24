@@ -6,26 +6,18 @@ export const homePage = defineType({
   type: 'document',
   fields: [
     defineField({
-      name: 'portrait',
-      title: 'Portrait',
-      type: 'image',
-      description:
-        'Full-screen photo at the top of the home page. Set the hotspot on the subject — phones crop around it.',
-      options: { hotspot: true },
+      name: 'heroList',
+      title: 'Hero words',
+      type: 'array',
+      of: [{ type: 'string' }],
+      description: 'The numbered list at the top of the home page. Default: Óleo, Tinta, Código.',
+      validation: (Rule) => Rule.max(5),
     }),
     defineField({
-      name: 'portraitAlt',
-      title: 'Portrait alt text',
+      name: 'heroFootnote',
+      title: 'Hero footnote',
       type: 'string',
-      description: 'Describes the photo for screen readers.',
-      validation: (Rule) =>
-        Rule.custom((alt, context) => {
-          const doc = context.document as { portrait?: { asset?: unknown } } | undefined;
-          if (doc?.portrait?.asset && !alt?.trim()) {
-            return 'Alt text is required when a portrait is set.';
-          }
-          return true;
-        }),
+      description: 'Small margin text beside the list. Default: Oil, ink and code, put in friction.',
     }),
     defineField({
       name: 'featuredWorks',

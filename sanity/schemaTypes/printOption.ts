@@ -23,5 +23,11 @@ export const printOption = defineType({
       type: 'string',
       validation: (Rule) => Rule.required(),
     }),
+    defineField({
+      name: 'soldOut',
+      title: 'Sold out',
+      type: 'boolean',
+      initialValue: false,
+    }),
   ],
 });
