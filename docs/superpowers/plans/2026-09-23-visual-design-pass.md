@@ -5053,7 +5053,7 @@ import RuptureRule from '../../components/RuptureRule.astro';
   }
 </style>
 ```
-Note: `GRACIAS` is a new Spanish display word — **ask Guillermo** at sign-off (Task 16) whether he wants it; if not, use `CONTACTO`.
+Note: `GRACIAS` approved by Guillermo 2026-09-24 (over repeating `CONTACTO`).
 
 - [ ] **Step 7: Gates**
 
@@ -5417,7 +5417,7 @@ For each page `/`, `/portfolio`, `/artwork/motopirueta-4`, `/artwork/johnny-efec
 
 - [ ] **Step 4: Sign-off with Guillermo**
 
-Show Guillermo every sheet, page by page, and ask for an explicit approval per page (and his answer on `GRACIAS` for the thanks page). Record each result. Any requested change is fixed and re-shot before moving on. Nothing merges until every page is approved.
+Show Guillermo every sheet, page by page, and ask for an explicit approval per page. Record each result. Any requested change is fixed and re-shot before moving on. Nothing merges until every page is approved.
 
 - [ ] **Step 5: Post-approval steps (each needs Guillermo's explicit OK at that moment)**
 
@@ -5426,4 +5426,5 @@ Show Guillermo every sheet, page by page, and ask for an explicit approval per p
 3. Push `main` → Netlify deploys the new design.
 4. `npx sanity deploy` → Studio shows Series, About Page, Site Settings.
 5. Live check on https://thriving-halva-34e095.netlify.app: every page, desktop + phone.
-6. Open items stay open: weather provider/cost (then set `PUBLIC_LIVE_WEATHER=on` in Netlify), Netlify Forms billing safeguard, photographer credit, final About text.
+6. Run `npm run seed:design` and `npm run seed:tattoo` (Task 15) if not already run, then `gh secret set NETLIFY_BUILD_HOOK_URL` + one manual run of the "Daily rebuild" workflow (Task 13 Step 4).
+7. Open items stay open: weather provider/cost (then set `PUBLIC_LIVE_WEATHER=on` in Netlify), Netlify Forms billing safeguard, Original status per artwork (Available/Sold) set by Guillermo in Studio.
