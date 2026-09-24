@@ -10,7 +10,8 @@
     "check": "astro check",
     "test": "vitest run",
     "seed:artworks": "node --env-file=.env scripts/seed-artworks.mjs",
-    "seed:home": "node --env-file=.env scripts/seed-home-page.mjs",
+    "seed:design": "node --env-file=.env scripts/seed-design-content.mjs",
+    "seed:tattoo": "node --env-file=.env scripts/seed-tattoo-images.mjs",
     "brand:assets": "node scripts/build-brand-assets.mjs"
   },
   "dependencies": {
