@@ -111,8 +111,11 @@ the per-page comparison in §11.
 - Painting large on the left on the veil (halo if applicable); image at `DETAIL_WIDTH`.
 - Right column `WallLabel`: `<numeral> · <Series> · NN / NN` (or `Standalone work`), title
   (display), short rupture rule, medium (+ year · dimensions when present in Sanity),
-  hairline, `Original` + `Inquire` button (→ Contact with "An original" preselected and
-  the artwork named), `Prints` (from `printOptions`; Stripe comes in a later plan),
+  hairline, `Original` block driven by the artwork's `originalStatus` (decided
+  2026-09-24): `available` → `Inquire` button (→ Contact with "An original" preselected
+  and the artwork named), `sold` → `Sold`, `notForSale` (default) → block hidden;
+  `Prints` (from `printOptions`; a size flagged `soldOut` shows `Sold out` instead of
+  its price; Stripe comes in a later plan),
   hairline, then the series as a `NumberedIndex` linking to its siblings (current active).
 - Existing gallery (multiple images, thumbnails) and the portfolio→artwork morph remain.
 
@@ -168,7 +171,8 @@ Dark-edged paintings disappear on the veil, so they get a halo.
 | Change | Details |
 |---|---|
 | New `series` document | `name` (string, required), `slug`, `order` (number), `kind` (optional: `series` / `diptych`), `halo` (`auto`/`always`/`never`, default `auto`). |
-| `artwork` | Add `series` (reference → `series`, optional), `seriesPosition` (number), `halo` (`auto`/`always`/`never`, default `auto`). |
+| `artwork` | Add `series` (reference → `series`, optional), `seriesPosition` (number), `halo` (`auto`/`always`/`never`, default `auto`). Replace the `availableAsOriginal` checkbox with `originalStatus` (`available`/`sold`/`notForSale`, default `notForSale`; the old checkbox is still read as a fallback). |
+| `printOption` | Add `soldOut` (boolean, default false). |
 | `homePage` | Remove `portrait` / `portraitAlt` from the design (the home seed stops uploading a portrait); add `heroList` (array of strings, default Óleo · Tinta · Código) and `heroFootnote` (string, default "Oil, ink and code, put in friction."). Keep `featuredWorks`. |
 | New `aboutPage` singleton | `portrait` (image with hotspot), `portraitAlt`, `statement` (text), `body` (portable text), `photoCredit` (string). |
 | `tattooInfo` | Add `statement` (text) and `process` (array of strings); keep `body`, `images`. |

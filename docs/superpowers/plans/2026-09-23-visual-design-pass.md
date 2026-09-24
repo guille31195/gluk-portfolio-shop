@@ -16,7 +16,7 @@
 
 - Work happens in the worktree `C:/Users/Guillermo/dev/gluk-portfolio-shop/.worktrees/gsap-motion` on branch `feat/gsap-motion`. Never commit to `main`.
 - Colors: Blue `#0C89D5`, Deep blue `#011458`, Black `#1E1619`, Orange `#C34F05`, Bone `#F1EEE8`. Fonts: Archivo (display) and Karla (body) only.
-- Copy rule: words come only from the spec/brand book or Guillermo. Allowed UI labels: nav/page names, form labels, data labels (`Air`, `Humidity`, `Elevation`, `Sea`), `Original`, `Inquire`, `Prints`, `Request a session`, `Send`, `Menu`, `Close`, `Series`, `Diptych`, `Standalone works`, `Standalone work`, `No entries yet`, `Read →`, `Photography —`, `Thank you — your message was sent.` Anything else needs Guillermo. No tags, stickers, captions-as-decoration, pull-quotes.
+- Copy rule: words come only from the spec/brand book or Guillermo. Allowed UI labels: nav/page names, form labels, data labels (`Air`, `Humidity`, `Elevation`, `Sea`), `Original`, `Inquire`, `Sold`, `Prints`, `Sold out`, `Request a session`, `Send`, `Menu`, `Close`, `Series`, `Diptych`, `Standalone works`, `Standalone work`, `No entries yet`, `Read →`, `Photography —`, `Thank you — your message was sent.` Anything else needs Guillermo. No tags, stickers, captions-as-decoration, pull-quotes.
 - Real facts only: email `gluk.caribe@gmail.com`, Instagram `gluk______` (six underscores), studio city `Ciudad de México`; Caracas 10.4806 N 66.9036 W, 882 m, `America/Caracas`; Mexico City 19.4326 N 99.1332 W, 2 230 m, `America/Mexico_City`; sea points Caribbean off La Guaira 10.65 N 66.93 W, Pacific off Acapulco 16.80 N 99.90 W.
 - Paintings: never animated, tinted, filtered or overlaid; the veil and halo sit *behind* them and never animate.
 - Motion values come from `src/motion/tokens.ts`; use `gsap.fromTo` for guard-hidden elements; reduced motion = fades only.
@@ -99,10 +99,10 @@
 
 **Files:**
 - Create: `sanity/schemaTypes/haloOptions.ts`, `sanity/schemaTypes/series.ts`, `sanity/schemaTypes/aboutPage.ts`, `sanity/schemaTypes/siteSettings.ts`
-- Modify: `sanity/schemaTypes/artwork.ts`, `sanity/schemaTypes/homePage.ts`, `sanity/schemaTypes/tattooInfo.ts`, `sanity/schemaTypes/index.ts`, `sanity/structure.ts`
+- Modify: `sanity/schemaTypes/artwork.ts`, `sanity/schemaTypes/printOption.ts`, `sanity/schemaTypes/homePage.ts`, `sanity/schemaTypes/tattooInfo.ts`, `sanity/schemaTypes/index.ts`, `sanity/structure.ts`
 
 **Interfaces:**
-- Produces (Sanity field names later tasks query): `series{name, slug, order, kind, halo}`; `artwork.series` (reference), `artwork.seriesPosition`, `artwork.halo`; `homePage.heroList`, `homePage.heroFootnote`, `homePage.featuredWorks`; `aboutPage{portrait, portraitAlt, statement, body, photoCredit}` with `_id: "aboutPage"`; `siteSettings{email, instagramHandle, studioCity}` with `_id: "siteSettings"`; `tattooInfo.statement`, `tattooInfo.process`.
+- Produces (Sanity field names later tasks query): `series{name, slug, order, kind, halo}`; `artwork.series` (reference), `artwork.seriesPosition`, `artwork.halo`, `artwork.originalStatus` (`available|sold|notForSale`, replaces `availableAsOriginal`), `printOption.soldOut`; `homePage.heroList`, `homePage.heroFootnote`, `homePage.featuredWorks`; `aboutPage{portrait, portraitAlt, statement, body, photoCredit}` with `_id: "aboutPage"`; `siteSettings{email, instagramHandle, studioCity}` with `_id: "siteSettings"`; `tattooInfo.statement`, `tattooInfo.process`.
 
 - [ ] **Step 1: Shared halo option list**
 
@@ -188,6 +188,34 @@ In `sanity/schemaTypes/artwork.ts`, add `import { HALO_OPTIONS } from './haloOpt
       type: 'string',
       options: { list: HALO_OPTIONS, layout: 'radio' },
       initialValue: 'auto',
+    }),
+```
+
+In the same file, replace the `availableAsOriginal` field with a three-way status (none of the 13 live documents has the old checkbox set, so nothing is lost; the mapper in Task 2 still reads it as a fallback):
+```ts
+    defineField({
+      name: 'originalStatus',
+      title: 'Original',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Available — show "Inquire"', value: 'available' },
+          { title: 'Sold — show "Sold"', value: 'sold' },
+          { title: 'Not for sale — hide', value: 'notForSale' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'notForSale',
+    }),
+```
+
+In `sanity/schemaTypes/printOption.ts`, add after `stripePriceId`:
+```ts
+    defineField({
+      name: 'soldOut',
+      title: 'Sold out',
+      type: 'boolean',
+      initialValue: false,
     }),
 ```
 
@@ -374,8 +402,9 @@ Note: the deployed Studio only shows these after `npx sanity deploy` (post-merge
   export type HaloSetting = 'auto' | 'always' | 'never';
   export type SeriesKind = 'series' | 'diptych';
   export interface SeriesInfo { slug: string; name: string; order: number; kind: SeriesKind; halo: HaloSetting }
-  export interface PrintOption { size: string; price: number; stripePriceId: string }
-  export interface Artwork { slug; title; medium: Medium; year: number | null; dimensions: string | null; description: string | null; images: string[]; availableAsOriginal: boolean; printOptions: PrintOption[]; series: SeriesInfo | null; seriesPosition: number | null; haloSetting: HaloSetting; halo: boolean }
+  export type OriginalStatus = 'available' | 'sold' | 'notForSale';
+  export interface PrintOption { size: string; price: number; stripePriceId: string; soldOut: boolean }
+  export interface Artwork { slug; title; medium: Medium; year: number | null; dimensions: string | null; description: string | null; images: string[]; originalStatus: OriginalStatus; printOptions: PrintOption[]; series: SeriesInfo | null; seriesPosition: number | null; haloSetting: HaloSetting; halo: boolean }
   export interface RawArtwork { … }  // shape returned by ARTWORK_PROJECTION
   export function mapArtwork(raw: RawArtwork, urlFor: (image: RawImage) => string): Artwork;
   export function mediumLabel(medium: Medium): string; // 'Oil painting'
@@ -404,6 +433,7 @@ function raw(overrides: Partial<RawArtwork> = {}): RawArtwork {
     dimensions: null,
     description: null,
     images: [{ asset: { _ref: 'a1', _type: 'reference' } }],
+    originalStatus: null,
     availableAsOriginal: null,
     printOptions: null,
     series: null,
@@ -423,13 +453,35 @@ describe('mapArtwork', () => {
       dimensions: null,
       description: null,
       images: ['https://cdn.sanity.io/images/p/d/a1.jpg'],
-      availableAsOriginal: false,
+      originalStatus: 'notForSale',
       printOptions: [],
       series: null,
       seriesPosition: null,
       haloSetting: 'auto',
       halo: false,
     });
+  });
+
+  it('maps the original status, falling back to the legacy checkbox', () => {
+    expect(mapArtwork(raw({ originalStatus: 'available' }), urlFor).originalStatus).toBe('available');
+    expect(mapArtwork(raw({ originalStatus: 'sold' }), urlFor).originalStatus).toBe('sold');
+    expect(mapArtwork(raw({ originalStatus: 'whatever' }), urlFor).originalStatus).toBe('notForSale');
+    // Old `availableAsOriginal: true` (set before the status field existed) still means available.
+    expect(mapArtwork(raw({ availableAsOriginal: true }), urlFor).originalStatus).toBe('available');
+    expect(mapArtwork(raw({ originalStatus: 'sold', availableAsOriginal: true }), urlFor).originalStatus).toBe('sold');
+  });
+
+  it('marks print sizes sold out only when flagged', () => {
+    const result = mapArtwork(
+      raw({
+        printOptions: [
+          { size: 'A3', price: 9000, stripePriceId: 'p1', soldOut: null },
+          { size: 'A2', price: 14000, stripePriceId: 'p2', soldOut: true },
+        ],
+      }),
+      urlFor
+    );
+    expect(result.printOptions.map((p) => p.soldOut)).toEqual([false, true]);
   });
 
   it('maps a series with defaults for missing series fields', () => {
@@ -689,6 +741,10 @@ export type SeriesKind = 'series' | 'diptych';
 
 const HALO_SETTINGS: readonly HaloSetting[] = ['auto', 'always', 'never'];
 
+// available → "Inquire"; sold → "Sold"; notForSale → the Original block is hidden.
+export type OriginalStatus = 'available' | 'sold' | 'notForSale';
+const ORIGINAL_STATUSES: readonly OriginalStatus[] = ['available', 'sold', 'notForSale'];
+
 export interface SeriesInfo {
   slug: string;
   name: string;
@@ -701,6 +757,14 @@ export interface PrintOption {
   size: string;
   price: number;
   stripePriceId: string;
+  soldOut: boolean;
+}
+
+export interface RawPrintOption {
+  size: string;
+  price: number;
+  stripePriceId: string;
+  soldOut: boolean | null;
 }
 
 export interface Artwork {
@@ -711,7 +775,7 @@ export interface Artwork {
   dimensions: string | null;
   description: string | null;
   images: string[];
-  availableAsOriginal: boolean;
+  originalStatus: OriginalStatus;
   printOptions: PrintOption[];
   series: SeriesInfo | null;
   seriesPosition: number | null;
@@ -740,8 +804,10 @@ export interface RawArtwork {
   dimensions: string | null;
   description: string | null;
   images: RawImage[] | null;
+  originalStatus: string | null;
+  // Legacy checkbox, read only as a fallback for documents edited before originalStatus.
   availableAsOriginal: boolean | null;
-  printOptions: PrintOption[] | null;
+  printOptions: RawPrintOption[] | null;
   series: RawSeries | null;
   seriesPosition: number | null;
   haloSetting: string | null;
@@ -756,8 +822,9 @@ export const ARTWORK_PROJECTION = `{
   dimensions,
   description,
   images,
+  originalStatus,
   availableAsOriginal,
-  printOptions[]{size, price, stripePriceId},
+  printOptions[]{size, price, stripePriceId, soldOut},
   "series": series->{ "slug": slug.current, name, order, kind, halo },
   seriesPosition,
   "haloSetting": halo
@@ -765,6 +832,11 @@ export const ARTWORK_PROJECTION = `{
 
 function haloSetting(value: string | null | undefined): HaloSetting {
   return HALO_SETTINGS.includes(value as HaloSetting) ? (value as HaloSetting) : 'auto';
+}
+
+function originalStatus(raw: RawArtwork): OriginalStatus {
+  if (ORIGINAL_STATUSES.includes(raw.originalStatus as OriginalStatus)) return raw.originalStatus as OriginalStatus;
+  return raw.availableAsOriginal ? 'available' : 'notForSale';
 }
 
 function mapSeries(raw: RawSeries | null): SeriesInfo | null {
@@ -788,8 +860,8 @@ export function mapArtwork(raw: RawArtwork, urlFor: (image: RawImage) => string)
     dimensions: raw.dimensions ?? null,
     description: raw.description ?? null,
     images: (raw.images ?? []).map(urlFor),
-    availableAsOriginal: raw.availableAsOriginal ?? false,
-    printOptions: raw.printOptions ?? [],
+    originalStatus: originalStatus(raw),
+    printOptions: (raw.printOptions ?? []).map((option) => ({ ...option, soldOut: option.soldOut ?? false })),
     series,
     seriesPosition: series ? (raw.seriesPosition ?? null) : null,
     haloSetting: haloSetting(raw.haloSetting),
@@ -1023,7 +1095,7 @@ import { mapSiteSettings, type RawSiteSettings, type SiteSettings } from './site
 import { mapTattooInfo, type RawTattooInfo, type TattooInfo } from './tattoo-info';
 
 export { MEDIUMS, mediumLabel } from './artwork-map';
-export type { Artwork, HaloSetting, Medium, PrintOption, SeriesInfo, SeriesKind } from './artwork-map';
+export type { Artwork, HaloSetting, Medium, OriginalStatus, PrintOption, SeriesInfo, SeriesKind } from './artwork-map';
 export type { AboutPage, HomePage, SiteSettings, TattooInfo };
 
 export function formatMedium(medium: Medium): string {
@@ -1153,7 +1225,7 @@ The old home page reads `portrait`. Replace the frontmatter and hero of `src/pag
 const { featuredWorks } = await getHomePage();
 const portrait = null as null | { src: string; srcset: string; alt: string; focalPoint: string };
 ```
-(Task 9 rewrites this page completely.) In `src/pages/artwork/[slug].astro`, the `year`/`dimensions` line now receives `number | null`/`string | null`; it still type-checks as JSX text. If `npm run check` reports anything else, fix only that line.
+(Task 9 rewrites this page completely.) In `src/pages/artwork/[slug].astro`, the `year`/`dimensions` line now receives `number | null`/`string | null`; it still type-checks as JSX text. Change `artwork!.availableAsOriginal &&` to `artwork!.originalStatus === 'available' &&` (the field was replaced; Task 11 rewrites this page). If `npm run check` reports anything else, fix only that line.
 
 - [ ] **Step 7: Run all gates**
 
@@ -1567,7 +1639,7 @@ function art(slug: string, overrides: Partial<Artwork> = {}): Artwork {
     dimensions: null,
     description: null,
     images: [],
-    availableAsOriginal: false,
+    originalStatus: 'notForSale',
     printOptions: [],
     series: null,
     seriesPosition: null,
@@ -3919,6 +3991,8 @@ interface Props {
 const { artwork, heading, siblings } = Astro.props;
 const details = [artwork.year, artwork.dimensions].filter(Boolean).join(' · ');
 const inquire = `/contact?interest=original&artwork=${encodeURIComponent(artwork.title)}`;
+// Available → Inquire button; sold → "Sold"; not for sale → no Original block.
+const showOriginal = artwork.originalStatus !== 'notForSale';
 ---
 <aside class="wall-label">
   <p class="mono dim" data-intro>{heading}</p>
@@ -3929,17 +4003,26 @@ const inquire = `/contact?interest=original&artwork=${encodeURIComponent(artwork
     {details && <><br /><span class="dim">{details}</span></>}
   </p>
   {artwork.description && <p class="wall-description" data-intro>{artwork.description}</p>}
-  <hr class="hairline" />
-  <div class="wall-block" data-intro>
-    <p class="label dim">Original</p>
-    <a class="button" href={inquire}>Inquire</a>
-  </div>
+  {(showOriginal || artwork.printOptions.length > 0) && <hr class="hairline" />}
+  {showOriginal && (
+    <div class="wall-block" data-intro>
+      <p class="label dim">Original</p>
+      {artwork.originalStatus === 'available' ? (
+        <a class="button" href={inquire}>Inquire</a>
+      ) : (
+        <p class="label wall-sold">Sold</p>
+      )}
+    </div>
+  )}
   {artwork.printOptions.length > 0 && (
     <div class="wall-block" data-intro>
       <p class="label dim">Prints</p>
       <ul class="wall-prints">
         {artwork.printOptions.map((option) => (
-          <li><span>{option.size}</span><span>{formatPrice(option.price)}</span></li>
+          <li class:list={{ 'is-sold-out': option.soldOut }}>
+            <span>{option.size}</span>
+            <span>{option.soldOut ? 'Sold out' : formatPrice(option.price)}</span>
+          </li>
         ))}
       </ul>
     </div>
@@ -3982,6 +4065,12 @@ const inquire = `/contact?interest=original&artwork=${encodeURIComponent(artwork
     padding: 0.5rem 0;
     border-top: var(--rule-hair) solid var(--color-hairline);
     font-variant-numeric: tabular-nums;
+  }
+  .wall-prints li.is-sold-out {
+    opacity: 0.45;
+  }
+  .wall-sold {
+    margin: 0;
   }
 </style>
 ```
