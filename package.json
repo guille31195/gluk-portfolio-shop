@@ -19,6 +19,7 @@
     "@sanity/astro": "^3.5.1",
     "@sanity/image-url": "^2.1.1",
     "astro": "^7.3.3",
+    "fast-xml-parser": "^5.11.1",
     "gsap": "^3.12.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

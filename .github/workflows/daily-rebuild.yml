@@ -1,0 +1,16 @@
+# Rebuilds the site daily so new Substack posts reach the Journal page.
+name: Daily rebuild
+on:
+  schedule:
+    - cron: '0 12 * * *' # 06:00 in Mexico City
+  workflow_dispatch:
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger the Netlify build hook
+        env:
+          HOOK: ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK" ]; then echo "NETLIFY_BUILD_HOOK_URL secret is not set"; exit 1; fi
+          curl -fsS -X POST -d '{}' "$HOOK"

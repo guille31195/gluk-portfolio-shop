@@ -25,22 +25,6 @@ export function formatMedium(medium: Medium): string {
   return medium.replace(/-/g, ' ');
 }
 
-export interface JournalPost {
-  slug: string;
-  title: string;
-  date: string;
-  coverImage: string;
-  body: string;
-}
-
-interface RawJournalPost {
-  slug: string;
-  title: string;
-  date: string;
-  coverImage: RawImage | null;
-  body: unknown[] | null;
-}
-
 const imageBuilder = imageUrlBuilder(sanityClient);
 
 function urlFor(image: RawImage): string {
@@ -115,37 +99,4 @@ export async function getTattooInfo(): Promise<TattooInfo> {
     `*[_type == "tattooInfo" && ${PUBLISHED}][0]{ statement, process, body, images }`
   );
   return mapTattooInfo(raw, { urlFor, toHtml });
-}
-
-const JOURNAL_PROJECTION = `{
-  "slug": slug.current,
-  title,
-  date,
-  coverImage,
-  body
-}`;
-
-function mapJournalPost(raw: RawJournalPost): JournalPost {
-  return {
-    slug: raw.slug,
-    title: raw.title,
-    date: raw.date,
-    coverImage: raw.coverImage ? urlFor(raw.coverImage) : '',
-    body: raw.body ? toHtml(raw.body) : '',
-  };
-}
-
-export async function getAllJournalPosts(): Promise<JournalPost[]> {
-  const raw: RawJournalPost[] = await sanityClient.fetch(
-    `*[_type == "journalPost" && ${PUBLISHED}] | order(date desc) ${JOURNAL_PROJECTION}`
-  );
-  return raw.map(mapJournalPost);
-}
-
-export async function getJournalPostBySlug(slug: string): Promise<JournalPost | null> {
-  const raw: RawJournalPost | null = await sanityClient.fetch(
-    `*[_type == "journalPost" && slug.current == $slug && ${PUBLISHED}][0] ${JOURNAL_PROJECTION}`,
-    { slug }
-  );
-  return raw ? mapJournalPost(raw) : null;
 }
