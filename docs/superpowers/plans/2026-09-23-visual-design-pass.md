@@ -3828,6 +3828,7 @@ const rooms = groupIntoRooms(all.filter((artwork) => artwork.medium === medium))
       </nav>
     </div>
     <RuptureRule weight="base" class="portfolio-rule" />
+    {rooms.length === 0 && <p class="label dim portfolio-empty">No entries yet</p>}
     {rooms.map((room) => <Room room={room} />)}
   </section>
 </BaseLayout>
@@ -3856,8 +3857,12 @@ const rooms = groupIntoRooms(all.filter((artwork) => artwork.medium === medium))
   :global(.portfolio-rule) {
     margin: 2.4rem 0 1rem;
   }
+  .portfolio-empty {
+    padding: clamp(3rem, 6vw, 5rem) 0;
+  }
 </style>
 ```
+Mediums with no works (today `tattoo`, `sculpture`) are still built as pages but not linked; they show `No entries yet` under the rule instead of an empty page.
 
 - [ ] **Step 3: Remove the old card**
 
