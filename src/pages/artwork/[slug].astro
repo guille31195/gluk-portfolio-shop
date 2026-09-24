@@ -1,35 +1,39 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getAllArtworks, getArtworkBySlug } from '../../lib/sanity';
-import { formatPrice } from '../../data/format-price';
+import WallLabel from '../../components/WallLabel.astro';
+import Halo from '../../components/Halo.astro';
+import { getAllArtworks } from '../../lib/sanity';
+import { groupIntoRooms, wallLabelHeading } from '../../lib/rooms';
 import { DETAIL_WIDTH, THUMB_WIDTH, sizedImage } from '../../lib/image-url';
 
 export async function getStaticPaths() {
   const artworks = await getAllArtworks();
-  return artworks.map((artwork) => ({ params: { slug: artwork.slug } }));
+  const rooms = groupIntoRooms(artworks);
+  return artworks.map((artwork) => ({ params: { slug: artwork.slug }, props: { artwork, rooms } }));
 }
 
-const { slug } = Astro.params;
-const artwork = await getArtworkBySlug(slug!);
-const images = artwork!.images.slice(0, 8);
+const { artwork, rooms } = Astro.props;
+const images = artwork.images.slice(0, 8);
+const room = artwork.series ? rooms.find((r) => r.key === artwork.series!.slug) : undefined;
+const siblings = (room?.works ?? []).map((work) => ({
+  label: work.title,
+  href: `/artwork/${work.slug}`,
+  active: work.slug === artwork.slug,
+}));
 ---
-<BaseLayout title={artwork!.title}>
-  <section class="detail">
+<BaseLayout title={artwork.title}>
+  <section class="detail page">
     <div class="gallery">
       {images.map((_, i) => (
         <input type="radio" name="gallery" id={`gallery-${i}`} class="gallery-radio" checked={i === 0} />
       ))}
-      <div class="gallery-main">
+      <div class:list={['gallery-main', { 'gallery-main--halo': artwork.halo }]}>
+        {artwork.halo && <Halo class="gallery-halo" />}
         {images.map((src, i) =>
           i === 0 ? (
-            <img
-              src={sizedImage(src, DETAIL_WIDTH)}
-              alt={artwork!.title}
-              class="gallery-image gallery-image-0"
-              transition:name={`artwork-${artwork!.slug}`}
-            />
+            <img src={sizedImage(src, DETAIL_WIDTH)} alt={artwork.title} class="gallery-image gallery-image-0" transition:name={`artwork-${artwork.slug}`} />
           ) : (
-            <img src={sizedImage(src, DETAIL_WIDTH)} alt={artwork!.title} class={`gallery-image gallery-image-${i}`} />
+            <img src={sizedImage(src, DETAIL_WIDTH)} alt={artwork.title} class={`gallery-image gallery-image-${i}`} />
           )
         )}
       </div>
@@ -37,43 +41,22 @@ const images = artwork!.images.slice(0, 8);
         <div class="gallery-thumbs">
           {images.map((src, i) => (
             <label for={`gallery-${i}`} class="gallery-thumb">
-              <img src={sizedImage(src, THUMB_WIDTH)} alt={`${artwork!.title} thumbnail ${i + 1}`} />
+              <img src={sizedImage(src, THUMB_WIDTH)} alt={`${artwork.title} thumbnail ${i + 1}`} />
             </label>
           ))}
         </div>
       )}
     </div>
-    <div class="info">
-      <h1 data-intro>{artwork!.title}</h1>
-      <p class="meta" data-intro>{artwork!.year} — {artwork!.dimensions}</p>
-      <p data-intro>{artwork!.description}</p>
-
-      {artwork!.originalStatus === 'available' && (
-        <a class="button" href="/contact">Inquire about the original</a>
-      )}
-
-      {artwork!.printOptions.length > 0 && (
-        <div class="prints">
-          <h2>Available prints</h2>
-          <ul>
-            {artwork!.printOptions.map((option) => (
-              <li>
-                {option.size} — {formatPrice(option.price)}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
+    <WallLabel artwork={artwork} heading={wallLabelHeading(artwork, rooms)} siblings={siblings} />
   </section>
 </BaseLayout>
 
 <style>
   .detail {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    padding: 3rem 2rem;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: clamp(2rem, 6vw, 7rem);
+    align-items: start;
   }
   .gallery-radio {
     display: none;
@@ -81,14 +64,17 @@ const images = artwork!.images.slice(0, 8);
   /* Images stack in one grid cell and crossfade; hidden ones are also
      visibility:hidden so screen readers skip them, as display:none did. */
   .gallery-main {
+    position: relative;
     display: grid;
     align-items: start;
   }
   .gallery-image {
     grid-area: 1 / 1;
+    position: relative;
     width: 100%;
     opacity: 0;
     visibility: hidden;
+    box-shadow: var(--shadow-painting);
     transition: opacity 0.5s ease, visibility 0s linear 0.5s;
   }
   .gallery-radio:nth-of-type(1):checked ~ .gallery-main .gallery-image-0,
@@ -133,19 +119,7 @@ const images = artwork!.images.slice(0, 8);
   .gallery-radio:nth-of-type(8):checked ~ .gallery-thumbs .gallery-thumb:nth-of-type(8) {
     opacity: 1;
   }
-  .meta {
-    color: var(--color-deep-blue);
-  }
-  .button {
-    display: inline-block;
-    margin-top: 1rem;
-    padding: 0.75rem 1.5rem;
-    background: var(--color-blue);
-    color: #fff;
-    text-decoration: none;
-  }
-  .prints ul {
-    list-style: none;
-    padding: 0;
+  @media (max-width: 860px) {
+    .detail { grid-template-columns: 1fr; }
   }
 </style>

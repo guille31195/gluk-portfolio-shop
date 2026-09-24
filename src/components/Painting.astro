@@ -3,6 +3,7 @@
 // soft orange/blue glow *behind* the canvas (spec §6.2).
 import type { Artwork } from '../lib/sanity';
 import { imageSrcset, sizedImage } from '../lib/image-url';
+import Halo from './Halo.astro';
 
 interface Props {
   artwork: Artwork;
@@ -16,7 +17,7 @@ const { artwork, width, widths, sizes, eager = false } = Astro.props;
 const src = artwork.images[0] ?? '';
 ---
 <div class:list={['painting', { 'painting--halo': artwork.halo }]}>
-  {artwork.halo && <span class="painting-halo" aria-hidden="true"></span>}
+  {artwork.halo && <Halo class="painting-halo" />}
   <img
     src={sizedImage(src, width)}
     srcset={widths ? imageSrcset(src, widths) : undefined}
@@ -38,18 +39,5 @@ const src = artwork.images[0] ?? '';
     width: 100%;
     height: auto;
     box-shadow: var(--shadow-painting);
-  }
-  .painting-halo {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 120%;
-    height: 108%;
-    transform: translate(-50%, -50%);
-    background:
-      radial-gradient(ellipse at 35% 60%, rgba(195, 79, 5, 0.75), transparent 60%),
-      radial-gradient(ellipse at 65% 40%, rgba(12, 137, 213, 0.85), transparent 60%);
-    filter: blur(clamp(24px, 3vw, 48px));
-    pointer-events: none;
   }
 </style>

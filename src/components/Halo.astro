@@ -1,0 +1,28 @@
+---
+// The soft orange/blue glow behind dark-edged paintings (spec §6.2). Sits
+// behind the canvas and never animates; the host element must be
+// `position: relative` and the painting image `position: relative` so it
+// paints above this.
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+<span class:list={['halo', className]} aria-hidden="true"></span>
+
+<style>
+  .halo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 120%;
+    height: 108%;
+    transform: translate(-50%, -50%);
+    background:
+      radial-gradient(ellipse at 35% 60%, rgba(195, 79, 5, 0.75), transparent 60%),
+      radial-gradient(ellipse at 65% 40%, rgba(12, 137, 213, 0.85), transparent 60%);
+    filter: blur(clamp(24px, 3vw, 48px));
+    pointer-events: none;
+  }
+</style>

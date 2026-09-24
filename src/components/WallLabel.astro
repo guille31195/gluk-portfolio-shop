@@ -1,0 +1,97 @@
+---
+import NumberedIndex, { type IndexItem } from './NumberedIndex.astro';
+import RuptureRule from './RuptureRule.astro';
+import { mediumLabel, type Artwork } from '../lib/sanity';
+import { formatPrice } from '../data/format-price';
+
+interface Props {
+  artwork: Artwork;
+  heading: string;
+  siblings: IndexItem[];
+}
+
+const { artwork, heading, siblings } = Astro.props;
+const details = [artwork.year, artwork.dimensions].filter(Boolean).join(' · ');
+const inquire = `/contact?interest=original&artwork=${encodeURIComponent(artwork.title)}`;
+// Available → Inquire button; sold → "Sold"; not for sale → no Original block.
+const showOriginal = artwork.originalStatus !== 'notForSale';
+---
+<aside class="wall-label">
+  <p class="mono dim" data-intro>{heading}</p>
+  <h1 class="title" data-intro>{artwork.title}</h1>
+  <RuptureRule weight="thin" class="wall-rule" />
+  <p class="wall-medium" data-intro>
+    {mediumLabel(artwork.medium)}
+    {details && <><br /><span class="dim">{details}</span></>}
+  </p>
+  {artwork.description && <p class="wall-description" data-intro>{artwork.description}</p>}
+  {(showOriginal || artwork.printOptions.length > 0) && <hr class="hairline" />}
+  {showOriginal && (
+    <div class="wall-block" data-intro>
+      <p class="label dim">Original</p>
+      {artwork.originalStatus === 'available' ? (
+        <a class="button" href={inquire}>Inquire</a>
+      ) : (
+        <p class="label wall-sold">Sold</p>
+      )}
+    </div>
+  )}
+  {artwork.printOptions.length > 0 && (
+    <div class="wall-block" data-intro>
+      <p class="label dim">Prints</p>
+      <ul class="wall-prints">
+        {artwork.printOptions.map((option) => (
+          <li class:list={{ 'is-sold-out': option.soldOut }}>
+            <span>{option.size}</span>
+            <span>{option.soldOut ? 'Sold out' : formatPrice(option.price)}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+  {siblings.length > 1 && (
+    <>
+      <hr class="hairline" />
+      <NumberedIndex items={siblings} class="wall-series" />
+    </>
+  )}
+</aside>
+
+<style>
+  .wall-label {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+  }
+  .wall-label .title {
+    margin-top: -0.4rem;
+  }
+  :global(.wall-rule) {
+    width: 9rem !important;
+  }
+  .wall-medium,
+  .wall-description {
+    margin: 0;
+  }
+  .wall-block .label {
+    margin: 0 0 0.8rem;
+  }
+  .wall-prints {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .wall-prints li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-top: var(--rule-hair) solid var(--color-hairline);
+    font-variant-numeric: tabular-nums;
+  }
+  .wall-prints li.is-sold-out {
+    opacity: 0.45;
+  }
+  .wall-sold {
+    margin: 0;
+  }
+</style>
