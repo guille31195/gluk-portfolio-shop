@@ -1062,9 +1062,9 @@ export const DEFAULT_SITE_SETTINGS: {
   instagramHandle: 'gluk______',
   studioCity: 'Ciudad de México',
   tattooInstagramHandle: 'gluk.tattooo',
-  // PENDING: Guillermo's Substack address (https://<name>.substack.com). Until it is
-  // filled in here or in Studio, the Journal shows "No entries yet".
-  substackUrl: null,
+  // Guillermo's Substack "Manchas de conciencia" (profile substack.com/@glukcaribe);
+  // feed verified 2026-09-24 at https://glukcaribe.substack.com/feed.
+  substackUrl: 'https://glukcaribe.substack.com',
 };
 
 export interface RawSiteSettings {
@@ -4755,7 +4755,7 @@ GitHub runs scheduled workflows only from the default branch, so this starts aft
 
 - [ ] **Step 5: Gates + visual check**
 
-Run: `npm run check && npm test && npm run build` → all pass; no `dist/journal/*/` entry pages. Screenshot `/tattoo` and `/journal` (1440×900, 390×844); compare with `small-pages-v2.html` (`05 AI/CLAUDE CODE/workspace/small-check.png`). Expected with empty content: TATUAJE + rule + Request a session + studio line + `Instagram — @gluk.tattooo`; DIARIO + "No entries yet" until the Substack address is set, then the list of posts. Once Guillermo gives the address, verify its feed first: `curl -fsS <address>/feed | head -c 400` shows `<rss`.
+Run: `npm run check && npm test && npm run build` → all pass; no `dist/journal/*/` entry pages. Screenshot `/tattoo` and `/journal` (1440×900, 390×844); compare with `small-pages-v2.html` (`05 AI/CLAUDE CODE/workspace/small-check.png`). Expected with empty content: TATUAJE + rule + Request a session + studio line + `Instagram — @gluk.tattooo`; DIARIO listing "Carretera margariteña" (22 Sep 2026, cover on hover) linking to https://glukcaribe.substack.com/p/carretera-margaritena (the default Substack address; no seed needed).
 
 - [ ] **Step 6: Commit**
 
@@ -5134,10 +5134,10 @@ const PORTRAIT_DRIVE_ID = '1Om7p2e091hAuBXNyY9hu6XXPNq5mqUWp';
 const PORTRAIT_PATH = process.env.PORTRAIT_PATH;
 const PORTRAIT_ALT = 'Portrait of GLUK in the studio';
 const PHOTO_CREDIT = '@topomaseda';
-// Given by Guillermo 2026-09-24 (spelling to be confirmed before running).
+// Confirmed by Guillermo 2026-09-24 (three o's).
 const TATTOO_INSTAGRAM_HANDLE = 'gluk.tattooo';
-// PENDING: Guillermo's Substack address, e.g. 'https://name.substack.com'. Left null → not written.
-const SUBSTACK_URL = null;
+// "Manchas de conciencia"; feed verified 2026-09-24.
+const SUBSTACK_URL = 'https://glukcaribe.substack.com';
 
 const slugs = SERIES.flatMap((s) => s.members).concat(FEATURED_SLUGS);
 const artworks = await client.fetch(
@@ -5237,7 +5237,7 @@ Syntax check (no network, no writes): `node --check scripts/seed-design-content.
 
 - [ ] **Step 2b: Tattoo photo upload script**
 
-Guillermo is collecting his tattoo photos in a local folder (path to be given). `scripts/seed-tattoo-images.mjs`:
+Tattoo photos: `C:/Users/Guillermo/Desktop/cuadros HD/tattoos` (31 JPEGs checked 2026-09-24, 1200–4284 px wide, most with iPhone EXIF rotation, which `.rotate()` applies). The files have random iPhone names, so upload order = file-name order unless Guillermo renames them (e.g. `01.jpg`, `02.jpg`…) or picks a subset first. `scripts/seed-tattoo-images.mjs`:
 ```js
 // Uploads every image in TATTOO_DIR to Tattoo Info (spec §5.6), in file-name order.
 // Idempotent: Sanity stores identical files once, and refs already on the document
@@ -5313,7 +5313,7 @@ Tell Guillermo exactly what the seed writes to the live `production` dataset (4 
 - `grep -l "gallery-halo" dist/artwork/*/index.html` → johnny-efectivo, violenta-i, violenta-ii
 - `/about` shows portrait #82.
 
-Before running, confirm with Guillermo: the tattoo handle spelling (`gluk.tattooo`) and his Substack address (fill `SUBSTACK_URL`; verify `curl -fsS <address>/feed | head -c 400` shows `<rss`). The tattoo upload (`npm run seed:tattoo` with `TATTOO_DIR`) is a separate run with its own OK, once his folder is ready; afterwards `/tattoo` shows the photos.
+The tattoo upload is a separate run with its own OK, after Guillermo settles which photos and in what order: `TATTOO_DIR="C:/Users/Guillermo/Desktop/cuadros HD/tattoos" npm run seed:tattoo`; afterwards `/tattoo` shows the photos. After the seed, `/journal` lists "Carretera margariteña" (22 Sep 2026) linking to Substack.
 
 ---
 
