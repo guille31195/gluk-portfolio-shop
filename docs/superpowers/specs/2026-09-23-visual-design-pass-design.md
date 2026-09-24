@@ -88,10 +88,10 @@ the per-page comparison in §11.
 
 ### 5.2 Home (`home-families.html` F2 + `home-egg.html` state 2)
 - **Hero:** on a gradient field, a vertical hairline with a margin footnote to its left —
-  the brand-book phrase "transforms Caribbean symbols, bodily memory and structures of
-  power". To its right, the numbered material list, large and precise:
-  `I SÍMBOLO / II MEMORIA / III PODER` (PODER in outline). A rupture rule cuts through
-  MEMORIA. Words are the three nouns of the brand book's positioning sentence.
+  "Oil, ink and code, put in friction." (adapted from BIO.pdf, chosen 2026-09-24).
+  To its right, the numbered material list, large and precise:
+  `I ÓLEO / II TINTA / III CÓDIGO` (CÓDIGO in outline). A rupture rule cuts through
+  TINTA. Words are his three media from BIO.pdf: oil painting, tattooing, technology.
 - **Data egg:** bottom-right (§8).
 - **Featured works:** on the veil, staggered two-column layout, restrained captions (title,
   medium, series), halo where applicable.
@@ -169,7 +169,7 @@ Dark-edged paintings disappear on the veil, so they get a halo.
 |---|---|
 | New `series` document | `name` (string, required), `slug`, `order` (number), `kind` (optional: `series` / `diptych`), `halo` (`auto`/`always`/`never`, default `auto`). |
 | `artwork` | Add `series` (reference → `series`, optional), `seriesPosition` (number), `halo` (`auto`/`always`/`never`, default `auto`). |
-| `homePage` | Remove `portrait` / `portraitAlt` from the design (the home seed stops uploading a portrait); add `heroList` (array of strings, default Símbolo · Memoria · Poder) and `heroFootnote` (string, default the brand-book phrase). Keep `featuredWorks`. |
+| `homePage` | Remove `portrait` / `portraitAlt` from the design (the home seed stops uploading a portrait); add `heroList` (array of strings, default Óleo · Tinta · Código) and `heroFootnote` (string, default "Oil, ink and code, put in friction."). Keep `featuredWorks`. |
 | New `aboutPage` singleton | `portrait` (image with hotspot), `portraitAlt`, `statement` (text), `body` (portable text), `photoCredit` (string). |
 | `tattooInfo` | Add `statement` (text) and `process` (array of strings); keep `body`, `images`. |
 | New `siteSettings` singleton | `email`, `instagramHandle`, `studioCity`; used by footer and Contact. |
@@ -223,7 +223,7 @@ reduced-motion handling, the 2.5 s failsafe) stays. Changes:
 
 | Where | Motion |
 |---|---|
-| Home hero | Replaces the portrait opening (`home-hero.ts`): numerals fade in, the three words rise from behind a mask in sequence, the rupture rule draws across MEMORIA, PODER's outline traces in. ~1.5 s once, then still. On scroll the list drifts slightly slower than the page. |
+| Home hero | Replaces the portrait opening (`home-hero.ts`): numerals fade in, the three words rise from behind a mask in sequence, the rupture rule draws across TINTA, CÓDIGO's outline traces in. ~1.5 s once, then still. On scroll the list drifts slightly slower than the page. |
 | Data egg | Unfold/fold on hover or tap. |
 | Portfolio rooms | Label and paintings rise gently on entering the viewport (existing reveal system). Veil and halo static. |
 | Portfolio → artwork | Existing view-transition morph, re-targeted to the room painting and the wall-label painting. |

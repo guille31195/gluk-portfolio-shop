@@ -201,14 +201,14 @@ Replace the whole `fields` array in `sanity/schemaTypes/homePage.ts` with:
       title: 'Hero words',
       type: 'array',
       of: [{ type: 'string' }],
-      description: 'The numbered list at the top of the home page. Default: Símbolo, Memoria, Poder.',
+      description: 'The numbered list at the top of the home page. Default: Óleo, Tinta, Código.',
       validation: (Rule) => Rule.max(5),
     }),
     defineField({
       name: 'heroFootnote',
       title: 'Hero footnote',
       type: 'string',
-      description: 'Small margin text beside the list. Default: the brand line.',
+      description: 'Small margin text beside the list. Default: Oil, ink and code, put in friction.',
     }),
     defineField({
       name: 'featuredWorks',
@@ -482,9 +482,9 @@ describe('mapHomePage', () => {
     });
   });
 
-  it('keeps the defaults exactly as the brand book words', () => {
-    expect(DEFAULT_HERO_LIST).toEqual(['Símbolo', 'Memoria', 'Poder']);
-    expect(DEFAULT_HERO_FOOTNOTE).toBe('transforms Caribbean symbols, bodily memory and structures of power');
+  it('keeps the approved defaults (his three media, from BIO.pdf)', () => {
+    expect(DEFAULT_HERO_LIST).toEqual(['Óleo', 'Tinta', 'Código']);
+    expect(DEFAULT_HERO_FOOTNOTE).toBe('Oil, ink and code, put in friction.');
   });
 
   it('trims hero words and drops blanks and nulls', () => {
@@ -807,8 +807,8 @@ export function mediumLabel(medium: Medium): string {
 ```ts
 // Pure mapping for the homePage singleton (spec §5.2). Free of `sanity:client`.
 
-export const DEFAULT_HERO_LIST = ['Símbolo', 'Memoria', 'Poder'] as const;
-export const DEFAULT_HERO_FOOTNOTE = 'transforms Caribbean symbols, bodily memory and structures of power';
+export const DEFAULT_HERO_LIST = ['Óleo', 'Tinta', 'Código'] as const;
+export const DEFAULT_HERO_FOOTNOTE = 'Oil, ink and code, put in friction.';
 const MAX_HERO_WORDS = 5;
 
 export interface RawHomePage {
@@ -3636,13 +3636,13 @@ const last = heroList.length - 1;
 - [ ] **Step 4: Gates**
 
 Run: `npm run check && npm test && npm run build`
-Expected: all pass. `dist/index.html` contains `SÍMBOLO`, `MEMORIA`, `PODER` and `data-hero-rule`.
+Expected: all pass. `dist/index.html` contains `ÓLEO`, `TINTA`, `CÓDIGO` and `data-hero-rule`.
 
 Run: `grep -c "data-hero-word" dist/index.html` → Expected: `3`.
 
 - [ ] **Step 5: Visual check**
 
-With `npm run preview` running, screenshot `/` at 1440×900 and 390×844 (as in Task 5 Step 6, names `task9-home-desktop.png`, `task9-home-phone.png`). Compare with the approved mockup `.superpowers/brainstorm/4236-1790195626/content/home-egg.html` (open it via the companion or the saved check image `05 AI/CLAUDE CODE/workspace/egg-check.png`). Expected: list with numerals I–III, rule through MEMORIA, PODER outlined, faint time line bottom-right. Fix layout differences before committing.
+With `npm run preview` running, screenshot `/` at 1440×900 and 390×844 (as in Task 5 Step 6, names `task9-home-desktop.png`, `task9-home-phone.png`). Compare with the approved mockup `.superpowers/brainstorm/4236-1790195626/content/home-egg.html` (open it via the companion or the saved check image `05 AI/CLAUDE CODE/workspace/egg-check.png`). Expected: list with numerals I–III, rule through TINTA, CÓDIGO outlined, footnote "Oil, ink and code, put in friction.", faint time line bottom-right. The mockup still shows the old words (SÍMBOLO / MEMORIA / PODER); compare layout, not wording. Fix layout differences before committing.
 
 - [ ] **Step 6: Commit**
 
@@ -4872,14 +4872,14 @@ tx.createIfNotExists({
 tx.createIfNotExists({
   _id: 'homePage',
   _type: 'homePage',
-  heroList: ['Símbolo', 'Memoria', 'Poder'],
-  heroFootnote: 'transforms Caribbean symbols, bodily memory and structures of power',
+  heroList: ['Óleo', 'Tinta', 'Código'],
+  heroFootnote: 'Oil, ink and code, put in friction.',
   featuredWorks: FEATURED_SLUGS.map((slug) => ({ _type: 'reference', _ref: bySlug.get(slug)._id, _key: slug })),
 });
 tx.patch('homePage', (p) =>
   p.setIfMissing({
-    heroList: ['Símbolo', 'Memoria', 'Poder'],
-    heroFootnote: 'transforms Caribbean symbols, bodily memory and structures of power',
+    heroList: ['Óleo', 'Tinta', 'Código'],
+    heroFootnote: 'Oil, ink and code, put in friction.',
   })
 );
 const result = await tx.commit();
@@ -5009,7 +5009,7 @@ Add these checks to `gsap-motion-check.mjs` after check 7, reusing its `load`, `
   await send('Emulation.setScriptExecutionDisabled', { value: false });
   record('11. No-JS: live elements hidden', [...noJs, ...noJsContact].every(Boolean) && noJs.length > 0, JSON.stringify({ noJs, noJsContact }));
 ```
-Also update check 5's page list to `['/', '/portfolio/', '/artwork/motopirueta-1']` (unchanged) and check 1's text to expect `SÍMBOLO`.
+Also update check 5's page list to `['/', '/portfolio/', '/artwork/motopirueta-1']` (unchanged) and check 1's text to expect `ÓLEO`.
 
 Run it against `npm run preview`, three times. Expected: 12/12 (the existing 8 plus 4 new) each run. Any failure → `superpowers:systematic-debugging`, fix, re-run.
 
