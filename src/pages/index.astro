@@ -75,6 +75,7 @@ const middle = Math.floor(heroList.length / 2);
     align-content: start;
     min-height: 100svh;
     padding: calc(var(--nav-height) + 6vh) var(--gutter) 8rem;
+    overflow-x: clip; /* the rupture rule bleeds off the right edge, not into a scrollbar */
   }
   .hero-footnote {
     margin: 0.4rem 0 0;
@@ -119,6 +120,22 @@ const middle = Math.floor(heroList.length / 2);
   .hero-word {
     display: block;
     white-space: pre;
+  }
+  /* Letter boxes built by src/motion/home-hero.ts (hence :global): each box
+     takes its letter's width and overlays a code glyph centred on it. */
+  .hero-word :global(.hero-ch) {
+    position: relative;
+    display: inline-block;
+  }
+  .hero-word :global(.hero-ch-letter) {
+    display: inline-block;
+  }
+  .hero-word :global(.hero-ch-glyph) {
+    position: absolute;
+    inset: 0;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
   }
   .hero-rule {
     position: absolute;

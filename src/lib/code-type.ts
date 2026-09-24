@@ -10,7 +10,11 @@ const SWAPS: Record<string, string> = { O: '0', I: '1', E: '3', A: '4' };
 
 type Random = () => number;
 
-const glyph = (random: Random) => CODE_GLYPHS[Math.floor(random() * CODE_GLYPHS.length)];
+/** A code glyph to show in place of `replacing` (never the same character). */
+export function randomGlyph(random: Random = Math.random, replacing?: string): string {
+  const pool = replacing ? CODE_GLYPHS.replace(replacing, '') : CODE_GLYPHS;
+  return pool[Math.floor(random() * pool.length)];
+}
 
 /** Every spelling of `word` with exactly one letter swapped for its code digit. */
 export function codeVariants(word: string): string[] {
@@ -30,16 +34,7 @@ export function pickVariant(word: string, random: Random = Math.random): string 
   return variants.length > 0 ? variants[Math.floor(random() * variants.length)] : word;
 }
 
-/** `target` with its first `revealed` characters shown and the rest as code glyphs. */
-export function scrambleFrame(target: string, revealed: number, random: Random = Math.random): string {
-  return [...target].map((ch, i) => (i < revealed || ch === ' ' ? ch : glyph(random))).join('');
-}
-
-/** `text` with one character (never the first, never a space) swapped for a glyph. */
-export function flickerFrame(text: string, random: Random = Math.random): string {
-  const chars = [...text];
-  const slots = chars.flatMap((ch, i) => (i > 0 && ch !== ' ' ? [i] : []));
-  if (slots.length === 0) return text;
-  chars[slots[Math.floor(random() * slots.length)]] = glyph(random);
-  return chars.join('');
+/** Indexes that may flicker: every character after the first, except spaces. */
+export function flickerSlots(text: string): number[] {
+  return [...text].flatMap((ch, i) => (i > 0 && ch !== ' ' ? [i] : []));
 }

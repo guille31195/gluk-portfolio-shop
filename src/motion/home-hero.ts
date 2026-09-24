@@ -1,12 +1,16 @@
 // Home opening (spec §10): numerals and footnote fade in, the words rise from
-// behind a mask one after another while decoding from code glyphs into their
-// resting spelling (one letter in code, e.g. T1NTA), and the rupture rule
-// draws across the middle word. At rest a letter flickers now and then; on a
-// fine pointer, hovering a word re-decodes it. Scrolling away drifts the list
-// up slightly slower than the page. Reduced motion: fades only, no scramble.
+// behind a mask one after another while each letter resolves from a faint code
+// glyph (fading and un-blurring left to right) into the word's resting
+// spelling, one letter in code (T1NTA); the rupture rule draws across the
+// middle word. At rest a letter now and then crossfades to a glyph and back.
+// Hovering a word (fine pointer) softly re-decodes it and eases the backdrop
+// into that word's mood; without hover the moods follow the hero's scroll.
+// Scrolling away drifts the list up slightly slower than the page.
+// Reduced motion: fades only, resting spelling, still backdrop.
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { flickerFrame, pickVariant, scrambleFrame } from '../lib/code-type';
+import { flickerSlots, pickVariant, randomGlyph } from '../lib/code-type';
+import { createHomeBackdrop } from './home-backdrop';
 import type { MotionEnv } from './lifecycle';
 import { FINE_POINTER_QUERY } from './media';
 import { DURATION, EASE, HERO_DECODE, HERO_DRIFT, HERO_INTRO } from './tokens';
@@ -14,33 +18,48 @@ import { DURATION, EASE, HERO_DECODE, HERO_DRIFT, HERO_INTRO } from './tokens';
 gsap.registerPlugin(ScrollTrigger);
 
 interface DecodeWord {
-  el: HTMLElement;
+  el: HTMLElement; // [data-hero-glyphs]
   plain: string;
   resting: string;
-  tween?: gsap.core.Tween;
+  letters: HTMLElement[];
+  glyphs: HTMLElement[];
+  anim?: gsap.core.Timeline; // the running flicker or re-decode
 }
 
-const decoding = (word: DecodeWord) => Boolean(word.tween?.isActive());
+const busy = (w: DecodeWord) => Boolean(w.anim?.isActive());
+const blurred = (px: number) => `blur(${px}px)`;
 
-// Resolves `word` from glyphs to its resting spelling, reshuffling every tick.
-function decode(word: DecodeWord): gsap.core.Tween {
-  const state = { p: 0 };
-  let last = -Infinity;
-  word.tween = gsap.to(state, {
-    p: 1,
-    duration: HERO_DECODE.duration,
-    ease: 'none',
-    onUpdate() {
-      const now = this.time();
-      if (now - last < HERO_DECODE.tick) return;
-      last = now;
-      word.el.textContent = scrambleFrame(word.resting, Math.floor(state.p * word.resting.length));
-    },
-    onComplete() {
-      word.el.textContent = word.resting;
-    },
+// Splits the word into letter boxes, each holding its resting letter and a
+// glyph overlaid on it. Boxes take the letter's width, so nothing reflows.
+function splitLetters(w: DecodeWord): void {
+  w.el.textContent = '';
+  for (const ch of w.resting) {
+    const box = document.createElement('span');
+    box.className = 'hero-ch';
+    const letter = document.createElement('span');
+    letter.className = 'hero-ch-letter';
+    letter.textContent = ch;
+    const glyph = document.createElement('span');
+    glyph.className = 'hero-ch-glyph';
+    glyph.textContent = ch === ' ' ? '' : randomGlyph();
+    box.append(letter, glyph);
+    w.el.append(box);
+    w.letters.push(letter);
+    w.glyphs.push(glyph);
+  }
+}
+
+// Letters resolve left to right across `span` seconds; each glyph is
+// reshuffled once midway through its wait so the code reads as alive.
+function resolve(tl: gsap.core.Timeline, w: DecodeWord, at: number, span: number, letterDur: number): void {
+  const n = w.letters.length;
+  w.letters.forEach((letter, j) => {
+    const t = at + (n > 1 ? (span * j) / (n - 1) : 0);
+    const glyph = w.glyphs[j];
+    if (t - at > 0.3) tl.call(() => void (glyph.textContent &&= randomGlyph(Math.random, glyph.textContent)), [], at + (t - at) / 2);
+    tl.to(letter, { autoAlpha: 1, filter: blurred(0), duration: letterDur, ease: HERO_DECODE.ease, clearProps: 'filter' }, t);
+    tl.to(glyph, { opacity: 0, duration: letterDur * 0.6, ease: HERO_DECODE.ease }, t);
   });
-  return word.tween;
 }
 
 export function setupHomeHero({ reduced }: MotionEnv): (() => void) | void {
@@ -58,7 +77,7 @@ export function setupHomeHero({ reduced }: MotionEnv): (() => void) | void {
     // or teardown starts from the real text, not a code spelling.
     el.dataset.plain ??= el.textContent?.trim() ?? '';
     const plain = el.dataset.plain;
-    return { el, plain, resting: pickVariant(plain) };
+    return { el, plain, resting: pickVariant(plain), letters: [], glyphs: [] };
   });
   const active = decodeWords.filter((w): w is DecodeWord => w !== null);
   const restore = () => active.forEach((w) => (w.el.textContent = w.plain));
@@ -71,7 +90,11 @@ export function setupHomeHero({ reduced }: MotionEnv): (() => void) | void {
     return restore;
   }
 
-  active.forEach((w) => (w.el.textContent = scrambleFrame(w.resting, 0)));
+  active.forEach((w) => {
+    splitLetters(w);
+    gsap.set(w.letters, { autoAlpha: 0, filter: blurred(HERO_DECODE.blur) });
+    gsap.set(w.glyphs, { opacity: HERO_DECODE.glyphOpacity });
+  });
 
   tl.fromTo(intro, { autoAlpha: 0 }, { autoAlpha: 1, duration: DURATION.base, stagger: 0.08 }, 0);
   tl.fromTo(
@@ -80,7 +103,9 @@ export function setupHomeHero({ reduced }: MotionEnv): (() => void) | void {
     { yPercent: 0, duration: DURATION.base, stagger: HERO_INTRO.stagger },
     HERO_INTRO.delay
   );
-  active.forEach((w, i) => tl.add(decode(w), HERO_INTRO.delay + HERO_INTRO.stagger * i));
+  active.forEach((w, i) =>
+    resolve(tl, w, HERO_INTRO.delay + HERO_INTRO.stagger * i, HERO_DECODE.word - HERO_DECODE.letter, HERO_DECODE.letter)
+  );
   if (rule) {
     tl.fromTo(
       rule,
@@ -90,33 +115,52 @@ export function setupHomeHero({ reduced }: MotionEnv): (() => void) | void {
     );
   }
 
-  // The flicker timers and hover tweens start after setup, outside GSAP's
-  // tracked scope, so the returned cleanup stops them.
+  // Everything below starts after setup, outside GSAP's tracked scope, so the
+  // returned cleanup stops it.
   let flickerLoop: number | undefined;
-  let flickerHold: number | undefined;
   tl.eventCallback('onComplete', () => {
     flickerLoop = window.setInterval(() => {
-      const idle = active.filter((w) => !decoding(w));
+      const idle = active.filter((w) => !busy(w));
       if (idle.length === 0) return;
       const w = idle[Math.floor(Math.random() * idle.length)];
-      w.el.textContent = flickerFrame(w.resting);
-      flickerHold = window.setTimeout(() => {
-        if (!decoding(w)) w.el.textContent = w.resting;
-      }, HERO_DECODE.flickerHold * 1000);
+      const slots = flickerSlots(w.resting);
+      if (slots.length === 0) return;
+      const j = slots[Math.floor(Math.random() * slots.length)];
+      const glyph = w.glyphs[j];
+      glyph.textContent = randomGlyph(Math.random, w.resting[j]);
+      const half = HERO_DECODE.flicker / 2;
+      w.anim = gsap
+        .timeline({ defaults: { duration: half, ease: 'sine.inOut' } })
+        .to(w.letters[j], { autoAlpha: 0.1 })
+        .to(glyph, { opacity: 0.8 }, '<')
+        .to(w.letters[j], { autoAlpha: 1 })
+        .to(glyph, { opacity: 0 }, '<');
     }, HERO_DECODE.flickerEvery * 1000);
   });
 
-  const hovers: [HTMLElement, () => void][] = [];
+  const backdrop = createHomeBackdrop();
+  const listeners: [HTMLElement, string, () => void][] = [];
+  const listen = (el: HTMLElement, type: string, fn: () => void) => {
+    el.addEventListener(type, fn);
+    listeners.push([el, type, fn]);
+  };
+
   if (window.matchMedia(FINE_POINTER_QUERY).matches) {
-    words.forEach((wordEl, i) => {
-      const w = decodeWords[i];
-      if (!w) return;
-      const onEnter = () => {
-        if (!decoding(w) && tl.progress() === 1) decode(w);
-      };
-      wordEl.addEventListener('pointerenter', onEnter);
-      hovers.push([wordEl, onEnter]);
+    active.forEach((w, i) => {
+      listen(w.el, 'pointerenter', () => {
+        backdrop?.toMood(i, w.el);
+        if (busy(w) || tl.progress() < 1) return;
+        w.glyphs.forEach((g, j) => (g.textContent = w.resting[j] === ' ' ? '' : randomGlyph()));
+        const dim = HERO_DECODE.redecode * 0.3;
+        w.anim = gsap.timeline();
+        w.anim.to(w.letters, { autoAlpha: 0.15, filter: blurred(HERO_DECODE.blur / 2), duration: dim, stagger: dim / w.letters.length, ease: 'sine.in' });
+        w.anim.to(w.glyphs, { opacity: HERO_DECODE.glyphOpacity, duration: dim, stagger: dim / w.letters.length }, 0);
+        resolve(w.anim, w, dim, HERO_DECODE.redecode - dim - HERO_DECODE.letter / 2, HERO_DECODE.letter / 2);
+      });
     });
+    if (list) listen(list, 'pointerleave', () => backdrop?.rest());
+  } else if (backdrop) {
+    backdrop.scrub(hero);
   }
 
   if (list) {
@@ -129,9 +173,9 @@ export function setupHomeHero({ reduced }: MotionEnv): (() => void) | void {
 
   return () => {
     window.clearInterval(flickerLoop);
-    window.clearTimeout(flickerHold);
-    active.forEach((w) => w.tween?.kill());
-    hovers.forEach(([el, onEnter]) => el.removeEventListener('pointerenter', onEnter));
+    active.forEach((w) => w.anim?.kill());
+    listeners.forEach(([el, type, fn]) => el.removeEventListener(type, fn));
+    backdrop?.cleanup();
     restore();
   };
 }

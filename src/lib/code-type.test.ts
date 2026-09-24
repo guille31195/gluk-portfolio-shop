@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CODE_GLYPHS, codeVariants, flickerFrame, pickVariant, scrambleFrame } from './code-type';
-
-// Deterministic stand-in for Math.random: cycles through the given values.
-const seq = (...values: number[]) => {
-  let i = 0;
-  return () => values[i++ % values.length];
-};
+import { CODE_GLYPHS, codeVariants, flickerSlots, pickVariant, randomGlyph } from './code-type';
 
 describe('codeVariants', () => {
   it('swaps exactly one legible letter for its code digit', () => {
@@ -36,38 +30,24 @@ describe('pickVariant', () => {
   });
 });
 
-describe('scrambleFrame', () => {
-  it('keeps the revealed prefix and fills the rest with code glyphs', () => {
-    const frame = scrambleFrame('TINTA', 2, seq(0, 0.5, 0.99));
-    expect(frame.slice(0, 2)).toBe('TI');
-    expect(frame).toHaveLength(5);
-    for (const ch of frame.slice(2)) expect(CODE_GLYPHS).toContain(ch);
+describe('randomGlyph', () => {
+  it('draws from the code glyph set', () => {
+    expect(randomGlyph(() => 0)).toBe(CODE_GLYPHS[0]);
+    expect(randomGlyph(() => 0.999)).toBe(CODE_GLYPHS[CODE_GLYPHS.length - 1]);
   });
 
-  it('is the target once fully revealed', () => {
-    expect(scrambleFrame('CÓD1GO', 6, Math.random)).toBe('CÓD1GO');
-    expect(scrambleFrame('CÓD1GO', 99, Math.random)).toBe('CÓD1GO');
-  });
-
-  it('preserves spaces so multi-word lines keep their shape', () => {
-    expect(scrambleFrame('OBRA VIVA', 0, () => 0)[4]).toBe(' ');
+  it('never returns the character it replaces', () => {
+    expect(randomGlyph(() => 0, '0')).not.toBe('0');
   });
 });
 
-describe('flickerFrame', () => {
-  it('swaps one character after the first for a glyph', () => {
-    const frame = flickerFrame('TINTA', seq(0, 0));
-    expect(frame[0]).toBe('T');
-    expect(frame).toHaveLength(5);
-    const changed = [...frame].filter((ch, i) => ch !== 'TINTA'[i]);
-    expect(changed).toHaveLength(1);
-    expect(CODE_GLYPHS).toContain(changed[0]);
+describe('flickerSlots', () => {
+  it('lists every character after the first that can flicker', () => {
+    expect(flickerSlots('TINTA')).toEqual([1, 2, 3, 4]);
   });
 
-  it('leaves one-letter words and spaces alone', () => {
-    expect(flickerFrame('A', () => 0)).toBe('A');
-    const frame = flickerFrame('A B', () => 0.5);
-    expect(frame.slice(0, 2)).toBe('A ');
-    expect(CODE_GLYPHS).toContain(frame[2]);
+  it('skips spaces and one-letter words', () => {
+    expect(flickerSlots('A B')).toEqual([2]);
+    expect(flickerSlots('A')).toEqual([]);
   });
 });

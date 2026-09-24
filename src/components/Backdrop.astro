@@ -1,6 +1,8 @@
 ---
 // Fixed full-screen background: a grainy brand gradient field, or the dim
-// "veil" behind artwork (spec §4). Never animated.
+// "veil" behind artwork (spec §4). Still on every page except Home, whose
+// hero shifts the field's mood (src/motion/home-backdrop.ts) by moving the
+// field layer and fading the glow/shade layers — all idle at opacity 0.
 export type BackdropKind = 'field-1' | 'field-2' | 'field-3' | 'veil';
 
 interface Props {
@@ -10,7 +12,11 @@ interface Props {
 const { kind } = Astro.props;
 const image = kind === 'veil' ? '/brand/veil-1.webp' : `/brand/${kind}.webp`;
 ---
-<div class:list={['backdrop', { 'backdrop--veil': kind === 'veil' }]} style={`--backdrop-image: url(${image})`} aria-hidden="true">
+<div class:list={['backdrop', { 'backdrop--veil': kind === 'veil' }]} style={`--backdrop-image: url(${image})`} aria-hidden="true" data-backdrop>
+  <div class="backdrop-field" data-backdrop-field></div>
+  <div class="backdrop-glow backdrop-glow--warm" data-backdrop-warm></div>
+  <div class="backdrop-glow backdrop-glow--cool" data-backdrop-cool></div>
+  <div class="backdrop-shade" data-backdrop-shade></div>
   <div class="backdrop-grain"></div>
 </div>
 
@@ -20,16 +26,47 @@ const image = kind === 'veil' ? '/brand/veil-1.webp' : `/brand/${kind}.webp`;
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    background: var(--color-black) var(--backdrop-image) center / cover no-repeat;
+    overflow: hidden;
+    background: var(--color-black);
+  }
+  .backdrop-field {
+    position: absolute;
+    inset: 0;
+    background: var(--backdrop-image) center / cover no-repeat;
+    will-change: transform;
+  }
+  .backdrop-glow,
+  .backdrop-shade {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+  }
+  /* Glows sit at --glow-x/--glow-y, which the Home motion points at the
+     hovered word. */
+  .backdrop-glow {
+    --glow-x: 30%;
+    --glow-y: 50%;
+    mix-blend-mode: screen;
+  }
+  .backdrop-glow--warm {
+    background: radial-gradient(60vmax 45vmax at var(--glow-x) var(--glow-y), var(--color-orange), transparent 70%);
+  }
+  .backdrop-glow--cool {
+    background: radial-gradient(60vmax 45vmax at var(--glow-x) var(--glow-y), var(--color-blue), transparent 70%);
+  }
+  .backdrop-shade {
+    background: var(--color-black);
   }
   .backdrop--veil::before {
     content: '';
     position: absolute;
     inset: 0;
+    z-index: 1; /* above the field layer, below the grain */
     background: var(--veil-wash);
   }
   .backdrop-grain {
     position: absolute;
+    z-index: 2;
     inset: 0;
     opacity: 0.16;
     mix-blend-mode: overlay;
