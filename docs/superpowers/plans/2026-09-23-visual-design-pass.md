@@ -5237,7 +5237,7 @@ Syntax check (no network, no writes): `node --check scripts/seed-design-content.
 
 - [ ] **Step 2b: Tattoo photo upload script**
 
-Tattoo photos: `C:/Users/Guillermo/Desktop/cuadros HD/tattoos` (31 JPEGs checked 2026-09-24, 1200–4284 px wide, most with iPhone EXIF rotation, which `.rotate()` applies). The files have random iPhone names, so upload order = file-name order unless Guillermo renames them (e.g. `01.jpg`, `02.jpg`…) or picks a subset first. `scripts/seed-tattoo-images.mjs`:
+Tattoo photos: `C:/Users/Guillermo/Desktop/cuadros HD/tattoos` (31 JPEGs checked 2026-09-24, 1200–4284 px wide, most with iPhone EXIF rotation, which `.rotate()` applies). Guillermo asked Claude to choose: 8 photos, listed in `SELECTION` below in display order. `scripts/seed-tattoo-images.mjs`:
 ```js
 // Uploads every image in TATTOO_DIR to Tattoo Info (spec §5.6), in file-name order.
 // Idempotent: Sanity stores identical files once, and refs already on the document
@@ -5313,7 +5313,7 @@ Tell Guillermo exactly what the seed writes to the live `production` dataset (4 
 - `grep -l "gallery-halo" dist/artwork/*/index.html` → johnny-efectivo, violenta-i, violenta-ii
 - `/about` shows portrait #82.
 
-The tattoo upload is a separate run with its own OK, after Guillermo settles which photos and in what order: `TATTOO_DIR="C:/Users/Guillermo/Desktop/cuadros HD/tattoos" npm run seed:tattoo`; afterwards `/tattoo` shows the photos. After the seed, `/journal` lists "Carretera margariteña" (22 Sep 2026) linking to Substack.
+The tattoo upload (the 8 selected photos) is a separate run with its own OK: `TATTOO_DIR="C:/Users/Guillermo/Desktop/cuadros HD/tattoos" npm run seed:tattoo`; afterwards `/tattoo` shows the photos. After the seed, `/journal` lists "Carretera margariteña" (22 Sep 2026) linking to Substack.
 
 ---
 
