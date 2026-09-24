@@ -1592,7 +1592,7 @@ describe('groupIntoRooms', () => {
     expect(rooms.map((r) => [r.numeral, r.name, r.kind, r.works.map((w) => w.slug)])).toEqual([
       ['I', 'Motopirueta', 'series', ['moto-1', 'moto-2']],
       ['II', 'Violenta', 'diptych', ['violenta-i', 'violenta-ii']],
-      ['III', 'Standalone works', 'standalone', ['johnny', 'bajale']],
+      ['III', 'Standalone works', 'standalone', ['bajale', 'johnny']],
     ]);
   });
 
@@ -1603,6 +1603,17 @@ describe('groupIntoRooms', () => {
       art('c', { series: moto, seriesPosition: 1 }),
     ]);
     expect(rooms[0].works.map((w) => w.slug)).toEqual(['c', 'a', 'b']);
+  });
+
+  it('orders standalone works by year (newest first, missing years last), then by title', () => {
+    const rooms = groupIntoRooms([
+      art('perdi', { title: 'Perdí el coco' }),
+      art('johnny', { title: 'Johnny Efectivo' }),
+      art('old', { title: 'Zeta', year: 2019 }),
+      art('bajale', { title: 'Bájale 2 Gallito' }),
+      art('new', { title: 'Alfa', year: 2024 }),
+    ]);
+    expect(rooms[0].works.map((w) => w.slug)).toEqual(['new', 'old', 'bajale', 'johnny', 'perdi']);
   });
 
   it('returns one standalone room when no series exist yet', () => {
@@ -1706,6 +1717,14 @@ function byPositionThenTitle(a: Artwork, b: Artwork): number {
   return pa !== pb ? pa - pb : a.title.localeCompare(b.title);
 }
 
+// Standalone works: newest year first, works without a year after, then A–Z.
+// Keeps the order stable on every build while no years are entered.
+function byYearThenTitle(a: Artwork, b: Artwork): number {
+  const ya = a.year ?? Number.NEGATIVE_INFINITY;
+  const yb = b.year ?? Number.NEGATIVE_INFINITY;
+  return ya !== yb ? yb - ya : a.title.localeCompare(b.title);
+}
+
 export function groupIntoRooms(artworks: Artwork[]): Room[] {
   const series = new Map<string, { order: number; room: Omit<Room, 'numeral'> }>();
   const standalone: Artwork[] = [];
@@ -1726,7 +1745,7 @@ export function groupIntoRooms(artworks: Artwork[]): Room[] {
     .map((entry) => ({ ...entry.room, works: [...entry.room.works].sort(byPositionThenTitle) }));
   const rooms: Omit<Room, 'numeral'>[] =
     standalone.length > 0
-      ? [...ordered, { key: STANDALONE_KEY, name: 'Standalone works', kind: 'standalone', works: standalone }]
+      ? [...ordered, { key: STANDALONE_KEY, name: 'Standalone works', kind: 'standalone', works: [...standalone].sort(byYearThenTitle) }]
       : ordered;
   return rooms.map((room, i) => ({ ...room, numeral: toRoman(i + 1) }));
 }
