@@ -6,7 +6,7 @@ import { CARD_WIDTH, CARD_WIDTHS, imageSrcset, sizedImage } from '../lib/image-u
 const { featuredWorks } = await getHomePage();
 const portrait = null as null | { src: string; srcset: string; alt: string; focalPoint: string };
 ---
-<BaseLayout title="Home" overlayNav={portrait !== null}>
+<BaseLayout title="Home">
   <div data-motion-page="home">
     <section class:list={['hero', { 'hero--photo': portrait }]} data-hero>
       {portrait && (

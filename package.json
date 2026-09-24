@@ -10,7 +10,8 @@
     "check": "astro check",
     "test": "vitest run",
     "seed:artworks": "node --env-file=.env scripts/seed-artworks.mjs",
-    "seed:home": "node --env-file=.env scripts/seed-home-page.mjs"
+    "seed:home": "node --env-file=.env scripts/seed-home-page.mjs",
+    "brand:assets": "node scripts/build-brand-assets.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^4.1.0",

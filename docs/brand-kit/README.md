@@ -47,3 +47,8 @@ Both available on Google Fonts.
 ## Not Downloaded
 
 Application mockups (business cards, envelopes, storefront, etc.) and the Family B assets were left on the source page — not needed for the site build. Re-visit https://mangomartinez.com/gluk if reference is needed later.
+
+## Gradient Fields & Rupture Rule
+
+`fields/` — the three grainy gradient fields and the rupture rule (orange → black → blue) from the
+Family A brand book. `npm run brand:assets` turns them into the optimized files in `public/brand/`.
