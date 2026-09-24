@@ -3,7 +3,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { getHomePage } from '../lib/sanity';
 import { CARD_WIDTH, CARD_WIDTHS, imageSrcset, sizedImage } from '../lib/image-url';
 
-const { portrait, featuredWorks } = await getHomePage();
+const { featuredWorks } = await getHomePage();
+const portrait = null as null | { src: string; srcset: string; alt: string; focalPoint: string };
 ---
 <BaseLayout title="Home" overlayNav={portrait !== null}>
   <div data-motion-page="home">

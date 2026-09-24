@@ -8,7 +8,7 @@ const info = await getTattooInfo();
 <BaseLayout title="Tattoo">
   <section class="page">
     <h1 data-intro>Tattoo</h1>
-    <div data-intro set:html={info.body} />
+    <div data-intro set:html={info.bodyHtml} />
     {info.images.length > 0 && (
       <div class="gallery" data-reveal-stagger>
         {info.images.map((src) => <img src={sizedImage(src, CARD_WIDTH)} alt="" data-reveal />)}

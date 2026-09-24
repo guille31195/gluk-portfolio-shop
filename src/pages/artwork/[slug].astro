@@ -48,7 +48,7 @@ const images = artwork!.images.slice(0, 8);
       <p class="meta" data-intro>{artwork!.year} — {artwork!.dimensions}</p>
       <p data-intro>{artwork!.description}</p>
 
-      {artwork!.availableAsOriginal && (
+      {artwork!.originalStatus === 'available' && (
         <a class="button" href="/contact">Inquire about the original</a>
       )}
 

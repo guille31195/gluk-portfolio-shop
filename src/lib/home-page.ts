@@ -1,72 +1,39 @@
-// Pure mapping for the homePage singleton. Kept free of `sanity:client` so it
-// can be unit-tested; src/lib/sanity.ts supplies the image URL builder and
-// artwork mapper.
+// Pure mapping for the homePage singleton (spec §5.2). Free of `sanity:client`.
 
-export interface RawPortrait {
-  asset: { _ref: string; _type: string } | null;
-  hotspot?: { x: number; y: number } | null;
-}
+export const DEFAULT_HERO_LIST = ['Óleo', 'Tinta', 'Código'] as const;
+export const DEFAULT_HERO_FOOTNOTE = 'Oil, ink and code, put in friction.';
+const MAX_HERO_WORDS = 5;
 
-export interface RawHomePage<RawArt> {
-  portrait: RawPortrait | null;
-  portraitAlt: string | null;
-  // `featuredWorks[]->` yields null for references to deleted/unpublished artworks.
-  featuredWorks: (RawArt | null)[] | null;
-}
-
-export interface Portrait {
-  src: string;
-  srcset: string;
-  alt: string;
-  focalPoint: string;
+export interface RawHomePage {
+  heroList: (string | null)[] | null;
+  heroFootnote: string | null;
+  // `featuredWorks[]->slug.current` yields null for deleted/unpublished artworks.
+  featuredSlugs: (string | null)[] | null;
 }
 
 export interface HomePage<Art> {
-  portrait: Portrait | null;
+  heroList: string[];
+  heroFootnote: string;
   featuredWorks: Art[];
 }
 
-export interface HomePageDeps<RawArt, Art> {
-  portraitUrl: (portrait: RawPortrait, width: number) => string;
-  mapArtwork: (raw: RawArt) => Art;
-}
-
-export const PORTRAIT_WIDTHS = [640, 1024, 1600, 2400] as const;
-const PORTRAIT_DEFAULT_WIDTH = 1600;
-const PORTRAIT_FALLBACK_ALT = 'GLUK';
-
-function toPercent(fraction: number): string {
-  return `${Math.round(fraction * 1000) / 10}%`;
-}
-
-export function focalPoint(hotspot: RawPortrait['hotspot']): string {
-  if (!hotspot) return '50% 50%';
-  return `${toPercent(hotspot.x)} ${toPercent(hotspot.y)}`;
-}
-
-function mapPortrait<RawArt, Art>(
-  raw: RawHomePage<RawArt>,
-  deps: HomePageDeps<RawArt, Art>
-): Portrait | null {
-  const portrait = raw.portrait;
-  if (!portrait?.asset) return null;
+export function mapHomePage<Art extends { slug: string }>(raw: RawHomePage | null, artworks: Art[]): HomePage<Art> {
+  const words = (raw?.heroList ?? [])
+    .map((word) => word?.trim() ?? '')
+    .filter((word) => word.length > 0)
+    .slice(0, MAX_HERO_WORDS);
+  const bySlug = new Map(artworks.map((art) => [art.slug, art]));
+  const seen = new Set<string>();
+  const featuredWorks: Art[] = [];
+  for (const slug of raw?.featuredSlugs ?? []) {
+    const art = slug ? bySlug.get(slug) : undefined;
+    if (!art || seen.has(art.slug)) continue;
+    seen.add(art.slug);
+    featuredWorks.push(art);
+  }
   return {
-    src: deps.portraitUrl(portrait, PORTRAIT_DEFAULT_WIDTH),
-    srcset: PORTRAIT_WIDTHS.map((w) => `${deps.portraitUrl(portrait, w)} ${w}w`).join(', '),
-    alt: raw.portraitAlt?.trim() || PORTRAIT_FALLBACK_ALT,
-    focalPoint: focalPoint(portrait.hotspot),
-  };
-}
-
-export function mapHomePage<RawArt, Art>(
-  raw: RawHomePage<RawArt> | null,
-  deps: HomePageDeps<RawArt, Art>
-): HomePage<Art> {
-  if (!raw) return { portrait: null, featuredWorks: [] };
-  return {
-    portrait: mapPortrait(raw, deps),
-    featuredWorks: (raw.featuredWorks ?? [])
-      .filter((work): work is RawArt => work !== null)
-      .map(deps.mapArtwork),
+    heroList: words.length > 0 ? words : [...DEFAULT_HERO_LIST],
+    heroFootnote: raw?.heroFootnote?.trim() || DEFAULT_HERO_FOOTNOTE,
+    featuredWorks,
   };
 }
