@@ -17,5 +17,6 @@ export const REVEAL_START = 'top 85%'; // ScrollTrigger start for reveals
 // Cursor trailing: quicker and softer than reveals so it feels attached to the pointer.
 export const CURSOR_TRAIL = { duration: 0.35, ease: 'power3.out' } as const;
 
-// Home hero opening: text starts shortly after the photo begins settling.
-export const HERO_INTRO = { delay: 0.2, stagger: 0.3 } as const;
+// Home hero opening (spec §10): the list rises word by word, ~1.5 s in total.
+export const HERO_INTRO = { delay: 0.1, stagger: 0.15 } as const;
+export const HERO_DRIFT = 12; // % the hero list drifts up while scrolling away

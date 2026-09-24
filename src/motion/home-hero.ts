@@ -1,40 +1,58 @@
-// Home opening: the portrait settles from a slight zoom while "GLUK" and the
-// tagline fade up; scrolling away scrubs the photo into a gentle zoom-and-fade
-// with the title drifting up faster (parallax). Reduced motion: text fades only.
+// Home opening (spec §10): numerals and footnote fade in, the words rise from
+// behind a mask one after another, the rupture rule draws across the middle
+// word, and the outlined last word wipes in. Scrolling away drifts the list up
+// slightly slower than the page. Reduced motion: fades only.
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import type { MotionEnv } from './lifecycle';
-import { DURATION, EASE, HERO_INTRO, REVEAL_DISTANCE } from './tokens';
+import { DURATION, EASE, HERO_DRIFT, HERO_INTRO } from './tokens';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function setupHomeHero({ reduced }: MotionEnv): void {
   const hero = document.querySelector<HTMLElement>('[data-hero]');
   if (!hero) return;
-  const media = hero.querySelector<HTMLElement>('[data-hero-media]');
-  const image = hero.querySelector<HTMLElement>('[data-hero-image]');
-  const text = hero.querySelector<HTMLElement>('[data-hero-text]');
   const intro = gsap.utils.toArray<HTMLElement>(hero.querySelectorAll('[data-hero-intro]'));
+  const words = gsap.utils.toArray<HTMLElement>(hero.querySelectorAll('[data-hero-word]'));
+  const outline = hero.querySelector<HTMLElement>('[data-hero-outline]');
+  const rule = hero.querySelector<HTMLElement>('[data-hero-rule]');
+  const list = hero.querySelector<HTMLElement>('[data-hero-list]');
 
-  const opening = gsap.timeline({ defaults: { ease: EASE } });
-  // The portrait is the LCP element: never hide it, only settle its scale.
-  if (image && !reduced) {
-    opening.fromTo(image, { scale: 1.08 }, { scale: 1, duration: DURATION.slow }, 0);
+  const tl = gsap.timeline({ defaults: { ease: EASE } });
+  if (reduced) {
+    tl.fromTo([...intro, ...words], { autoAlpha: 0 }, { autoAlpha: 1, duration: DURATION.base, stagger: HERO_INTRO.stagger });
+    if (rule) tl.fromTo(rule, { autoAlpha: 0 }, { autoAlpha: 1, duration: DURATION.base }, 0);
+    return;
   }
-  if (intro.length > 0) {
-    opening.fromTo(
-      intro,
-      { autoAlpha: 0, y: reduced ? 0 : REVEAL_DISTANCE },
-      { autoAlpha: 1, y: 0, duration: DURATION.slow, stagger: HERO_INTRO.stagger },
-      HERO_INTRO.delay
+
+  tl.fromTo(intro, { autoAlpha: 0 }, { autoAlpha: 1, duration: DURATION.base, stagger: 0.08 }, 0);
+  tl.fromTo(
+    words,
+    { autoAlpha: 1, yPercent: 110 },
+    { yPercent: 0, duration: DURATION.base, stagger: HERO_INTRO.stagger },
+    HERO_INTRO.delay
+  );
+  if (rule) {
+    tl.fromTo(
+      rule,
+      { autoAlpha: 1, scaleX: 0, transformOrigin: '0% 50%' },
+      { scaleX: 1, duration: DURATION.base },
+      HERO_INTRO.delay + HERO_INTRO.stagger
     );
   }
-
-  if (reduced || !media || !text) return;
-  gsap
-    .timeline({
+  if (outline) {
+    tl.fromTo(
+      outline,
+      { clipPath: 'inset(0% 100% 0% 0%)' },
+      { clipPath: 'inset(0% 0% 0% 0%)', duration: DURATION.base },
+      HERO_INTRO.delay + HERO_INTRO.stagger * 2
+    );
+  }
+  if (list) {
+    gsap.to(list, {
+      yPercent: -HERO_DRIFT,
+      ease: 'none',
       scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true },
-    })
-    .to(media, { scale: 1.12, autoAlpha: 0, ease: 'none' }, 0)
-    .to(text, { yPercent: -60, autoAlpha: 0, ease: 'none' }, 0);
+    });
+  }
 }
