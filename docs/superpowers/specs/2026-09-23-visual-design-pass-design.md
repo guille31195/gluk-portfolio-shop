@@ -184,7 +184,7 @@ OK at run time):**
   Pobrecita la vaquita (original + invertido). Standalone: Johnny Efectivo, Perdí el coco en
   un pueblo caribeño, Bájale 2 Gallito.
 - `siteSettings`: gluk.caribe@gmail.com, `gluk______`, Ciudad de México.
-- `aboutPage`: shoot #82 portrait, empty credit; text comes from the BIO.pdf defaults.
+- `aboutPage`: shoot #82 portrait, credit `@topomaseda` (links to his Instagram); text comes from the BIO.pdf defaults.
 - Delivered as an idempotent script (same pattern as `scripts/seed-artworks.mjs`).
 
 ## 8. Live data

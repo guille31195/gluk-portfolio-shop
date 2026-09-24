@@ -410,7 +410,7 @@ Note: the deployed Studio only shows these after `npx sanity deploy` (post-merge
   export function mediumLabel(medium: Medium): string; // 'Oil painting'
   ```
 - `src/lib/home-page.ts`: `DEFAULT_HERO_LIST`, `DEFAULT_HERO_FOOTNOTE`, `interface RawHomePage { heroList; heroFootnote; featuredSlugs }`, `interface HomePage<Art> { heroList: string[]; heroFootnote: string; featuredWorks: Art[] }`, `mapHomePage<Art extends { slug: string }>(raw, artworks: Art[]): HomePage<Art>`.
-- `src/lib/about-page.ts`: `DEFAULT_ABOUT`, `focalPoint(hotspot)`, `interface AboutPortrait { src; srcset; alt; focalPoint }`, `interface AboutPage { portrait: AboutPortrait | null; statement: string; bodyHtml: string; photoCredit: string | null }`, `ABOUT_PORTRAIT_WIDTHS`, `mapAboutPage(raw, deps: { imageUrl(image, width): string; toHtml(blocks: unknown[]): string }): AboutPage`.
+- `src/lib/about-page.ts`: `DEFAULT_ABOUT`, `focalPoint(hotspot)`, `interface AboutPortrait { src; srcset; alt; focalPoint }`, `interface AboutPage { portrait: AboutPortrait | null; statement: string; bodyHtml: string; photoCredit: string | null; photoCreditUrl: string | null }`, `ABOUT_PORTRAIT_WIDTHS`, `mapAboutPage(raw, deps: { imageUrl(image, width): string; toHtml(blocks: unknown[]): string }): AboutPage`.
 - `src/lib/site-settings.ts`: `DEFAULT_SITE_SETTINGS`, `interface SiteSettings { email; instagramHandle; instagramUrl; studioCity }`, `mapSiteSettings(raw): SiteSettings`.
 - `src/lib/tattoo-info.ts`: `interface TattooInfo { statement: string | null; process: string[]; bodyHtml: string; images: string[] }`, `mapTattooInfo(raw, deps: { urlFor; toHtml }): TattooInfo`.
 - `src/lib/sanity.ts` exports: everything above plus `getAllArtworks(): Promise<Artwork[]>`, `getArtworksByMedium(m)`, `getArtworkBySlug(slug)`, `getHomePage(): Promise<HomePage<Artwork>>`, `getAboutPage()`, `getSiteSettings()`, `getTattooInfo()`, `getAllJournalPosts()`, `getJournalPostBySlug()`, `formatMedium` (kept), `JournalPost` type.
@@ -585,6 +585,7 @@ describe('mapAboutPage', () => {
       statement: DEFAULT_ABOUT.statement,
       bodyHtml: DEFAULT_ABOUT_BODY_HTML,
       photoCredit: null,
+      photoCreditUrl: null,
     });
   });
 
@@ -620,6 +621,13 @@ describe('mapAboutPage', () => {
     expect(result.statement).toBe('Custom statement');
     expect(result.bodyHtml).toBe('<p>1 blocks</p>');
     expect(result.photoCredit).toBe('Someone');
+    expect(result.photoCreditUrl).toBeNull();
+  });
+
+  it('links an Instagram handle credit', () => {
+    const result = mapAboutPage({ photoCredit: ' @topomaseda ' }, deps);
+    expect(result.photoCredit).toBe('@topomaseda');
+    expect(result.photoCreditUrl).toBe('https://www.instagram.com/topomaseda/');
   });
 
   it('treats blank strings and empty body as missing', () => {
@@ -631,6 +639,7 @@ describe('mapAboutPage', () => {
     expect(result.statement).toBe(DEFAULT_ABOUT.statement);
     expect(result.bodyHtml).toBe(DEFAULT_ABOUT_BODY_HTML);
     expect(result.photoCredit).toBeNull();
+    expect(result.photoCreditUrl).toBeNull();
   });
 
   it('falls back to "GLUK" alt text', () => {
@@ -967,6 +976,8 @@ export interface AboutPage {
   statement: string;
   bodyHtml: string;
   photoCredit: string | null;
+  // Set when the credit is an Instagram handle ("@name").
+  photoCreditUrl: string | null;
 }
 
 export interface AboutDeps {
@@ -985,6 +996,8 @@ export function focalPoint(hotspot: RawHotspot | null | undefined): string {
 
 export function mapAboutPage(raw: RawAboutPage | null, deps: AboutDeps): AboutPage {
   const portrait = raw?.portrait;
+  const photoCredit = raw?.photoCredit?.trim() || null;
+  const handle = photoCredit?.match(/^@([A-Za-z0-9._]+)$/)?.[1];
   return {
     portrait: portrait?.asset
       ? {
@@ -996,7 +1009,8 @@ export function mapAboutPage(raw: RawAboutPage | null, deps: AboutDeps): AboutPa
       : null,
     statement: raw?.statement?.trim() || DEFAULT_ABOUT.statement,
     bodyHtml: raw?.body && raw.body.length > 0 ? deps.toHtml(raw.body) : DEFAULT_ABOUT_BODY_HTML,
-    photoCredit: raw?.photoCredit?.trim() || null,
+    photoCredit,
+    photoCreditUrl: handle ? `https://www.instagram.com/${handle}/` : null,
   };
 }
 ```
@@ -4229,7 +4243,11 @@ const about = await getAboutPage();
       <p class="statement" data-intro>{about.statement}</p>
       <RuptureRule weight="thin" class="about-rule" />
       <div class="about-body" data-intro set:html={about.bodyHtml} />
-      {about.photoCredit && <p class="label dim about-credit">Photography — {about.photoCredit}</p>}
+      {about.photoCredit && (
+        <p class="label dim about-credit">
+          Photography — {about.photoCreditUrl ? <a href={about.photoCreditUrl} rel="noopener">{about.photoCredit}</a> : about.photoCredit}
+        </p>
+      )}
     </div>
   </section>
 </BaseLayout>
@@ -4926,6 +4944,7 @@ const FEATURED_SLUGS = [
 const PORTRAIT_DRIVE_ID = '1Om7p2e091hAuBXNyY9hu6XXPNq5mqUWp';
 const PORTRAIT_PATH = process.env.PORTRAIT_PATH;
 const PORTRAIT_ALT = 'Portrait of GLUK in the studio';
+const PHOTO_CREDIT = '@topomaseda';
 
 const slugs = SERIES.flatMap((s) => s.members).concat(FEATURED_SLUGS);
 const artworks = await client.fetch(
@@ -5005,6 +5024,10 @@ if (about?.hasPortrait) {
     .commit();
   console.log(`aboutPage portrait uploaded -> ${asset._id}`);
 }
+
+// Shoot #82 photographer (confirmed by Guillermo 2026-09-24). Never overwrites a credit set in Studio.
+await client.createIfNotExists({ _id: 'aboutPage', _type: 'aboutPage' });
+await client.patch('aboutPage').setIfMissing({ photoCredit: PHOTO_CREDIT }).commit();
 ```
 
 - [ ] **Step 2: Package scripts**
