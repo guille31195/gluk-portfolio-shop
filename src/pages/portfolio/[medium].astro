@@ -1,34 +1,64 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import ArtworkCard from '../../components/ArtworkCard.astro';
-import { MEDIUMS, formatMedium, getArtworksByMedium, type Medium } from '../../lib/sanity';
+import Room from '../../components/Room.astro';
+import RuptureRule from '../../components/RuptureRule.astro';
+import { MEDIUMS, getAllArtworks, mediumLabel, type Medium } from '../../lib/sanity';
+import { groupIntoRooms, mediumCounts } from '../../lib/rooms';
+import { pad2 } from '../../lib/numerals';
 
 export function getStaticPaths() {
   return MEDIUMS.map((medium) => ({ params: { medium } }));
 }
 
 const { medium } = Astro.params as { medium: Medium };
-const artworks = await getArtworksByMedium(medium);
+const all = await getAllArtworks();
+const counts = mediumCounts(all);
+const rooms = groupIntoRooms(all.filter((artwork) => artwork.medium === medium));
 ---
-<BaseLayout title={`Portfolio — ${formatMedium(medium)}`}>
+<BaseLayout title={`Work — ${mediumLabel(medium)}`}>
   <section class="page">
-    <h1 data-intro>{formatMedium(medium)}</h1>
-    <div class="grid" data-reveal-stagger>
-      {artworks.map((artwork) => (
-        <ArtworkCard artwork={artwork} />
-      ))}
+    <div class="portfolio-head">
+      <h1 class="display" data-intro>OBRA</h1>
+      <nav class="filters label" aria-label="Filter by medium" data-intro>
+        <a href="/portfolio"><span class="dim">{pad2(counts.total)}</span> All</a>
+        {counts.mediums.map((entry) => (
+          <a href={`/portfolio/${entry.medium}`} class:list={{ 'is-on': entry.medium === medium }} aria-current={entry.medium === medium ? 'page' : undefined}>
+            <span class="dim">{pad2(entry.count)}</span> {mediumLabel(entry.medium)}
+          </a>
+        ))}
+      </nav>
     </div>
+    <RuptureRule weight="base" class="portfolio-rule" />
+    {rooms.length === 0 && <p class="label dim portfolio-empty">No entries yet</p>}
+    {rooms.map((room) => <Room room={room} />)}
   </section>
 </BaseLayout>
 
 <style>
-  .page {
-    padding: 3rem 2rem;
-    text-transform: capitalize;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  .portfolio-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
     gap: 1.5rem;
+  }
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.6rem;
+  }
+  .filters a {
+    text-decoration: none;
+    opacity: 0.45;
+  }
+  .filters a.is-on,
+  .filters a:hover {
+    opacity: 1;
+  }
+  :global(.portfolio-rule) {
+    margin: 2.4rem 0 1rem;
+  }
+  .portfolio-empty {
+    padding: clamp(3rem, 6vw, 5rem) 0;
   }
 </style>

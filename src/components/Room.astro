@@ -1,0 +1,65 @@
+---
+import Painting from './Painting.astro';
+import { roomCountLabel, type Room } from '../lib/rooms';
+import { pad2, toRoman } from '../lib/numerals';
+import { CARD_WIDTH, CARD_WIDTHS } from '../lib/image-url';
+
+interface Props {
+  room: Room;
+}
+
+const { room } = Astro.props;
+const mark = (i: number) => (room.kind === 'diptych' ? toRoman(i + 1) : pad2(i + 1));
+---
+<section class="room" data-reveal-stagger aria-labelledby={`room-${room.key}`}>
+  <header class="room-label" data-reveal>
+    <p class="mono dim">{room.numeral}</p>
+    <h2 class="room-name" id={`room-${room.key}`}>{room.name}</h2>
+    <p class="label dim">{roomCountLabel(room)}</p>
+  </header>
+  <ul class="room-works">
+    {room.works.map((artwork, i) => (
+      <li data-reveal>
+        <a href={`/artwork/${artwork.slug}`} data-cursor="view" class="room-work">
+          <Painting artwork={artwork} width={CARD_WIDTH} widths={CARD_WIDTHS} sizes="(max-width: 760px) 45vw, 22vw" />
+          <span class="mono room-mark">{room.kind === 'standalone' ? artwork.title : mark(i)}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .room {
+    display: grid;
+    grid-template-columns: minmax(9rem, 14vw) 1fr;
+    gap: clamp(1.5rem, 3vw, 3rem);
+    padding: clamp(3rem, 6vw, 5rem) 0;
+    border-top: var(--rule-hair) solid var(--color-hairline);
+  }
+  .room-name {
+    margin: 0.8rem 0 0.9rem;
+    font-size: clamp(1.3rem, 1rem + 1vw, 2.2rem);
+    letter-spacing: -0.01em;
+  }
+  .room-works {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(11rem, 40vw), 1fr));
+    gap: clamp(1.2rem, 2.4vw, 2.4rem);
+    align-items: end;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .room-work {
+    display: block;
+    text-decoration: none;
+  }
+  .room-mark {
+    display: block;
+    margin-top: 0.9rem;
+  }
+  @media (max-width: 760px) {
+    .room { grid-template-columns: 1fr; }
+  }
+</style>

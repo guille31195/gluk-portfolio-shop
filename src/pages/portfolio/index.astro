@@ -1,39 +1,53 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import ArtworkCard from '../../components/ArtworkCard.astro';
-import { MEDIUMS, formatMedium, getAllArtworks } from '../../lib/sanity';
+import Room from '../../components/Room.astro';
+import RuptureRule from '../../components/RuptureRule.astro';
+import { getAllArtworks, mediumLabel } from '../../lib/sanity';
+import { groupIntoRooms, mediumCounts } from '../../lib/rooms';
+import { pad2 } from '../../lib/numerals';
 
 const artworks = await getAllArtworks();
+const counts = mediumCounts(artworks);
+const rooms = groupIntoRooms(artworks);
 ---
-<BaseLayout title="Portfolio">
+<BaseLayout title="Work">
   <section class="page">
-    <h1 data-intro>Portfolio</h1>
-    <nav class="medium-filter">
-      {MEDIUMS.map((medium) => (
-        <a href={`/portfolio/${medium}`}>{formatMedium(medium)}</a>
-      ))}
-    </nav>
-    <div class="grid" data-reveal-stagger>
-      {artworks.map((artwork) => (
-        <ArtworkCard artwork={artwork} />
-      ))}
+    <div class="portfolio-head">
+      <h1 class="display" data-intro>OBRA</h1>
+      <nav class="filters label" aria-label="Filter by medium" data-intro>
+        <a href="/portfolio" aria-current="page" class="is-on"><span class="dim">{pad2(counts.total)}</span> All</a>
+        {counts.mediums.map(({ medium, count }) => (
+          <a href={`/portfolio/${medium}`}><span class="dim">{pad2(count)}</span> {mediumLabel(medium)}</a>
+        ))}
+      </nav>
     </div>
+    <RuptureRule weight="base" class="portfolio-rule" />
+    {rooms.map((room) => <Room room={room} />)}
   </section>
 </BaseLayout>
 
 <style>
-  .page {
-    padding: 3rem 2rem;
-  }
-  .medium-filter {
+  .portfolio-head {
     display: flex;
-    gap: 1rem;
-    margin: 1rem 0 2rem;
-    text-transform: capitalize;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
     gap: 1.5rem;
+  }
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.6rem;
+  }
+  .filters a {
+    text-decoration: none;
+    opacity: 0.45;
+  }
+  .filters a.is-on,
+  .filters a:hover {
+    opacity: 1;
+  }
+  :global(.portfolio-rule) {
+    margin: 2.4rem 0 1rem;
   }
 </style>
