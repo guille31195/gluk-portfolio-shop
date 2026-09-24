@@ -1,75 +1,160 @@
 ---
+import NumberedIndex from './NumberedIndex.astro';
+import RuptureRule from './RuptureRule.astro';
+import type { SiteSettings } from '../lib/sanity';
+import { WORDMARK_HEIGHT, WORDMARK_WIDTH } from '../lib/brand';
+
+interface Props {
+  settings: SiteSettings;
+}
+
+const { settings } = Astro.props;
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const links = [
-  { href: '/', label: 'Home' },
-  { href: '/portfolio', label: 'Portfolio' },
-  { href: '/about', label: 'About' },
+  { href: '/portfolio', label: 'Work' },
   { href: '/tattoo', label: 'Tattoo' },
   { href: '/journal', label: 'Journal' },
+  { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
 ];
+const isActive = (href: string) =>
+  path === href || path.startsWith(`${href}/`) || (href === '/portfolio' && path.startsWith('/artwork/'));
 ---
-<nav class="site-nav">
-  <a class="brand" href="/">GLUK</a>
-  <ul>
-    {links.map((link) => (
-      <li><a href={link.href}>{link.label}</a></li>
-    ))}
-  </ul>
-</nav>
+<header class="site-nav">
+  <a class="brand" href="/" aria-label="GLUK — home">
+    <img src="/brand/wordmark-white.png" alt="GLUK" width={WORDMARK_WIDTH} height={WORDMARK_HEIGHT} />
+  </a>
+  <nav class="nav-desktop" aria-label="Main">
+    <ul>
+      {links.map((link) => (
+        <li>
+          <a href={link.href} class:list={{ 'is-active': isActive(link.href) }} aria-current={isActive(link.href) ? 'page' : undefined}>
+            {link.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+  <button class="menu-toggle label" type="button" aria-expanded="false" aria-controls="mobile-menu" data-menu-toggle hidden>
+    <span data-menu-label>Menu</span>
+  </button>
+  <div class="mobile-menu" id="mobile-menu" data-mobile-menu hidden>
+    <NumberedIndex items={links.map((link) => ({ label: link.label, href: link.href, active: isActive(link.href) }))} size="large" />
+    <RuptureRule weight="base" class="mobile-menu-rule" />
+    <a class="label mobile-menu-social" href={settings.instagramUrl} rel="noopener">Instagram</a>
+  </div>
+</header>
+
+<script>
+  import '../scripts/mobile-menu';
+</script>
 
 <style>
   .site-nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.5rem 2rem;
-  }
-  :global(body[data-nav-overlay]) .site-nav {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 2;
-  }
-  .brand {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 1.25rem;
-    text-decoration: none;
-    color: var(--color-black);
-  }
-  .site-nav ul {
+    z-index: 40;
     display: flex;
-    gap: 1.5rem;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--nav-height);
+    padding: 0 var(--gutter);
+  }
+  .brand img {
+    display: block;
+    height: clamp(1.4rem, 2.2vw, 2rem);
+    width: auto;
+  }
+  .nav-desktop ul {
+    display: flex;
+    gap: clamp(1.2rem, 2.4vw, 2.6rem);
     list-style: none;
     margin: 0;
     padding: 0;
   }
-  .site-nav a {
+  .nav-desktop a {
+    font-size: var(--text-label);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
     text-decoration: none;
-    color: var(--color-black);
-  }
-  :global(body[data-nav-overlay]) .site-nav a {
-    color: #fff;
-  }
-  .site-nav ul a {
-    padding-bottom: 2px;
+    padding-bottom: 3px;
     background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0 1px;
-    transition: background-size 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: background-size 0.5s var(--ease-out);
   }
-  .site-nav ul a:hover,
-  .site-nav ul a:focus-visible {
+  .nav-desktop a:hover,
+  .nav-desktop a:focus-visible,
+  .nav-desktop a.is-active {
     background-size: 100% 1px;
   }
-  .site-nav a:hover {
-    color: var(--color-blue);
+  .menu-toggle {
+    display: none;
+    position: relative;
+    z-index: 2;
+    padding: 0.5rem 0;
+    border: 0;
+    background: none;
+    color: var(--color-bone);
+    font: inherit;
+    font-size: var(--text-label);
+    letter-spacing: 0.2em;
+    cursor: pointer;
   }
-  :global(body[data-nav-overlay]) .site-nav a:hover {
-    color: #fff;
+  .mobile-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2.5rem;
+    padding: var(--nav-height) var(--gutter) 3rem;
+    background: var(--color-black) url(/brand/field-1.webp) center / cover no-repeat;
+    animation: menu-in 0.45s var(--ease-out);
+  }
+  .mobile-menu[hidden] {
+    display: none;
+  }
+  .mobile-menu :global(.index-item) {
+    animation: item-in 0.6s var(--ease-out) both;
+  }
+  .mobile-menu :global(.index-item:nth-child(2)) { animation-delay: 0.06s; }
+  .mobile-menu :global(.index-item:nth-child(3)) { animation-delay: 0.12s; }
+  .mobile-menu :global(.index-item:nth-child(4)) { animation-delay: 0.18s; }
+  .mobile-menu :global(.index-item:nth-child(5)) { animation-delay: 0.24s; }
+  .mobile-menu-social {
+    text-decoration: none;
+  }
+  @keyframes menu-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes item-in {
+    from { opacity: 0; transform: translateY(1rem); }
+    to { opacity: 1; transform: none; }
+  }
+  @media (max-width: 760px) {
+    .nav-desktop { display: none; }
+    .menu-toggle { display: block; }
+    .menu-toggle[hidden] { display: none; }
+    .brand { position: relative; z-index: 2; }
+    /* No JavaScript: the toggle stays hidden, so keep the links as a small wrapping row. */
+    .site-nav:has(.menu-toggle[hidden]) {
+      flex-wrap: wrap;
+      height: auto;
+      min-height: var(--nav-height);
+      row-gap: 0.6rem;
+      padding-block: 1rem;
+    }
+    .site-nav:has(.menu-toggle[hidden]) .nav-desktop { display: block; }
+    .site-nav:has(.menu-toggle[hidden]) .nav-desktop ul { flex-wrap: wrap; gap: 0.4rem 1.2rem; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .site-nav ul a {
-      transition: none;
-    }
+    .nav-desktop a { transition: none; }
+    .mobile-menu :global(.index-item) { animation: none; }
+  }
+  :global(html.menu-open) {
+    overflow: hidden;
   }
 </style>
