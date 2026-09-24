@@ -519,7 +519,7 @@ describe('mapHomePage', () => {
 `src/lib/about-page.test.ts`:
 ```ts
 import { describe, it, expect } from 'vitest';
-import { ABOUT_PORTRAIT_WIDTHS, DEFAULT_ABOUT, focalPoint, mapAboutPage } from './about-page';
+import { ABOUT_PORTRAIT_WIDTHS, DEFAULT_ABOUT, DEFAULT_ABOUT_BODY_HTML, focalPoint, mapAboutPage } from './about-page';
 
 const deps = {
   imageUrl: (_image: unknown, width: number) => `https://cdn.test/p.jpg?w=${width}`,
@@ -527,22 +527,25 @@ const deps = {
 };
 
 describe('mapAboutPage', () => {
-  it('uses the brand-book text and no portrait when the document is missing', () => {
+  it('uses the BIO.pdf text and no portrait when the document is missing', () => {
     expect(mapAboutPage(null, deps)).toEqual({
       portrait: null,
       statement: DEFAULT_ABOUT.statement,
-      bodyHtml: `<p>${DEFAULT_ABOUT.body}</p>`,
+      bodyHtml: DEFAULT_ABOUT_BODY_HTML,
       photoCredit: null,
     });
   });
 
-  it('keeps the default text verbatim from the brand book', () => {
-    expect(DEFAULT_ABOUT.statement).toBe(
-      'GLUK is a Caracas-born, Mexico City–based multidisciplinary artist working across oil painting, tattooing and contemporary technologies.'
-    );
-    expect(DEFAULT_ABOUT.body).toBe(
-      'His practice transforms Caribbean symbols, bodily memory and structures of power into images where elegance, tenderness and threat occupy the same surface.'
-    );
+  it('keeps the default text verbatim from BIO.pdf', () => {
+    expect(DEFAULT_ABOUT.statement).toBe('Gluk is a Caribbean artist born in Caracas, Venezuela.');
+    expect(DEFAULT_ABOUT.body).toHaveLength(6);
+    expect(DEFAULT_ABOUT.body[0]).toMatch(/^Disruptive not in terms of subject matter, /);
+    expect(DEFAULT_ABOUT.body[0]).toMatch(/He currently lives and works in Mexico City\.$/);
+    expect(DEFAULT_ABOUT.body[5]).toMatch(/to be touched without being dominated\.$/);
+  });
+
+  it('renders every default body paragraph as its own <p>', () => {
+    expect(DEFAULT_ABOUT_BODY_HTML).toBe(DEFAULT_ABOUT.body.map((p) => `<p>${p}</p>`).join(''));
   });
 
   it('maps a complete document', () => {
@@ -574,7 +577,7 @@ describe('mapAboutPage', () => {
     );
     expect(result.portrait).toBeNull();
     expect(result.statement).toBe(DEFAULT_ABOUT.statement);
-    expect(result.bodyHtml).toBe(`<p>${DEFAULT_ABOUT.body}</p>`);
+    expect(result.bodyHtml).toBe(DEFAULT_ABOUT_BODY_HTML);
     expect(result.photoCredit).toBeNull();
   });
 
@@ -845,14 +848,24 @@ export function mapHomePage<Art extends { slug: string }>(raw: RawHomePage | nul
 
 `src/lib/about-page.ts`:
 ```ts
-// Pure mapping for the aboutPage singleton (spec §5.5). Default text is the
-// brand book's positioning, verbatim, until Guillermo writes his own.
+// Pure mapping for the aboutPage singleton (spec §5.5). Default text is
+// Guillermo's BIO.pdf, verbatim: its first sentence is the statement, the rest
+// is the body (one string per paragraph).
 
 export const DEFAULT_ABOUT = {
-  statement:
-    'GLUK is a Caracas-born, Mexico City–based multidisciplinary artist working across oil painting, tattooing and contemporary technologies.',
-  body: 'His practice transforms Caribbean symbols, bodily memory and structures of power into images where elegance, tenderness and threat occupy the same surface.',
+  statement: 'Gluk is a Caribbean artist born in Caracas, Venezuela.',
+  body: [
+    'Disruptive not in terms of subject matter, but in terms of method and attitude: he articulates ideas using non-traditional media and contemporary technologies alongside oil painting and tattooing. His symbolism, rhythm, and source of consciousness come from the Caribbean, the nucleus from which he approaches identity and representation. He currently lives and works in Mexico City.',
+    'For Gluk, art is neither a neutral nor decorative space. It is a tool for confrontation and, at the same time, for care. Even in his most raw or violent explorations, there is a good intention to sustain something that he fears will be lost if he does not narrate it: a story, a bodily memory, a way of inhabiting the world without asking permission.',
+    'He studied at NYU Shanghai, during which time, at the age of 20, he exhibited at the Yicangart Museum in Shanghai. Subsequently, he lived in Berlin for eight years, where he furthered his training in new media. During that period, in 2020, he produced Onde du Midi at the Louvre Museum (Paris) and developed interdisciplinary collaborations with artists such as Rawayana, Nicola Cruz, and Salomón, among others.',
+    'On canvas, Gluk takes on a central gesture: painting in oil what the canon tends to relegate. By choosing oil—a noble, slow, and demanding medium—he places symbols and iconographies of the Caribbean and its contemporary identity at the heart of the pictorial tradition, elevating them without folklorizing them and shifting clichés from postcards to complex narratives.',
+    'In the technological sphere, he converts data and urban signals into reactive experiences: visualizations, generative systems, and screens that respond to the body and context. He does not oppose painting and technology; he puts them in friction to raise questions about identity, memory, and power.',
+    'His aesthetic is both precise and streetwise: elegant without being domesticated. No matter how harsh or ironic his themes may be, there is an underlying desire for tenderness. For the world—art, the body, the system—to be touched without being dominated.',
+  ],
 } as const;
+
+// Plain text with no markup characters, so it is safe to wrap directly.
+export const DEFAULT_ABOUT_BODY_HTML = DEFAULT_ABOUT.body.map((p) => `<p>${p}</p>`).join('');
 
 export const ABOUT_PORTRAIT_WIDTHS = [640, 960, 1200, 1800] as const;
 const ABOUT_PORTRAIT_DEFAULT_WIDTH = 1200;
@@ -910,7 +923,7 @@ export function mapAboutPage(raw: RawAboutPage | null, deps: AboutDeps): AboutPa
         }
       : null,
     statement: raw?.statement?.trim() || DEFAULT_ABOUT.statement,
-    bodyHtml: raw?.body && raw.body.length > 0 ? deps.toHtml(raw.body) : `<p>${DEFAULT_ABOUT.body}</p>`,
+    bodyHtml: raw?.body && raw.body.length > 0 ? deps.toHtml(raw.body) : DEFAULT_ABOUT_BODY_HTML,
     photoCredit: raw?.photoCredit?.trim() || null,
   };
 }
@@ -4117,11 +4130,17 @@ const about = await getAboutPage();
   .about--portrait {
     grid-template-columns: 44fr 56fr;
   }
+  /* The BIO body runs longer than one screen: the portrait stays pinned at
+     screen height (keeping the close crop) while the text scrolls beside it. */
+  .about-photo {
+    position: sticky;
+    top: 0;
+    align-self: start;
+  }
   .about-photo img {
     display: block;
     width: 100%;
-    height: 100%;
-    min-height: 100svh;
+    height: 100svh;
     object-fit: cover;
   }
   .about-text {
@@ -4144,7 +4163,8 @@ const about = await getAboutPage();
   }
   @media (max-width: 860px) {
     .about--portrait { grid-template-columns: 1fr; }
-    .about-photo img { min-height: 0; height: 70svh; }
+    .about-photo { position: static; }
+    .about-photo img { height: 70svh; }
     .about-text { padding-top: 3rem; }
   }
 </style>
@@ -4153,13 +4173,13 @@ Note: the nav overlays the portrait; the wordmark is white on the photo, which i
 
 - [ ] **Step 2: Gates + visual check**
 
-Run: `npm run check && npm test && npm run build` → all pass. Before the seed there is no portrait: the page shows the text column alone. Screenshot `/about` (1440×900, 390×844); after the seed, compare with `about-v2.html` AB1 (`05 AI/CLAUDE CODE/workspace/about-check2.png`).
+Run: `npm run check && npm test && npm run build` → all pass. Before the seed there is no portrait: the page shows the text column alone. Screenshot `/about` (1440×900, 390×844); after the seed, compare with `about-v2.html` AB1 (`05 AI/CLAUDE CODE/workspace/about-check2.png`). The body is the six BIO.pdf paragraphs: at 1440×900 scroll to the bottom and confirm the portrait stays pinned at full screen height (close crop, not stretched) while the text scrolls.
 
 - [ ] **Step 3: Commit**
 
 ```bash
 git add src/pages/about.astro
-git commit -m "About page: close portrait and brand positioning
+git commit -m "About page: close portrait and BIO text
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```

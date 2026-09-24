@@ -119,9 +119,10 @@ the per-page comparison in §11.
 ### 5.5 About — close portrait (`about-v2.html` AB1)
 - Left: full-height portrait (default shoot #82), cropped close.
 - Right: mono label `Guillermo Carrasquero — GLUK`, large light statement, short rupture
-  rule, body paragraph, `Photography — <name>` credit.
-- Until Guillermo rewrites it, the text is the brand book's positioning verbatim. The
-  final text is out of scope (§12).
+  rule, body paragraphs, `Photography — <name>` credit.
+- The default text is Guillermo's `BIO.pdf`, verbatim (decided 2026-09-24): its first
+  sentence is the statement, the rest is the body (six paragraphs). The portrait stays
+  pinned at screen height while the longer text scrolls beside it.
 
 ### 5.6 Tattoo (`small-pages-v2.html`, "Tattoo")
 - Giant `TATUAJE`, statement beside it, rupture rule, staggered row of tattoo photos,
@@ -179,7 +180,7 @@ OK at run time):**
   Pobrecita la vaquita (original + invertido). Standalone: Johnny Efectivo, Perdí el coco en
   un pueblo caribeño, Bájale 2 Gallito.
 - `siteSettings`: gluk.caribe@gmail.com, `gluk______`, Ciudad de México.
-- `aboutPage`: shoot #82 portrait, brand-book positioning text, empty credit.
+- `aboutPage`: shoot #82 portrait, empty credit; text comes from the BIO.pdf defaults.
 - Delivered as an idempotent script (same pattern as `scripts/seed-artworks.mjs`).
 
 ## 8. Live data
@@ -247,7 +248,6 @@ Budget: home-page JS stays around the current ~52 KB gzipped.
 ## 12. Out of scope
 
 - Stripe checkout for prints (separate plan).
-- Final About text (to be written from Guillermo's `BIO.pdf` in his own words).
 - Tattoo photos, statement and process text (Guillermo adds via Sanity).
 - Photographer credit name.
 - Year, dimensions and print prices for artworks (fields exist; content later).
