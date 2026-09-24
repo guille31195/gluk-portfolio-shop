@@ -10,6 +10,8 @@ import {
   type RawArtwork,
   type RawImage,
 } from './artwork-map';
+import { resolveHalos } from './halo';
+import { measureEdge } from './halo-measure';
 import { mapHomePage, type HomePage, type RawHomePage } from './home-page';
 import { mapAboutPage, type AboutPage, type RawAboutPage } from './about-page';
 import { mapSiteSettings, type RawSiteSettings, type SiteSettings } from './site-settings';
@@ -53,7 +55,17 @@ export async function getAllArtworks(): Promise<Artwork[]> {
   const raw: RawArtwork[] = await sanityClient.fetch(
     `*[_type == "artwork" && ${PUBLISHED}] | order(year desc) ${ARTWORK_PROJECTION}`
   );
-  return raw.map((item) => mapArtwork(item, urlFor));
+  const artworks = raw.map((item) => mapArtwork(item, urlFor));
+  const edges = await Promise.all(artworks.map((artwork) => measureEdge(artwork.images[0] ?? '')));
+  const halos = resolveHalos(
+    artworks.map((artwork, i) => ({
+      slug: artwork.slug,
+      haloSetting: artwork.haloSetting,
+      series: artwork.series ? { slug: artwork.series.slug, halo: artwork.series.halo } : null,
+      edge: edges[i],
+    }))
+  );
+  return artworks.map((artwork) => ({ ...artwork, halo: halos.get(artwork.slug) ?? false }));
 }
 
 export async function getArtworksByMedium(medium: Medium): Promise<Artwork[]> {
