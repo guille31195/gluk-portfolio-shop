@@ -25,7 +25,7 @@ const SERIES = [
     members: ['violenta-i', 'violenta-ii'] },
   { id: 'series-contemplacion-violenta', slug: 'contemplacion-violenta', name: 'Contemplación Violenta', order: 3, kind: 'series',
     members: ['contemplacion-violenta-1', 'contemplacion-violenta-2'] },
-  { id: 'series-pobrecita-la-vaquita', slug: 'pobrecita-la-vaquita', name: 'Pobrecita la vaquita', order: 4, kind: 'series',
+  { id: 'series-pobrecita-la-vaquita', slug: 'pobrecita-la-vaquita', name: 'Pobrecita la vaquita, qué bonita la cartera', order: 4, kind: 'series',
     members: ['pobrecita-la-vaquita-que-bonita-la-cartera', 'pobrecita-la-vaquita-que-bonita-la-cartera-invertido'] },
 ];
 
