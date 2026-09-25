@@ -18,9 +18,9 @@ const settings = await getSiteSettings();
       <a class="mono" href={settings.instagramUrl} rel="noopener" data-intro>Instagram @{settings.instagramHandle}</a>
     </div>
 
-    <form class="contact-form" name="contact" method="POST" action="/contact/thanks" data-netlify="true" netlify-honeypot="bot-field" data-contact-form data-intro>
+    <form class="contact-form" name="contact" method="POST" action="/contact/thanks" data-netlify="true" netlify-honeypot="bot-field" data-astro-reload data-contact-form data-intro>
       <input type="hidden" name="form-name" value="contact" />
-      <p class="visually-hidden"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off" /></label></p>
+      <p class="visually-hidden" aria-hidden="true"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off" /></label></p>
       <fieldset class="interests">
         <legend class="label dim">I'm interested in</legend>
         {INTERESTS.map((interest) => (
@@ -98,6 +98,9 @@ const settings = await getSiteSettings();
   }
   .interests legend {
     margin-bottom: 1rem;
+  }
+  .chip {
+    position: relative;
   }
   .chip input {
     position: absolute;
