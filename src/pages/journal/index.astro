@@ -5,7 +5,7 @@ import { loadJournal } from '../../lib/substack';
 import { pad2 } from '../../lib/numerals';
 
 const settings = await getSiteSettings();
-const posts = await loadJournal(settings.substackUrl);
+const posts = await loadJournal(settings.substackUrl, { required: import.meta.env.JOURNAL_FEED_REQUIRED === 'true' });
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: '2-digit', timeZone: 'UTC' });
 ---

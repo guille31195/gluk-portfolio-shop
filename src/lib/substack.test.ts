@@ -57,20 +57,46 @@ describe('loadJournal', () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
-  it('fetches <origin>/feed and parses it', async () => {
+  it('fetches <origin>/feed with a 10s timeout signal and parses it', async () => {
     const fetchImpl = vi.fn().mockResolvedValue({ ok: true, text: async () => FEED });
     const entries = await loadJournal('https://name.substack.com', { fetch: fetchImpl });
-    expect(fetchImpl).toHaveBeenCalledWith(feedUrl('https://name.substack.com'));
+    expect(fetchImpl).toHaveBeenCalledWith(feedUrl('https://name.substack.com'), { signal: expect.any(AbortSignal) });
     expect(feedUrl('https://name.substack.com')).toBe('https://name.substack.com/feed');
     expect(entries).toHaveLength(2);
   });
 
-  it('returns [] and warns when Substack is unreachable, never throws', async () => {
+  it('retries once before giving up', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce({ ok: true, text: async () => FEED });
+    const entries = await loadJournal('https://name.substack.com', { fetch: fetchImpl });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(entries).toHaveLength(2);
+  });
+
+  it('returns [] and warns once when both attempts fail, never throws', async () => {
     const warn = vi.fn();
     const failing = vi.fn().mockRejectedValue(new Error('offline'));
     expect(await loadJournal('https://name.substack.com', { fetch: failing, warn })).toEqual([]);
+    expect(failing).toHaveBeenCalledTimes(2);
     const notOk = vi.fn().mockResolvedValue({ ok: false, status: 503, text: async () => '' });
     expect(await loadJournal('https://name.substack.com', { fetch: notOk, warn })).toEqual([]);
     expect(warn).toHaveBeenCalledTimes(2);
+  });
+
+  it('throws instead of falling back when required (Netlify production context)', async () => {
+    const warn = vi.fn();
+    const failing = vi.fn().mockRejectedValue(new Error('offline'));
+    await expect(loadJournal('https://name.substack.com', { fetch: failing, warn, required: true })).rejects.toThrow(
+      /could not read/
+    );
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('does not throw when required but the feed is reachable', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({ ok: true, text: async () => FEED });
+    const entries = await loadJournal('https://name.substack.com', { fetch: fetchImpl, required: true });
+    expect(entries).toHaveLength(2);
   });
 });

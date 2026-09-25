@@ -143,7 +143,10 @@ the per-page comparison in §11.
 - Giant `DIARIO`; entries as a `NumberedIndex` table (Nº, date, title, `Read →`), newest
   first; hovering an entry reveals its cover. Entries open on Substack (no on-site entry
   pages; the Sanity `journalPost` type is removed). Empty state `No entries yet` when
-  no address is set or the feed can't be read (never fails the build).
+  no address is set or the feed can't be read (never fails the build) — except in
+  Netlify's production context (`JOURNAL_FEED_REQUIRED=true`), where an unreachable or
+  unparseable feed fails the build instead, so the previous deploy with its Journal
+  stays live; local and preview builds keep the empty-state fallback.
 - A daily scheduled GitHub workflow calls the Netlify build hook so new posts appear
   within a day.
 

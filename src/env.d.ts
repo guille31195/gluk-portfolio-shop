@@ -10,4 +10,6 @@ interface Window {
 
 interface ImportMetaEnv {
   readonly PUBLIC_LIVE_WEATHER?: 'on' | 'off';
+  // Netlify production context only (netlify.toml); see src/lib/substack.ts.
+  readonly JOURNAL_FEED_REQUIRED?: 'true' | 'false';
 }

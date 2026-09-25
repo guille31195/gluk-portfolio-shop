@@ -52,20 +52,37 @@ interface TextResponse {
 }
 
 export interface JournalDeps {
-  fetch?: (url: string) => Promise<TextResponse>;
+  fetch?: (url: string, init?: { signal: AbortSignal }) => Promise<TextResponse>;
   warn?: (message: string) => void;
+  // Set from JOURNAL_FEED_REQUIRED in Netlify's production context: an unreachable
+  // feed fails the build (Netlify keeps the last good deploy) instead of publishing
+  // an empty Journal. Local and preview builds leave this unset.
+  required?: boolean;
 }
+
+const FETCH_TIMEOUT_MS = 10_000;
 
 export async function loadJournal(origin: string | null, deps: JournalDeps = {}): Promise<JournalEntry[]> {
   if (!origin) return [];
-  const fetchImpl = deps.fetch ?? ((url: string) => globalThis.fetch(url) as Promise<TextResponse>);
+  const fetchImpl = deps.fetch ?? ((url: string, init?: { signal: AbortSignal }) => globalThis.fetch(url, init) as Promise<TextResponse>);
   const warn = deps.warn ?? ((message: string) => console.warn(message));
-  try {
-    const res = await fetchImpl(feedUrl(origin));
+  const url = feedUrl(origin);
+  const attempt = async () => {
+    const res = await fetchImpl(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return parseFeed(await res.text());
-  } catch (error) {
-    warn(`[journal] could not read ${feedUrl(origin)}: ${(error as Error).message}`);
-    return [];
+  };
+  try {
+    return await attempt();
+  } catch {
+    // One retry: a single dropped request or timeout shouldn't wipe the Journal.
+    try {
+      return await attempt();
+    } catch (error) {
+      const message = `[journal] could not read ${url}: ${(error as Error).message}`;
+      if (deps.required) throw new Error(message);
+      warn(message);
+      return [];
+    }
   }
 }
