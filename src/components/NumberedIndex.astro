@@ -1,0 +1,87 @@
+---
+// The numbered-list device used across the site (home hero, series index,
+// journal, mobile menu). When one item is active the others dim.
+import { pad2, toRoman } from '../lib/numerals';
+
+export interface IndexItem {
+  label: string;
+  href?: string;
+  active?: boolean;
+}
+
+interface Props {
+  items: IndexItem[];
+  numerals?: 'arabic' | 'roman';
+  size?: 'small' | 'large';
+  class?: string;
+}
+
+const { items, numerals = 'arabic', size = 'small', class: className } = Astro.props;
+const mark = (i: number) => (numerals === 'roman' ? toRoman(i + 1) : pad2(i + 1));
+---
+<ol class:list={['index', `index--${size}`, className]}>
+  {items.map((item, i) => (
+    <li class:list={['index-item', { 'is-active': item.active }]}>
+      <span class="index-mark">{mark(i)}</span>
+      {item.href ? (
+        <a href={item.href} aria-current={item.active ? 'page' : undefined}>{item.label}</a>
+      ) : (
+        <span>{item.label}</span>
+      )}
+    </li>
+  ))}
+</ol>
+
+<style>
+  .index {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .index-item {
+    display: grid;
+    grid-template-columns: 2.6em 1fr;
+    align-items: baseline;
+    transition: opacity 0.4s var(--ease-out);
+  }
+  .index:has(.is-active) .index-item:not(.is-active) {
+    opacity: 0.4;
+  }
+  .index-item a {
+    text-decoration: none;
+  }
+  .index-mark {
+    opacity: 0.6;
+    font-variant-numeric: tabular-nums;
+  }
+  .index--small {
+    font-size: var(--text-label);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    line-height: 2.2;
+  }
+  .index--large .index-item {
+    grid-template-columns: 3rem 1fr;
+    padding: 0.9rem 0;
+    border-top: var(--rule-hair) solid var(--color-hairline);
+  }
+  .index--large .index-item:last-child {
+    border-bottom: var(--rule-hair) solid var(--color-hairline);
+  }
+  .index--large .index-mark {
+    font-size: var(--text-label);
+    letter-spacing: 0.12em;
+  }
+  .index--large a,
+  .index--large span:not(.index-mark) {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-stretch: 125%;
+    font-size: clamp(2rem, 9vw, 3.4rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .index-item { transition: none; }
+  }
+</style>

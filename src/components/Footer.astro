@@ -1,15 +1,96 @@
 ---
+import RuptureRule from './RuptureRule.astro';
+import type { SiteSettings } from '../lib/sanity';
+import { WORDMARK_HEIGHT, WORDMARK_WIDTH } from '../lib/brand';
+
+interface Props {
+  settings: SiteSettings;
+}
+
+const { settings } = Astro.props;
 const year = new Date().getFullYear();
 ---
 <footer class="site-footer">
-  <p>&copy; {year} GLUK. All rights reserved.</p>
+  <div class="footer-mark">
+    <img src="/brand/wordmark-white.png" alt="GLUK" width={WORDMARK_WIDTH} height={WORDMARK_HEIGHT} />
+    <RuptureRule weight="base" class="footer-rule" />
+  </div>
+  <div class="footer-cols">
+    <div>
+      <p class="label dim">Work</p>
+      <ul>
+        <li><a href="/portfolio/oil-painting">Oil painting</a></li>
+        <li><a href="/portfolio/mixed-media">Mixed media</a></li>
+        <li><a href="/tattoo">Tattoo</a></li>
+        <li><a href="/portfolio">Prints</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="label dim">Studio</p>
+      <ul>
+        <li>{settings.studioCity}</li>
+        <li><a href="/contact?interest=commission">Commissions &amp; originals: inquire</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="label dim">Follow</p>
+      <ul>
+        <li><a href={settings.instagramUrl} rel="noopener">Instagram</a></li>
+        <li><a href="/journal">Journal</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-legal label dim">
+    <span>&copy; GLUK {year}</span>
+    <span>Guillermo Carrasquero</span>
+  </div>
 </footer>
 
 <style>
   .site-footer {
-    padding: 2rem;
-    text-align: center;
-    color: var(--color-black);
-    font-size: 0.875rem;
+    position: relative;
+    z-index: 1;
+    padding: var(--section-space) var(--gutter) 2rem;
+    background: var(--color-black);
+  }
+  .footer-mark {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.4vw;
+  }
+  .footer-mark img {
+    width: clamp(7rem, 18vw, 16rem);
+    height: auto;
+    display: block;
+  }
+  .footer-mark :global(.footer-rule) {
+    flex: 1;
+    margin-bottom: 0.9vw;
+  }
+  .footer-cols {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 3.5rem;
+  }
+  .footer-cols ul {
+    list-style: none;
+    margin: 0.6rem 0 0;
+    padding: 0;
+    line-height: 1.9;
+  }
+  .footer-cols a {
+    text-decoration: none;
+  }
+  .footer-cols a:hover {
+    text-decoration: underline;
+  }
+  .footer-legal {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 3rem;
+  }
+  @media (max-width: 640px) {
+    .footer-cols { grid-template-columns: 1fr; }
   }
 </style>

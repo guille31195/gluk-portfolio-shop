@@ -1,0 +1,53 @@
+---
+import RuptureRule from './RuptureRule.astro';
+import { mediumLabel, type Medium } from '../lib/sanity';
+import type { MediumCount } from '../lib/rooms';
+import { pad2 } from '../lib/numerals';
+
+interface Props {
+  counts: { total: number; mediums: MediumCount[] };
+  active: Medium | null;
+}
+
+const { counts, active } = Astro.props;
+---
+<div class="portfolio-head">
+  <h1 class="display" data-intro>OBRA</h1>
+  <nav class="filters label" aria-label="Filter by medium" data-intro>
+    <a href="/portfolio" class:list={{ 'is-on': active === null }} aria-current={active === null ? 'page' : undefined}>
+      <span class="dim">{pad2(counts.total)}</span> All
+    </a>
+    {counts.mediums.map(({ medium, count }) => (
+      <a href={`/portfolio/${medium}`} class:list={{ 'is-on': medium === active }} aria-current={medium === active ? 'page' : undefined}>
+        <span class="dim">{pad2(count)}</span> {mediumLabel(medium)}
+      </a>
+    ))}
+  </nav>
+</div>
+<RuptureRule weight="base" class="portfolio-rule" />
+
+<style>
+  .portfolio-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1.5rem;
+  }
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.6rem;
+  }
+  .filters a {
+    text-decoration: none;
+    opacity: 0.45;
+  }
+  .filters a.is-on,
+  .filters a:hover {
+    opacity: 1;
+  }
+  :global(.portfolio-rule) {
+    margin: 2.4rem 0 1rem;
+  }
+</style>

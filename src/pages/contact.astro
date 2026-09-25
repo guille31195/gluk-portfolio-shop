@@ -1,51 +1,147 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import RuptureRule from '../components/RuptureRule.astro';
+import StudioClock from '../components/StudioClock.astro';
+import { getSiteSettings } from '../lib/sanity';
+import { INTERESTS } from '../lib/contact-prefill';
+
+const settings = await getSiteSettings();
 ---
-<BaseLayout title="Contact">
-  <section class="page">
-    <h1>Contact</h1>
-    <form name="contact" method="POST" data-netlify="true">
+<BaseLayout title="Contact" backdrop="field-3">
+  <section class="page contact">
+    <div class="contact-info">
+      <h1 class="display" data-intro>CONTACTO</h1>
+      <RuptureRule weight="thin" class="contact-rule" />
+      <a class="statement contact-email" href={`mailto:${settings.email}`} data-intro>{settings.email}</a>
+      <p class="mono" data-intro>Studio · {settings.studioCity}</p>
+      <StudioClock />
+      <a class="mono" href={settings.instagramUrl} rel="noopener" data-intro>Instagram @{settings.instagramHandle}</a>
+    </div>
+
+    <form class="contact-form" name="contact" method="POST" action="/contact/thanks" data-netlify="true" netlify-honeypot="bot-field" data-astro-reload data-contact-form data-intro>
       <input type="hidden" name="form-name" value="contact" />
-      <label>
-        Name
-        <input type="text" name="name" required />
-      </label>
-      <label>
-        Email
-        <input type="email" name="email" required />
-      </label>
-      <label>
-        Message
-        <textarea name="message" required></textarea>
-      </label>
-      <button type="submit">Send</button>
+      <p class="visually-hidden" aria-hidden="true"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off" /></label></p>
+      <fieldset class="interests">
+        <legend class="label dim">I'm interested in</legend>
+        {INTERESTS.map((interest) => (
+          <label class="chip">
+            <input type="radio" name="interest" value={interest.value} />
+            <span>{interest.label}</span>
+          </label>
+        ))}
+      </fieldset>
+      <label class="field"><span class="label dim">Name</span><input type="text" name="name" required autocomplete="name" /></label>
+      <label class="field"><span class="label dim">Email</span><input type="email" name="email" required autocomplete="email" /></label>
+      <label class="field"><span class="label dim">Message</span><textarea name="message" rows="5" required></textarea></label>
+      <button class="button" type="submit">Send</button>
     </form>
   </section>
 </BaseLayout>
 
+<script>
+  import { readPrefill } from '../lib/contact-prefill';
+
+  document.addEventListener('astro:page-load', () => {
+    const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+    if (!form) return;
+    const { interest, message } = readPrefill(window.location.search);
+    if (interest) {
+      const radio = form.querySelector<HTMLInputElement>(`input[name="interest"][value="${interest}"]`);
+      if (radio) radio.checked = true;
+    }
+    const textarea = form.querySelector<HTMLTextAreaElement>('textarea[name="message"]');
+    if (textarea && message && !textarea.value) textarea.value = message;
+  });
+</script>
+
 <style>
-  .page {
-    padding: 3rem 2rem;
-    max-width: 60ch;
-    margin: 0 auto;
+  .contact {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(2rem, 7vw, 8rem);
+    align-items: start;
   }
-  form {
+  /* CONTACTO is the longest display word; at the display minimum (3.5rem) it
+     is wider than a phone screen, so it also scales with the viewport. */
+  .contact .display {
+    font-size: min(var(--text-display), 12.5vw);
+  }
+  .contact-info {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.2rem;
   }
-  label {
+  :global(.contact-rule) {
+    width: 10rem !important;
+    margin: 1.4rem 0;
+  }
+  .contact-email {
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+  .contact-info a.mono {
+    text-decoration: none;
+  }
+  .contact-form {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    font-family: var(--font-body);
+    gap: 1.6rem;
+    padding-top: 1rem;
   }
-  button {
-    align-self: flex-start;
-    padding: 0.75rem 1.5rem;
-    background: var(--color-blue);
-    color: #fff;
-    border: none;
+  .interests {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .interests legend {
+    margin-bottom: 1rem;
+  }
+  .chip {
+    position: relative;
+  }
+  .chip input {
+    position: absolute;
+    opacity: 0;
+  }
+  .chip span {
+    display: inline-block;
+    padding: 0.5em 1em;
+    border: 1px solid rgba(241, 238, 232, 0.45);
+    font-size: var(--text-label);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
     cursor: pointer;
+  }
+  .chip input:checked + span {
+    background: var(--color-bone);
+    color: var(--color-black);
+  }
+  .chip input:focus-visible + span {
+    outline: 1px solid var(--color-bone);
+    outline-offset: 3px;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .field input,
+  .field textarea {
+    padding: 0.6rem 0;
+    border: 0;
+    border-bottom: 1px solid rgba(241, 238, 232, 0.4);
+    background: none;
+    color: var(--color-bone);
+    font: inherit;
+    resize: vertical;
+  }
+  .contact-form .button {
+    align-self: flex-start;
+  }
+  @media (max-width: 760px) {
+    .contact { grid-template-columns: 1fr; }
   }
 </style>

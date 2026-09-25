@@ -1,26 +1,59 @@
 ---
+import { ClientRouter, fade } from 'astro:transitions';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import Cursor from '../components/Cursor.astro';
+import Backdrop, { type BackdropKind } from '../components/Backdrop.astro';
+import { getSiteSettings } from '../lib/sanity';
 import '../styles/theme.css';
 
 interface Props {
   title: string;
+  backdrop?: BackdropKind;
 }
 
-const { title } = Astro.props;
+const { title, backdrop = 'veil' } = Astro.props;
+const settings = await getSiteSettings();
 ---
-<html lang="en">
+<html lang="en" transition:animate={fade({ duration: '0.3s' })}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" href="/favicon.png" />
+    <link rel="icon" href="/brand/monogram-white.png" />
     <title>{title} — GLUK</title>
+    <ClientRouter />
+    <script is:inline>
+      // Motion guard — see theme.css. Runs once per full page load.
+      (function () {
+        if (window.__glukMotionGuard) return;
+        window.__glukMotionGuard = true;
+        var root = document.documentElement;
+        root.classList.add('js-motion');
+        // Failsafe: if the motion bundle never loads, show everything.
+        setTimeout(function () {
+          if (!window.__glukMotionReady) root.classList.remove('js-motion');
+        }, 2500);
+        // ClientRouter replaces <html> attributes on every navigation.
+        document.addEventListener('astro:after-swap', function () {
+          if (window.__glukMotionReady) document.documentElement.classList.add('js-motion');
+        });
+      })();
+    </script>
   </head>
   <body>
-    <Nav />
+    <Backdrop kind={backdrop} />
+    <Cursor />
+    <Nav settings={settings} />
     <main>
       <slot />
     </main>
-    <Footer />
+    <Footer settings={settings} />
+    <script>
+      import { motion } from '../motion/runtime';
+      import { setupIntro, setupReveal } from '../motion/reveal';
+
+      motion.registerGlobal(setupIntro);
+      motion.registerGlobal(setupReveal);
+    </script>
   </body>
 </html>

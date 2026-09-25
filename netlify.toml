@@ -5,3 +5,13 @@
 # Required environment variables (set in Netlify's dashboard, not here):
 #   PUBLIC_SANITY_PROJECT_ID
 #   PUBLIC_SANITY_DATASET (typically "production")
+
+# Optional (spec §8): PUBLIC_LIVE_WEATHER=on enables live weather/sea data in the
+# home-page data egg. Leave unset until a commercial weather plan is chosen —
+# Open-Meteo's free API is non-commercial only.
+
+# Production only: an unreachable/unparseable Substack feed fails the build
+# instead of publishing an empty Journal, so Netlify keeps the last good deploy.
+# Deploy previews and local builds keep the warn + empty-fallback behaviour.
+[context.production.environment]
+  JOURNAL_FEED_REQUIRED = "true"

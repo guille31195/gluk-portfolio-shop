@@ -1,0 +1,43 @@
+---
+// A painting on the veil: never filtered or animated; dark-edged pieces get a
+// soft orange/blue glow *behind* the canvas (spec §6.2).
+import type { Artwork } from '../lib/sanity';
+import { imageSrcset, sizedImage } from '../lib/image-url';
+import Halo from './Halo.astro';
+
+interface Props {
+  artwork: Artwork;
+  width: number;
+  widths?: number[];
+  sizes: string;
+  eager?: boolean;
+}
+
+const { artwork, width, widths, sizes, eager = false } = Astro.props;
+const src = artwork.images[0] ?? '';
+---
+<div class:list={['painting', { 'painting--halo': artwork.halo }]}>
+  {artwork.halo && <Halo class="painting-halo" />}
+  <img
+    src={sizedImage(src, width)}
+    srcset={widths ? imageSrcset(src, widths) : undefined}
+    sizes={sizes}
+    alt={artwork.title}
+    loading={eager ? 'eager' : 'lazy'}
+    decoding="async"
+    transition:name={`artwork-${artwork.slug}`}
+  />
+</div>
+
+<style>
+  .painting {
+    position: relative;
+  }
+  .painting img {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: auto;
+    box-shadow: var(--shadow-painting);
+  }
+</style>

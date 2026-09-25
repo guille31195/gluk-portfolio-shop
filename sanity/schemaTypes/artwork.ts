@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity';
+import { HALO_OPTIONS } from './haloOptions';
 
 export const artwork = defineType({
   name: 'artwork',
@@ -33,6 +34,34 @@ export const artwork = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'materials',
+      title: 'Materials',
+      type: 'string',
+      description: 'Shown on the artwork page instead of the medium, e.g. "Oil on canvas".',
+    }),
+    defineField({
+      name: 'series',
+      title: 'Series',
+      type: 'reference',
+      to: [{ type: 'series' }],
+      description: 'Leave empty for a standalone work.',
+    }),
+    defineField({
+      name: 'seriesPosition',
+      title: 'Position in series',
+      type: 'number',
+      description: '1, 2, 3… Order of this work inside its series.',
+      hidden: ({ document }) => !document?.series,
+      validation: (Rule) => Rule.min(1).integer(),
+    }),
+    defineField({
+      name: 'halo',
+      title: 'Halo',
+      type: 'string',
+      options: { list: HALO_OPTIONS, layout: 'radio' },
+      initialValue: 'auto',
+    }),
+    defineField({
       name: 'images',
       title: 'Images',
       type: 'array',
@@ -55,10 +84,18 @@ export const artwork = defineType({
       type: 'string',
     }),
     defineField({
-      name: 'availableAsOriginal',
-      title: 'Available as Original',
-      type: 'boolean',
-      initialValue: false,
+      name: 'originalStatus',
+      title: 'Original',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Available — show "Inquire"', value: 'available' },
+          { title: 'Sold — show "Sold"', value: 'sold' },
+          { title: 'Not for sale — hide', value: 'notForSale' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'notForSale',
     }),
     defineField({
       name: 'printOptions',

@@ -1,25 +1,206 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import RuptureRule from '../components/RuptureRule.astro';
+import BrandField from '../components/BrandField.astro';
+import Painting from '../components/Painting.astro';
+import DataEgg from '../components/DataEgg.astro';
+import { getHomePage, mediumLabel } from '../lib/sanity';
+import { toRoman } from '../lib/numerals';
+import { CARD_WIDTH, CARD_WIDTHS } from '../lib/image-url';
+
+const { heroList, heroFootnote, featuredWorks } = await getHomePage();
+const middle = Math.floor(heroList.length / 2);
 ---
-<BaseLayout title="Home">
-  <section class="hero">
-    <h1>GLUK</h1>
-    <p class="tagline">Precise, streetwise images about Caribbean identity, memory and power.</p>
-  </section>
+<BaseLayout title="Home" backdrop="field-2">
+  <div data-motion-page="home">
+    <section class="hero" data-hero>
+      <p class="hero-footnote" data-hero-intro>{heroFootnote}</p>
+      <span class="hero-hairline" aria-hidden="true"></span>
+      <h1 class="hero-list" data-hero-list>
+        <span class="visually-hidden">GLUK — </span>
+        {heroList.map((word, i) => (
+          <span class="hero-line">
+            <span class="hero-numeral mono" data-hero-intro>{toRoman(i + 1)}</span>
+            <span class="hero-mask">
+              <span class="hero-word" data-hero-word>
+                <span class="visually-hidden">{word.toUpperCase()}</span>
+                <span aria-hidden="true" data-hero-glyphs>{word.toUpperCase()}</span>
+              </span>
+            </span>
+            {i === middle && (
+              <span class="hero-rule" data-hero-rule>
+                <RuptureRule weight="base" />
+              </span>
+            )}
+          </span>
+        ))}
+      </h1>
+      <div class="hero-egg"><DataEgg /></div>
+    </section>
+
+    {featuredWorks.length > 0 && (
+      <section class="featured" aria-label="Selected work">
+        <BrandField kind="veil" class="featured-field" />
+        <ol class="featured-list">
+          {featuredWorks.map((artwork) => (
+            <li class="featured-item" data-reveal>
+              <a class="featured-link" href={`/artwork/${artwork.slug}`} data-cursor="view">
+                <Painting artwork={artwork} width={CARD_WIDTH} widths={CARD_WIDTHS} sizes="(max-width: 700px) 100vw, 34rem" />
+                <p class="featured-title">{artwork.title}</p>
+                <p class="label dim">
+                  {mediumLabel(artwork.medium)}{artwork.series && ` · ${artwork.series.name}`}
+                </p>
+              </a>
+            </li>
+          ))}
+        </ol>
+        <p class="view-all" data-reveal><a class="button" href="/portfolio">Work</a></p>
+      </section>
+    )}
+  </div>
 </BaseLayout>
+
+<script>
+  import { motion } from '../motion/runtime';
+  import { setupHomeHero } from '../motion/home-hero';
+
+  motion.registerPage('home', setupHomeHero);
+</script>
 
 <style>
   .hero {
-    padding: 6rem 2rem;
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(8rem, 14rem) 1px 1fr;
+    column-gap: clamp(1.5rem, 3vw, 3rem);
+    align-items: start;
+    align-content: start;
+    min-height: 100svh;
+    padding: calc(var(--nav-height) + 6vh) var(--gutter) 8rem;
+    overflow-x: clip; /* the rupture rule bleeds off the right edge, not into a scrollbar */
+  }
+  .hero-footnote {
+    margin: 0.4rem 0 0;
+    font-size: var(--text-label);
+    line-height: 1.6;
+    opacity: 0.8;
+  }
+  .hero-hairline {
+    align-self: stretch;
+    background: var(--color-hairline);
+    max-height: 70vh;
+  }
+  .hero-list {
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-stretch: 125%;
+    font-size: clamp(min(3rem, 13.3vw), 1rem + 7.5vw, 9rem); /* CÓDIGO fits 320px */
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+  }
+  .hero-line {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.2rem;
+  }
+  .hero-numeral {
+    padding-top: 0.6em;
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-stretch: 100%;
+    opacity: 0.55;
+    min-width: 2.2rem;
+  }
+  .hero-mask {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.04em;
+  }
+  .hero-word {
+    display: block;
+    white-space: pre;
+  }
+  /* Letter boxes built by src/motion/home-hero.ts (hence :global): each box
+     takes its letter's width and overlays a code glyph centred on it. */
+  .hero-word :global(.hero-ch) {
+    position: relative;
+    display: inline-block;
+  }
+  .hero-word :global(.hero-ch-letter) {
+    display: inline-block;
+  }
+  .hero-word :global(.hero-ch-glyph) {
+    position: absolute;
+    inset: 0;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .hero-rule {
+    position: absolute;
+    left: -3%;
+    right: -12%;
+    top: 58%;
+  }
+  .hero-egg {
+    position: absolute;
+    right: var(--gutter);
+    bottom: 2.4rem;
+  }
+  .featured {
+    position: relative;
+    padding: var(--section-space) var(--gutter);
+    isolation: isolate;
+    overflow-x: clip; /* painting halos near the edge must not widen the page on phones */
+  }
+  /* The veil field under a 40% dark wash (was the veil image). */
+  .featured :global(.featured-field) {
+    z-index: -2;
+  }
+  .featured::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--veil-wash);
+  }
+  .featured-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(3rem, 8vw, 8rem);
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0;
+    list-style: none;
+  }
+  .featured-item:nth-child(even) {
+    margin-top: clamp(6rem, 16vw, 14rem);
+  }
+  .featured-link {
+    display: block;
+    text-decoration: none;
+  }
+  .featured-title {
+    margin: 1.4rem 0 0.3rem;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.4rem;
+  }
+  .view-all {
+    margin: var(--section-space) 0 0;
     text-align: center;
   }
-  .hero h1 {
-    font-size: 4rem;
-  }
-  .tagline {
-    font-family: var(--font-body);
-    font-size: 1.25rem;
-    max-width: 40ch;
-    margin: 0 auto;
+  @media (max-width: 760px) {
+    .hero {
+      grid-template-columns: 1fr;
+      row-gap: 2rem;
+    }
+    .hero-hairline { display: none; }
+    .hero-egg { left: var(--gutter); }
+    .featured-list { grid-template-columns: 1fr; }
+    .featured-item:nth-child(even) { margin-top: 0; }
   }
 </style>

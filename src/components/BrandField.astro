@@ -1,0 +1,45 @@
+---
+// A brand gradient field drawn with CSS (sharp and band-free at any size).
+// Fills (and clips to) its nearest positioned ancestor like
+// `background-size: cover` on the square brand-kit original: a centred
+// square at least as big as the box.
+import { BRAND_FIELDS, fieldLayers, type BrandFieldKind } from '../lib/brand-fields';
+
+interface Props {
+  kind: BrandFieldKind;
+  class?: string;
+  [attr: `data-${string}`]: boolean | string | undefined;
+}
+
+const { kind, class: className, ...attrs } = Astro.props;
+const layers = fieldLayers(BRAND_FIELDS[kind]);
+---
+<div class:list={['brand-field', className]} aria-hidden="true" {...attrs}>
+  <div class="brand-field-square">
+    {layers.map((layer) => (
+      <div style={`background: ${layer.background};${layer.mask ? ` mask-image: ${layer.mask}; -webkit-mask-image: ${layer.mask};` : ''}`}></div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .brand-field {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .brand-field-square {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    aspect-ratio: 1;
+    translate: -50% -50%;
+  }
+  .brand-field-square > div {
+    position: absolute;
+    inset: 0;
+  }
+</style>

@@ -9,7 +9,11 @@
     "preview": "astro preview",
     "check": "astro check",
     "test": "vitest run",
-    "seed:artworks": "node --env-file=.env scripts/seed-artworks.mjs"
+    "seed:artworks": "node --env-file=.env scripts/seed-artworks.mjs",
+    "seed:design": "node --env-file=.env scripts/seed-design-content.mjs",
+    "seed:details": "node --env-file=.env scripts/seed-artwork-details.mjs",
+    "seed:tattoo": "node --env-file=.env scripts/seed-tattoo-images.mjs",
+    "brand:assets": "node scripts/build-brand-assets.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^4.1.0",
@@ -17,10 +21,12 @@
     "@sanity/astro": "^3.5.1",
     "@sanity/image-url": "^2.1.1",
     "astro": "^7.3.3",
+    "fast-xml-parser": "^5.11.1",
     "gsap": "^3.12.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sanity": "^6.14.1",
+    "sharp": "^0.35.4",
     "styled-components": "^6.5.3"
   },
   "devDependencies": {

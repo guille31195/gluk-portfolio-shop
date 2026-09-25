@@ -1,39 +1,17 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import ArtworkCard from '../../components/ArtworkCard.astro';
-import { MEDIUMS, formatMedium, getAllArtworks } from '../../lib/sanity';
+import Room from '../../components/Room.astro';
+import PortfolioHead from '../../components/PortfolioHead.astro';
+import { getAllArtworks } from '../../lib/sanity';
+import { groupIntoRooms, mediumCounts } from '../../lib/rooms';
 
 const artworks = await getAllArtworks();
+const counts = mediumCounts(artworks);
+const rooms = groupIntoRooms(artworks);
 ---
-<BaseLayout title="Portfolio">
+<BaseLayout title="Work">
   <section class="page">
-    <h1>Portfolio</h1>
-    <nav class="medium-filter">
-      {MEDIUMS.map((medium) => (
-        <a href={`/portfolio/${medium}`}>{formatMedium(medium)}</a>
-      ))}
-    </nav>
-    <div class="grid">
-      {artworks.map((artwork) => (
-        <ArtworkCard artwork={artwork} />
-      ))}
-    </div>
+    <PortfolioHead counts={counts} active={null} />
+    {rooms.map((room) => <Room room={room} />)}
   </section>
 </BaseLayout>
-
-<style>
-  .page {
-    padding: 3rem 2rem;
-  }
-  .medium-filter {
-    display: flex;
-    gap: 1rem;
-    margin: 1rem 0 2rem;
-    text-transform: capitalize;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1.5rem;
-  }
-</style>

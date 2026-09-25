@@ -1,34 +1,29 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import ArtworkCard from '../../components/ArtworkCard.astro';
-import { MEDIUMS, formatMedium, getArtworksByMedium, type Medium } from '../../lib/sanity';
+import Room from '../../components/Room.astro';
+import PortfolioHead from '../../components/PortfolioHead.astro';
+import { MEDIUMS, getAllArtworks, mediumLabel, type Medium } from '../../lib/sanity';
+import { groupIntoRooms, mediumCounts } from '../../lib/rooms';
 
 export function getStaticPaths() {
   return MEDIUMS.map((medium) => ({ params: { medium } }));
 }
 
 const { medium } = Astro.params as { medium: Medium };
-const artworks = await getArtworksByMedium(medium);
+const all = await getAllArtworks();
+const counts = mediumCounts(all);
+const rooms = groupIntoRooms(all.filter((artwork) => artwork.medium === medium));
 ---
-<BaseLayout title={`Portfolio — ${formatMedium(medium)}`}>
+<BaseLayout title={`Work — ${mediumLabel(medium)}`}>
   <section class="page">
-    <h1>{formatMedium(medium)}</h1>
-    <div class="grid">
-      {artworks.map((artwork) => (
-        <ArtworkCard artwork={artwork} />
-      ))}
-    </div>
+    <PortfolioHead counts={counts} active={medium} />
+    {rooms.length === 0 && <p class="label dim portfolio-empty">No entries yet</p>}
+    {rooms.map((room) => <Room room={room} />)}
   </section>
 </BaseLayout>
 
 <style>
-  .page {
-    padding: 3rem 2rem;
-    text-transform: capitalize;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1.5rem;
+  .portfolio-empty {
+    padding: clamp(3rem, 6vw, 5rem) 0;
   }
 </style>

@@ -1,21 +1,84 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import RuptureRule from '../components/RuptureRule.astro';
+import { getAboutPage } from '../lib/sanity';
+
+const about = await getAboutPage();
 ---
 <BaseLayout title="About">
-  <section class="page">
-    <h1>About GLUK</h1>
-    <p>
-      GLUK (Guillermo Carrasquero) is a plastic artist working across oil
-      painting, tattoo art, sculpture, and mixed media, exploring Caribbean
-      identity, memory, and power.
-    </p>
+  <section class:list={['about', { 'about--portrait': about.portrait }]}>
+    {about.portrait && (
+      <div class="about-photo">
+        <img
+          src={about.portrait.src}
+          srcset={about.portrait.srcset}
+          sizes={about.portrait.sizes}
+          alt={about.portrait.alt}
+          style={`object-position: ${about.portrait.focalPoint}`}
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+        />
+      </div>
+    )}
+    <div class="about-text">
+      <p class="mono dim" data-intro>Guillermo Carrasquero — GLUK</p>
+      <p class="statement" data-intro>{about.statement}</p>
+      <RuptureRule weight="thin" class="about-rule" />
+      <div class="about-body" data-intro set:html={about.bodyHtml} />
+      {about.photoCredit && (
+        <p class="label dim about-credit">
+          Photography — {about.photoCreditUrl ? <a href={about.photoCreditUrl} rel="noopener">{about.photoCredit}</a> : about.photoCredit}
+        </p>
+      )}
+    </div>
   </section>
 </BaseLayout>
 
 <style>
-  .page {
-    padding: 3rem 2rem;
-    max-width: 60ch;
-    margin: 0 auto;
+  .about {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-height: 100svh;
+  }
+  .about--portrait {
+    grid-template-columns: 44fr 56fr;
+  }
+  /* The BIO body runs longer than one screen: the portrait stays pinned at
+     screen height (keeping the close crop) while the text scrolls beside it. */
+  .about-photo {
+    position: sticky;
+    top: 0;
+    align-self: start;
+  }
+  .about-photo img {
+    display: block;
+    width: 100%;
+    height: 100svh;
+    object-fit: cover;
+  }
+  .about-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1.8rem;
+    max-width: 44rem;
+    padding: calc(var(--nav-height) + 4rem) var(--gutter) var(--section-space);
+  }
+  :global(.about-rule) {
+    width: 10rem !important;
+  }
+  .about-body :global(p) {
+    margin: 0 0 1em;
+    opacity: 0.85;
+    max-width: 36rem;
+  }
+  .about-credit {
+    margin-top: auto;
+  }
+  @media (max-width: 860px) {
+    .about--portrait { grid-template-columns: 1fr; }
+    .about-photo { position: static; }
+    .about-photo img { height: 70svh; }
+    .about-text { padding-top: 3rem; }
   }
 </style>

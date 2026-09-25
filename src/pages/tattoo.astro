@@ -1,34 +1,99 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getTattooInfo } from '../lib/sanity';
+import RuptureRule from '../components/RuptureRule.astro';
+import { getSiteSettings, getTattooInfo } from '../lib/sanity';
+import { CARD_WIDTH, sizedImage } from '../lib/image-url';
+import { pad2 } from '../lib/numerals';
 
-const info = await getTattooInfo();
+const [info, settings] = await Promise.all([getTattooInfo(), getSiteSettings()]);
 ---
 <BaseLayout title="Tattoo">
   <section class="page">
-    <h1>Tattoo</h1>
-    <div set:html={info.body} />
+    <div class="tattoo-head">
+      <h1 class="display" data-intro>TATUAJE</h1>
+      {info.statement && <p class="tattoo-statement" data-intro>{info.statement}</p>}
+    </div>
+    <RuptureRule weight="base" class="tattoo-rule" />
+    {info.bodyHtml && <div class="tattoo-body" data-reveal set:html={info.bodyHtml} />}
     {info.images.length > 0 && (
-      <div class="gallery">
-        {info.images.map((src) => <img src={src} alt="" />)}
+      <div class="tattoo-gallery" data-reveal-stagger>
+        {info.images.map((src, i) => (
+          <img src={sizedImage(src, CARD_WIDTH)} alt={`Tattoo by GLUK ${pad2(i + 1)}`} loading="lazy" decoding="async" data-reveal />
+        ))}
       </div>
     )}
+    <div class="tattoo-foot">
+      {info.process.length > 0 && (
+        <ol class="tattoo-process">
+          {info.process.map((step, i) => (
+            <li data-reveal><span class="mono dim">{pad2(i + 1)}</span><span>{step}</span></li>
+          ))}
+        </ol>
+      )}
+      <div class="tattoo-cta" data-reveal>
+        <a class="button" href="/contact?interest=tattoo">Request a session</a>
+        <p class="mono dim">Studio · {settings.studioCity}</p>
+        <p class="mono"><a href={settings.tattooInstagramUrl} rel="noopener">Instagram — @{settings.tattooInstagramHandle}</a></p>
+      </div>
+    </div>
   </section>
 </BaseLayout>
 
 <style>
-  .page {
-    padding: 3rem 2rem;
-    max-width: 60ch;
-    margin: 0 auto;
-  }
-  .gallery {
+  .tattoo-head {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 1rem;
-    margin-top: 2rem;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+    gap: 3rem;
+    align-items: end;
   }
-  .gallery img {
+  .tattoo-statement {
+    margin: 0;
+  }
+  :global(.tattoo-rule) {
+    margin: 2.6rem 0 3.5rem;
+  }
+  .tattoo-body {
+    max-width: 40rem;
+    margin-bottom: 3rem;
+  }
+  .tattoo-gallery {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+  .tattoo-gallery img {
     width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+  }
+  .tattoo-gallery img:nth-child(even) {
+    margin-top: 4rem;
+  }
+  .tattoo-foot {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: end;
+    margin-top: 5rem;
+  }
+  .tattoo-process {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .tattoo-process li {
+    display: grid;
+    grid-template-columns: 4rem 1fr;
+    padding: 1rem 0;
+    border-top: var(--rule-hair) solid var(--color-hairline);
+  }
+  .tattoo-cta .mono {
+    margin-top: 1.2rem;
+  }
+  @media (max-width: 760px) {
+    .tattoo-head,
+    .tattoo-foot { grid-template-columns: 1fr; }
+    .tattoo-gallery { grid-template-columns: 1fr 1fr; }
+    .tattoo-gallery img:nth-child(even) { margin-top: 2rem; }
   }
 </style>

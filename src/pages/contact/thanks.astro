@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import RuptureRule from '../../components/RuptureRule.astro';
+---
+<BaseLayout title="Contact" backdrop="field-3">
+  <section class="page thanks">
+    <h1 class="display" data-intro>GRACIAS</h1>
+    <RuptureRule weight="thin" class="thanks-rule" />
+    <p class="statement" data-intro>Thank you — your message was sent.</p>
+    <a class="button" href="/portfolio">Work</a>
+  </section>
+</BaseLayout>
+
+<style>
+  .thanks {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    min-height: 80svh;
+    justify-content: center;
+  }
+  :global(.thanks-rule) {
+    width: 10rem !important;
+  }
+  .thanks .button {
+    align-self: flex-start;
+  }
+</style>

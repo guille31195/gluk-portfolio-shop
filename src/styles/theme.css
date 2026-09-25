@@ -1,32 +1,175 @@
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@800&family=Karla:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Karla:wght@300;400;700&display=swap');
 
 :root {
   --color-blue: #0C89D5;
   --color-deep-blue: #011458;
   --color-black: #1E1619;
   --color-orange: #C34F05;
+  --color-bone: #F1EEE8;
+  --color-bone-dim: rgba(241, 238, 232, 0.55);
+  --color-hairline: rgba(241, 238, 232, 0.22);
+  --veil-wash: rgba(30, 22, 25, 0.4);
 
   --font-display: 'Archivo', sans-serif;
   --font-body: 'Karla', sans-serif;
+
+  --gutter: clamp(1rem, 4vw, 4rem);
+  --nav-height: clamp(4.5rem, 8vw, 6.5rem);
+  --section-space: clamp(4rem, 10vw, 9rem);
+
+  --rule-hair: 1px;
+  --rule-thin: 3px;
+  --rule-base: 5px;
+  --rule-bold: 9px;
+
+  --text-label: clamp(0.68rem, 0.62rem + 0.2vw, 0.8rem);
+  --text-body: clamp(0.95rem, 0.9rem + 0.2vw, 1.1rem);
+  --text-statement: clamp(1.4rem, 1rem + 1.4vw, 2.4rem);
+  --text-title: clamp(2rem, 1.2rem + 3vw, 4.4rem);
+  /* The minimum also scales below ~360px so 7-letter words fit the phone. */
+  --text-display: clamp(min(3.5rem, 15.5vw), 1rem + 9vw, 10rem);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-painting: 0 1.6rem 4rem rgba(0, 0, 0, 0.45);
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  background: var(--color-black);
+  color-scheme: dark;
+}
+
 body {
   margin: 0;
-  background: #fff;
-  color: var(--color-black);
+  color: var(--color-bone);
   font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: 1.6;
+}
+
+main {
+  position: relative;
+  z-index: 1;
+  min-height: 100svh;
 }
 
 h1, h2, h3, h4 {
   font-family: var(--font-display);
   font-weight: 800;
-  margin: 0 0 0.5em;
+  margin: 0;
 }
 
 a {
-  color: var(--color-blue);
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+}
+
+/* ---- Type utilities ---- */
+.display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 125%;
+  font-size: var(--text-display);
+  line-height: 0.8;
+  letter-spacing: -0.045em;
+  margin: 0;
+}
+.display--outline {
+  color: transparent;
+  -webkit-text-stroke: max(1px, 0.012em) var(--color-bone);
+}
+.title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 125%;
+  font-size: var(--text-title);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+.statement {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: var(--text-statement);
+  line-height: 1.22;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.label {
+  font-size: var(--text-label);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+.mono {
+  font-size: var(--text-label);
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
+}
+.dim {
+  opacity: 0.55;
+}
+.hairline {
+  display: block;
+  height: var(--rule-hair);
+  border: 0;
+  margin: 0;
+  background: var(--color-hairline);
+}
+.button {
+  display: inline-block;
+  padding: 0.9em 1.6em;
+  border: 1px solid var(--color-bone);
+  background: none;
+  color: var(--color-bone);
+  font: inherit;
+  font-size: var(--text-label);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.4s var(--ease-out), color 0.4s var(--ease-out);
+}
+.button:hover,
+.button:focus-visible {
+  background: var(--color-bone);
+  color: var(--color-black);
+}
+.page {
+  padding: calc(var(--nav-height) + 3rem) var(--gutter) var(--section-space);
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+:focus-visible {
+  outline: 1px solid var(--color-bone);
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+}
+
+/* Motion guard. The inline script in BaseLayout adds .js-motion to <html>
+   only when JavaScript runs (and removes it if the motion bundle never
+   loads), so these elements are hidden only when GSAP will reveal them.
+   Without JS everything stays visible. */
+.js-motion [data-reveal],
+.js-motion [data-intro],
+.js-motion [data-hero-intro],
+.js-motion [data-hero-word],
+.js-motion [data-hero-rule] {
+  visibility: hidden;
 }
