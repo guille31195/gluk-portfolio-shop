@@ -38,6 +38,7 @@ export interface Artwork {
   slug: string;
   title: string;
   medium: Medium;
+  materials: string | null;
   year: number | null;
   dimensions: string | null;
   description: string | null;
@@ -67,6 +68,7 @@ export interface RawArtwork {
   slug: string;
   title: string;
   medium: Medium;
+  materials: string | null;
   year: number | null;
   dimensions: string | null;
   description: string | null;
@@ -85,6 +87,7 @@ export const ARTWORK_PROJECTION = `{
   "slug": slug.current,
   title,
   medium,
+  materials,
   year,
   dimensions,
   description,
@@ -123,6 +126,7 @@ export function mapArtwork(raw: RawArtwork, urlFor: (image: RawImage) => string)
     slug: raw.slug,
     title: raw.title,
     medium: raw.medium,
+    materials: raw.materials ?? null,
     year: raw.year ?? null,
     dimensions: raw.dimensions ?? null,
     description: raw.description ?? null,

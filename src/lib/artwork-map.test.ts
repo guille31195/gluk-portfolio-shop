@@ -8,6 +8,7 @@ function raw(overrides: Partial<RawArtwork> = {}): RawArtwork {
     slug: 'motopirueta-1',
     title: 'Motopirueta 1',
     medium: 'oil-painting',
+    materials: null,
     year: null,
     dimensions: null,
     description: null,
@@ -28,6 +29,7 @@ describe('mapArtwork', () => {
       slug: 'motopirueta-1',
       title: 'Motopirueta 1',
       medium: 'oil-painting',
+      materials: null,
       year: null,
       dimensions: null,
       description: null,
@@ -39,6 +41,13 @@ describe('mapArtwork', () => {
       haloSetting: 'auto',
       halo: false,
     });
+  });
+
+  it('passes materials, year and dimensions through', () => {
+    const result = mapArtwork(raw({ materials: 'Oil on canvas', year: 2024, dimensions: '120 × 100 cm' }), urlFor);
+    expect(result.materials).toBe('Oil on canvas');
+    expect(result.year).toBe(2024);
+    expect(result.dimensions).toBe('120 × 100 cm');
   });
 
   it('maps the original status, falling back to the legacy checkbox', () => {

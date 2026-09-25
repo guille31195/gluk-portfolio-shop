@@ -10,6 +10,7 @@ function art(slug: string, overrides: Partial<Artwork> = {}): Artwork {
     slug,
     title: slug,
     medium: 'oil-painting',
+    materials: null,
     year: null,
     dimensions: null,
     description: null,

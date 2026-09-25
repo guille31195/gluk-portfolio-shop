@@ -34,6 +34,12 @@ export const artwork = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'materials',
+      title: 'Materials',
+      type: 'string',
+      description: 'Shown on the artwork page instead of the medium, e.g. "Oil on canvas".',
+    }),
+    defineField({
       name: 'series',
       title: 'Series',
       type: 'reference',

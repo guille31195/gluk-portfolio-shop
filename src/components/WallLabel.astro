@@ -21,7 +21,7 @@ const showOriginal = artwork.originalStatus !== 'notForSale';
   <h1 class="title" data-intro>{artwork.title}</h1>
   <RuptureRule weight="thin" class="wall-rule" />
   <p class="wall-medium" data-intro>
-    {mediumLabel(artwork.medium)}
+    {artwork.materials ?? mediumLabel(artwork.medium)}
     {details && <><br /><span class="dim">{details}</span></>}
   </p>
   {artwork.description && <p class="wall-description" data-intro>{artwork.description}</p>}
