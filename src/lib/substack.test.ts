@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { feedUrl, loadJournal, parseFeed } from './substack';
+import { COVER_WIDTH, coverAtWidth, feedUrl, loadJournal, parseFeed } from './substack';
 
 // Synthetic feed in the shape Substack serves at <origin>/feed (RSS 2.0).
 const FEED = `<?xml version="1.0" encoding="UTF-8"?>
@@ -23,6 +23,12 @@ const FEED = `<?xml version="1.0" encoding="UTF-8"?>
 </channel></rss>`;
 
 describe('parseFeed', () => {
+  it("asks Substack's image CDN for a cover wide enough for high-density screens", () => {
+    const thumb = 'https://substackcdn.com/image/fetch/$s_!dc81!,w_256,c_limit,f_auto/https%3A%2F%2Fs3.example%2Fw_100.jpeg';
+    expect(coverAtWidth(thumb)).toBe(`https://substackcdn.com/image/fetch/$s_!dc81!,w_${COVER_WIDTH},c_limit,f_auto/https%3A%2F%2Fs3.example%2Fw_100.jpeg`);
+    expect(coverAtWidth('https://example.com/cover.jpg')).toBe('https://example.com/cover.jpg');
+  });
+
   it('reads entries newest first, with cover when present', () => {
     expect(parseFeed(FEED)).toEqual([
       {

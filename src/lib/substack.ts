@@ -13,6 +13,15 @@ export const feedUrl = (origin: string) => `${origin}/feed`;
 
 const isHttps = (value: unknown): value is string => typeof value === 'string' && value.startsWith('https://');
 
+// The feed's cover is a 256px Substack CDN thumbnail; the journal shows it at
+// 14rem, so request a copy wide enough for 2× screens. Only the CDN's own
+// options (before the /https%3A… source) are rewritten.
+export const COVER_WIDTH = 640;
+export function coverAtWidth(url: string): string {
+  const match = /^(https:\/\/substackcdn\.com\/image\/fetch\/[^/]*?)w_\d+/.exec(url);
+  return match ? url.replace(match[0], `${match[1]}w_${COVER_WIDTH}`) : url;
+}
+
 export function parseFeed(xml: string): JournalEntry[] {
   let doc: unknown;
   try {
@@ -30,7 +39,7 @@ export function parseFeed(xml: string): JournalEntry[] {
     if (!title || !isHttps(url) || Number.isNaN(time)) continue;
     const enclosure = item.enclosure as Record<string, unknown> | undefined;
     const type = String(enclosure?.['@_type'] ?? '');
-    const cover = isHttps(enclosure?.['@_url']) && type.startsWith('image/') ? (enclosure!['@_url'] as string) : null;
+    const cover = isHttps(enclosure?.['@_url']) && type.startsWith('image/') ? coverAtWidth(enclosure!['@_url'] as string) : null;
     entries.push({ title, url, date: new Date(time).toISOString(), cover });
   }
   return entries.sort((a, b) => b.date.localeCompare(a.date));
