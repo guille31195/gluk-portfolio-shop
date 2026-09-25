@@ -1,10 +1,10 @@
-import type { RawImage } from './artwork-map';
+import { hasAsset, type RawImage, type RawImageSlot } from './artwork-map';
 
 export interface RawTattooInfo {
   statement?: string | null;
   process?: (string | null)[] | null;
   body?: unknown[] | null;
-  images?: RawImage[] | null;
+  images?: RawImageSlot[] | null;
 }
 
 export interface TattooInfo {
@@ -24,6 +24,6 @@ export function mapTattooInfo(raw: RawTattooInfo | null, deps: TattooDeps): Tatt
     statement: raw?.statement?.trim() || null,
     process: (raw?.process ?? []).map((step) => step?.trim() ?? '').filter((step) => step.length > 0),
     bodyHtml: raw?.body && raw.body.length > 0 ? deps.toHtml(raw.body) : '',
-    images: (raw?.images ?? []).map(deps.urlFor),
+    images: (raw?.images ?? []).filter(hasAsset).map(deps.urlFor),
   };
 }

@@ -56,6 +56,17 @@ export interface RawImage {
   asset: { _ref: string; _type: string };
 }
 
+// An array item as Sanity actually returns it: an upload started and cancelled in
+// Studio leaves an item with no asset. imageBuilder.image() throws on that, so it
+// must be filtered out (see hasAsset) before a RawImage reaches a urlFor call.
+export interface RawImageSlot {
+  asset?: { _ref: string; _type: string } | null;
+}
+
+export function hasAsset(image: RawImageSlot | null | undefined): image is RawImage {
+  return Boolean(image?.asset?._ref);
+}
+
 export interface RawSeries {
   slug: string | null;
   name: string | null;
@@ -72,7 +83,7 @@ export interface RawArtwork {
   year: number | null;
   dimensions: string | null;
   description: string | null;
-  images: RawImage[] | null;
+  images: RawImageSlot[] | null;
   originalStatus: string | null;
   // Legacy checkbox, read only as a fallback for documents edited before originalStatus.
   availableAsOriginal: boolean | null;
@@ -130,7 +141,7 @@ export function mapArtwork(raw: RawArtwork, urlFor: (image: RawImage) => string)
     year: raw.year ?? null,
     dimensions: raw.dimensions ?? null,
     description: raw.description ?? null,
-    images: (raw.images ?? []).map(urlFor),
+    images: (raw.images ?? []).filter(hasAsset).map(urlFor),
     originalStatus: originalStatus(raw),
     printOptions: (raw.printOptions ?? []).map((option) => ({ ...option, soldOut: option.soldOut ?? false })),
     series,

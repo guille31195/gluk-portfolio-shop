@@ -95,6 +95,11 @@ describe('mapArtwork', () => {
   it('treats a missing images array as empty', () => {
     expect(mapArtwork(raw({ images: null }), urlFor).images).toEqual([]);
   });
+
+  it('drops an image slot with no asset (an upload started and cancelled in Studio)', () => {
+    const images = [{ asset: { _ref: 'a1', _type: 'reference' } }, { asset: null }, {}];
+    expect(mapArtwork(raw({ images }), urlFor).images).toEqual(['https://cdn.sanity.io/images/p/d/a1.jpg']);
+  });
 });
 
 describe('mediumLabel', () => {

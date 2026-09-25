@@ -33,4 +33,11 @@ describe('mapTattooInfo', () => {
   it('treats a blank statement as missing', () => {
     expect(mapTattooInfo({ statement: '  ', process: null, body: null, images: null }, deps).statement).toBeNull();
   });
+
+  it('drops an image slot with no asset (an upload started and cancelled in Studio)', () => {
+    const images = [{ asset: { _ref: 't1', _type: 'reference' } }, { asset: null }, {}];
+    expect(mapTattooInfo({ statement: null, process: null, body: null, images }, deps).images).toEqual([
+      'https://cdn.sanity.io/images/p/d/t1.jpg',
+    ]);
+  });
 });
