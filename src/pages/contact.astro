@@ -61,6 +61,11 @@ const settings = await getSiteSettings();
     gap: clamp(2rem, 7vw, 8rem);
     align-items: start;
   }
+  /* CONTACTO is the longest display word; at the display minimum (3.5rem) it
+     is wider than a phone screen, so it also scales with the viewport. */
+  .contact .display {
+    font-size: min(var(--text-display), 12.5vw);
+  }
   .contact-info {
     display: flex;
     flex-direction: column;

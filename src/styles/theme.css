@@ -26,7 +26,8 @@
   --text-body: clamp(0.95rem, 0.9rem + 0.2vw, 1.1rem);
   --text-statement: clamp(1.4rem, 1rem + 1.4vw, 2.4rem);
   --text-title: clamp(2rem, 1.2rem + 3vw, 4.4rem);
-  --text-display: clamp(3.5rem, 1rem + 9vw, 10rem);
+  /* The minimum also scales below ~360px so 7-letter words fit the phone. */
+  --text-display: clamp(min(3.5rem, 15.5vw), 1rem + 9vw, 10rem);
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --shadow-painting: 0 1.6rem 4rem rgba(0, 0, 0, 0.45);

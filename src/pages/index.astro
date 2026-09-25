@@ -96,7 +96,7 @@ const middle = Math.floor(heroList.length / 2);
     font-family: var(--font-display);
     font-weight: 800;
     font-stretch: 125%;
-    font-size: clamp(3rem, 1rem + 7.5vw, 9rem);
+    font-size: clamp(min(3rem, 13.3vw), 1rem + 7.5vw, 9rem); /* CÓDIGO fits 320px */
     line-height: 1.02;
     letter-spacing: -0.03em;
   }
@@ -154,6 +154,7 @@ const middle = Math.floor(heroList.length / 2);
     position: relative;
     padding: var(--section-space) var(--gutter);
     isolation: isolate;
+    overflow-x: clip; /* painting halos near the edge must not widen the page on phones */
   }
   /* The veil field under a 40% dark wash (was the veil image). */
   .featured :global(.featured-field) {
