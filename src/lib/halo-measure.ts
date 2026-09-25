@@ -4,9 +4,10 @@ import sharp from 'sharp';
 import { edgeLuminance } from './halo';
 
 const SANITY_CDN = 'https://cdn.sanity.io/images/';
+const FETCH_TIMEOUT_MS = 10_000;
 
 interface FetchLike {
-  (url: string): Promise<{ ok: boolean; status?: number; arrayBuffer(): Promise<ArrayBuffer> }>;
+  (url: string, init?: { signal: AbortSignal }): Promise<{ ok: boolean; status?: number; arrayBuffer(): Promise<ArrayBuffer> }>;
 }
 
 export interface MeasureDeps {
@@ -24,7 +25,7 @@ export function measureEdge(imageUrl: string, deps: MeasureDeps = {}): Promise<n
   const warn = deps.warn ?? ((message: string) => console.warn(message));
   const pending = (async () => {
     try {
-      const res = await fetchImpl(`${imageUrl.split('?')[0]}?w=100&fm=png`);
+      const res = await fetchImpl(`${imageUrl.split('?')[0]}?w=100&fm=png`, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const input = Buffer.from(await res.arrayBuffer());
       const { data, info } = await sharp(input).removeAlpha().raw().toBuffer({ resolveWithObject: true });

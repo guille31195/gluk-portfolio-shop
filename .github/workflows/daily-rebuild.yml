@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: '0 12 * * *' # 06:00 in Mexico City
   workflow_dispatch:
+# The job only makes an outbound HTTP call; it never needs repo write access.
+permissions: {}
 jobs:
   rebuild:
     runs-on: ubuntu-latest

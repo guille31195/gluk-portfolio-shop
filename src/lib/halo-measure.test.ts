@@ -35,6 +35,6 @@ describe('measureEdge', () => {
     expect(await measureEdge(url, { fetch: fetchImpl })).toBe(0);
     expect(await measureEdge(url, { fetch: fetchImpl })).toBe(0);
     expect(fetchImpl).toHaveBeenCalledOnce();
-    expect(fetchImpl).toHaveBeenCalledWith(`${url}?w=100&fm=png`);
+    expect(fetchImpl).toHaveBeenCalledWith(`${url}?w=100&fm=png`, { signal: expect.any(AbortSignal) });
   });
 });

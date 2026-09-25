@@ -3,7 +3,6 @@ import imageUrlBuilder from '@sanity/image-url';
 import { toHTML } from '@portabletext/to-html';
 import {
   ARTWORK_PROJECTION,
-  MEDIUMS,
   mapArtwork,
   type Artwork,
   type Medium,
@@ -20,10 +19,6 @@ import { mapTattooInfo, type RawTattooInfo, type TattooInfo } from './tattoo-inf
 export { MEDIUMS, mediumLabel } from './artwork-map';
 export type { Artwork, HaloSetting, Medium, OriginalStatus, PrintOption, SeriesInfo, SeriesKind } from './artwork-map';
 export type { AboutPage, HomePage, SiteSettings, TattooInfo };
-
-export function formatMedium(medium: Medium): string {
-  return medium.replace(/-/g, ' ');
-}
 
 const imageBuilder = imageUrlBuilder(sanityClient);
 
