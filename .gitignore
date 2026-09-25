@@ -13,3 +13,6 @@ data/working/
 dist/
 .astro/
 .sanity/
+
+# Brainstorming companion mockups
+.superpowers/
