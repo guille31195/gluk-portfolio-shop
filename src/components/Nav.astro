@@ -1,6 +1,7 @@
 ---
 import NumberedIndex from './NumberedIndex.astro';
 import RuptureRule from './RuptureRule.astro';
+import BrandField from './BrandField.astro';
 import type { SiteSettings } from '../lib/sanity';
 import { WORDMARK_HEIGHT, WORDMARK_WIDTH } from '../lib/brand';
 
@@ -39,6 +40,7 @@ const isActive = (href: string) =>
     <span data-menu-label>Menu</span>
   </button>
   <div class="mobile-menu" id="mobile-menu" data-mobile-menu hidden>
+    <BrandField kind="field-1" class="mobile-menu-field" />
     <NumberedIndex items={links.map((link) => ({ label: link.label, href: link.href, active: isActive(link.href) }))} size="large" />
     <RuptureRule weight="base" class="mobile-menu-rule" />
     <a class="label mobile-menu-social" href={settings.instagramUrl} rel="noopener">Instagram</a>
@@ -110,8 +112,12 @@ const isActive = (href: string) =>
     justify-content: center;
     gap: 2.5rem;
     padding: var(--nav-height) var(--gutter) 3rem;
-    background: var(--color-black) url(/brand/field-1.webp) center / cover no-repeat;
+    isolation: isolate;
+    background: var(--color-black);
     animation: menu-in 0.45s var(--ease-out);
+  }
+  .mobile-menu :global(.mobile-menu-field) {
+    z-index: -1;
   }
   .mobile-menu[hidden] {
     display: none;

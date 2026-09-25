@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import RuptureRule from '../components/RuptureRule.astro';
+import BrandField from '../components/BrandField.astro';
 import Painting from '../components/Painting.astro';
 import DataEgg from '../components/DataEgg.astro';
 import { getHomePage, mediumLabel } from '../lib/sanity';
@@ -39,6 +40,7 @@ const middle = Math.floor(heroList.length / 2);
 
     {featuredWorks.length > 0 && (
       <section class="featured" aria-label="Selected work">
+        <BrandField kind="veil" class="featured-field" />
         <ol class="featured-list">
           {featuredWorks.map((artwork) => (
             <li class="featured-item" data-reveal>
@@ -151,7 +153,18 @@ const middle = Math.floor(heroList.length / 2);
   .featured {
     position: relative;
     padding: var(--section-space) var(--gutter);
-    background: linear-gradient(var(--veil-wash), var(--veil-wash)), url(/brand/veil-1.webp) center / cover;
+    isolation: isolate;
+  }
+  /* The veil field under a 40% dark wash (was the veil image). */
+  .featured :global(.featured-field) {
+    z-index: -2;
+  }
+  .featured::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--veil-wash);
   }
   .featured-list {
     display: grid;

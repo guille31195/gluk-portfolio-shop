@@ -3,17 +3,19 @@
 // "veil" behind artwork (spec §4). Still on every page except Home, whose
 // hero shifts the field's mood (src/motion/home-backdrop.ts) by moving the
 // field layer and fading the glow/shade layers — all idle at opacity 0.
-export type BackdropKind = 'field-1' | 'field-2' | 'field-3' | 'veil';
+import BrandField from './BrandField.astro';
+import type { BrandFieldKind } from '../lib/brand-fields';
+
+export type BackdropKind = BrandFieldKind;
 
 interface Props {
   kind: BackdropKind;
 }
 
 const { kind } = Astro.props;
-const image = kind === 'veil' ? '/brand/veil-1.webp' : `/brand/${kind}.webp`;
 ---
-<div class:list={['backdrop', { 'backdrop--veil': kind === 'veil' }]} style={`--backdrop-image: url(${image})`} aria-hidden="true" data-backdrop>
-  <div class="backdrop-field" data-backdrop-field></div>
+<div class:list={['backdrop', { 'backdrop--veil': kind === 'veil' }]} aria-hidden="true" data-backdrop>
+  <BrandField kind={kind} class="backdrop-field" data-backdrop-field />
   <div class="backdrop-glow backdrop-glow--warm" data-backdrop-warm></div>
   <div class="backdrop-glow backdrop-glow--cool" data-backdrop-cool></div>
   <div class="backdrop-shade" data-backdrop-shade></div>
@@ -29,10 +31,7 @@ const image = kind === 'veil' ? '/brand/veil-1.webp' : `/brand/${kind}.webp`;
     overflow: hidden;
     background: var(--color-black);
   }
-  .backdrop-field {
-    position: absolute;
-    inset: 0;
-    background: var(--backdrop-image) center / cover no-repeat;
+  .backdrop :global(.backdrop-field) {
     will-change: transform;
   }
   .backdrop-glow,
