@@ -43,6 +43,7 @@ describe('mapAboutPage', () => {
     expect(result.portrait).toEqual({
       src: 'https://cdn.test/p.jpg?w=1200',
       srcset: ABOUT_PORTRAIT_WIDTHS.map((w) => `https://cdn.test/p.jpg?w=${w} ${w}w`).join(', '),
+      sizes: '(max-width: 860px) 100vw, 44vw',
       alt: 'Portrait of GLUK in the studio',
       focalPoint: '50% 30%',
     });
@@ -50,6 +51,17 @@ describe('mapAboutPage', () => {
     expect(result.bodyHtml).toBe('<p>1 blocks</p>');
     expect(result.photoCredit).toBe('Someone');
     expect(result.photoCreditUrl).toBeNull();
+  });
+
+  it('sizes a landscape portrait by its cropped (cover) width, not its column width', () => {
+    const landscape = {
+      ...deps,
+      imageUrl: (_image: unknown, width: number) => `https://cdn.sanity.io/images/p/d/a-2400x1600.jpg?w=${width}`,
+    };
+    const result = mapAboutPage({ portrait: { asset: { _ref: 'img', _type: 'reference' } } }, landscape);
+    // Box is 100vw × 70vh on phones, 44vw × 100vh on desktop; aspect 1.5.
+    expect(result.portrait?.sizes).toBe('(max-width: 860px) max(100vw, 105vh), max(44vw, 150vh)');
+    expect(ABOUT_PORTRAIT_WIDTHS.at(-1)).toBeGreaterThanOrEqual(2400);
   });
 
   it('links an Instagram handle credit', () => {

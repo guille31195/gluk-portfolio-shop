@@ -12,7 +12,7 @@ const about = await getAboutPage();
         <img
           src={about.portrait.src}
           srcset={about.portrait.srcset}
-          sizes="(max-width: 860px) 100vw, 44vw"
+          sizes={about.portrait.sizes}
           alt={about.portrait.alt}
           style={`object-position: ${about.portrait.focalPoint}`}
           loading="eager"

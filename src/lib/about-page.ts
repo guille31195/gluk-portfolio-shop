@@ -1,6 +1,7 @@
 // Pure mapping for the aboutPage singleton (spec §5.5). Default text is
 // Guillermo's BIO.pdf, verbatim: its first sentence is the statement, the rest
 // is the body (one string per paragraph).
+import { imageAspect } from './image-url';
 
 export const DEFAULT_ABOUT = {
   statement: 'Gluk is a Caribbean artist born in Caracas, Venezuela.',
@@ -17,8 +18,19 @@ export const DEFAULT_ABOUT = {
 // Plain text with no markup characters, so it is safe to wrap directly.
 export const DEFAULT_ABOUT_BODY_HTML = DEFAULT_ABOUT.body.map((p) => `<p>${p}</p>`).join('');
 
-export const ABOUT_PORTRAIT_WIDTHS = [640, 960, 1200, 1800] as const;
+export const ABOUT_PORTRAIT_WIDTHS = [640, 960, 1200, 1800, 2400] as const;
 const ABOUT_PORTRAIT_DEFAULT_WIDTH = 1200;
+
+// The portrait box (see about.astro) is 100vw × 70vh on phones and 44vw × 100vh
+// on desktop, filled with object-fit: cover. A landscape photo renders wider
+// than its column, so srcset must be picked by that cropped width or the
+// browser downloads a file too small and upscales it.
+function portraitSizes(src: string): string {
+  const aspect = imageAspect(src);
+  if (!aspect) return '(max-width: 860px) 100vw, 44vw';
+  const vh = (boxHeight: number) => `${Math.round(aspect * boxHeight)}vh`;
+  return `(max-width: 860px) max(100vw, ${vh(70)}), max(44vw, ${vh(100)})`;
+}
 
 export interface RawHotspot {
   x: number;
@@ -36,6 +48,7 @@ export interface RawAboutPage {
 export interface AboutPortrait {
   src: string;
   srcset: string;
+  sizes: string;
   alt: string;
   focalPoint: string;
 }
@@ -72,6 +85,7 @@ export function mapAboutPage(raw: RawAboutPage | null, deps: AboutDeps): AboutPa
       ? {
           src: deps.imageUrl(portrait, ABOUT_PORTRAIT_DEFAULT_WIDTH),
           srcset: ABOUT_PORTRAIT_WIDTHS.map((w) => `${deps.imageUrl(portrait, w)} ${w}w`).join(', '),
+          sizes: portraitSizes(deps.imageUrl(portrait, ABOUT_PORTRAIT_DEFAULT_WIDTH)),
           alt: raw?.portraitAlt?.trim() || 'GLUK',
           focalPoint: focalPoint(portrait.hotspot),
         }
