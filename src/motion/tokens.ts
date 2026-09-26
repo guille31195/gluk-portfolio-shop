@@ -32,6 +32,7 @@ export const HERO_DECODE = {
   ease: 'power2.out',
   flickerEvery: 5, // s between resting flickers
   flicker: 0.6, // s for a flicker: letter to glyph and back
+  flickerFor: 30, // s the resting flicker runs before it stops for good (WCAG 2.2.2)
   redecode: 1, // s for a hover re-decode
 } as const;
 

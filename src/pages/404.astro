@@ -1,0 +1,30 @@
+---
+// Netlify serves dist/404.html for any unknown path.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import NumberedIndex from '../components/NumberedIndex.astro';
+import RuptureRule from '../components/RuptureRule.astro';
+import { NAV_LINKS } from '../lib/nav-links';
+---
+<BaseLayout title="Page not found" backdrop="field-1">
+  <section class="page not-found">
+    <h1 class="display" data-intro>404</h1>
+    <RuptureRule weight="thin" class="not-found-rule" />
+    <p class="label" data-intro>Page not found</p>
+    <nav aria-label="Main pages" data-intro>
+      <NumberedIndex items={NAV_LINKS.map(({ href, label }) => ({ href, label }))} size="large" />
+    </nav>
+  </section>
+</BaseLayout>
+
+<style>
+  .not-found {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    min-height: 80svh;
+    justify-content: center;
+  }
+  :global(.not-found-rule) {
+    width: 10rem !important;
+  }
+</style>

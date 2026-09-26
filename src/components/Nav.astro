@@ -4,6 +4,7 @@ import RuptureRule from './RuptureRule.astro';
 import BrandField from './BrandField.astro';
 import type { SiteSettings } from '../lib/sanity';
 import { WORDMARK_HEIGHT, WORDMARK_WIDTH } from '../lib/brand';
+import { NAV_LINKS as links } from '../lib/nav-links';
 
 interface Props {
   settings: SiteSettings;
@@ -11,13 +12,6 @@ interface Props {
 
 const { settings } = Astro.props;
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
-const links = [
-  { href: '/portfolio', label: 'Work' },
-  { href: '/tattoo', label: 'Tattoo' },
-  { href: '/journal', label: 'Journal' },
-  { href: '/about', label: 'About' },
-  { href: '/contact', label: 'Contact' },
-];
 const isActive = (href: string) =>
   path === href || path.startsWith(`${href}/`) || (href === '/portfolio' && path.startsWith('/artwork/'));
 ---
