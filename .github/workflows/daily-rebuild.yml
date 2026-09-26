@@ -1,18 +1,32 @@
-# Rebuilds the site daily so new Substack posts reach the Journal page.
+# Daily check: rebuild the site only if Sanity content or the Substack feed
+# changed since the live deploy (each Netlify deploy costs credits).
+# Run it by hand from Actions → Daily rebuild → Run workflow; tick "force" to
+# rebuild even without changes.
 name: Daily rebuild
 on:
   schedule:
     - cron: '0 12 * * *' # 06:00 in Mexico City
   workflow_dispatch:
-# The job only makes an outbound HTTP call; it never needs repo write access.
-permissions: {}
+    inputs:
+      force:
+        description: Rebuild even if nothing changed
+        type: boolean
+        default: false
+# Read-only checkout; the job otherwise only makes outbound HTTP calls.
+permissions:
+  contents: read
 jobs:
   rebuild:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger the Netlify build hook
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --omit=dev --ignore-scripts
+      - name: Rebuild if content changed
         env:
-          HOOK: ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
-        run: |
-          if [ -z "$HOOK" ]; then echo "NETLIFY_BUILD_HOOK_URL secret is not set"; exit 1; fi
-          curl -fsS -X POST -d '{}' "$HOOK"
+          NETLIFY_BUILD_HOOK_URL: ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
+          FORCE: ${{ inputs.force || 'false' }}
+        run: node scripts/rebuild-if-changed.mjs
