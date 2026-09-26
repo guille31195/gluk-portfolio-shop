@@ -46,3 +46,6 @@ function initMobileMenu(): void {
 }
 
 document.addEventListener('astro:page-load', initMobileMenu);
+
+// Side-effect module; the empty export lets the test import it.
+export {};
