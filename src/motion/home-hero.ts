@@ -118,7 +118,11 @@ export function setupHomeHero({ reduced }: MotionEnv): (() => void) | void {
   // Everything below starts after setup, outside GSAP's tracked scope, so the
   // returned cleanup stops it.
   let flickerLoop: number | undefined;
+  let flickerStop: number | undefined;
   tl.eventCallback('onComplete', () => {
+    // Auto-playing motion must stop on its own; a flicker already running
+    // finishes, so the word rests on its code spelling.
+    flickerStop = window.setTimeout(() => window.clearInterval(flickerLoop), HERO_DECODE.flickerFor * 1000);
     flickerLoop = window.setInterval(() => {
       const idle = active.filter((w) => !busy(w));
       if (idle.length === 0) return;
@@ -173,6 +177,7 @@ export function setupHomeHero({ reduced }: MotionEnv): (() => void) | void {
 
   return () => {
     window.clearInterval(flickerLoop);
+    window.clearTimeout(flickerStop);
     active.forEach((w) => w.anim?.kill());
     listeners.forEach(([el, type, fn]) => el.removeEventListener(type, fn));
     backdrop?.cleanup();
