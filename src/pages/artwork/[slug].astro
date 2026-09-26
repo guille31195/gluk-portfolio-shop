@@ -24,8 +24,19 @@ const siblings = (room?.works ?? []).map((work) => ({
 <BaseLayout title={artwork.title}>
   <section class="detail page">
     <div class="gallery">
+      {/* Visually hidden, not display:none, so keyboards can reach them: Tab
+          into the group, arrows switch images. A lone image has nothing to
+          switch, so its radio stays fully hidden. */}
       {images.map((_, i) => (
-        <input type="radio" name="gallery" id={`gallery-${i}`} class="gallery-radio" checked={i === 0} />
+        <input
+          type="radio"
+          name="gallery"
+          id={`gallery-${i}`}
+          class="gallery-radio visually-hidden"
+          checked={i === 0}
+          hidden={images.length < 2}
+          aria-label={`Image ${i + 1} of ${images.length}`}
+        />
       ))}
       <div class:list={['gallery-main', { 'gallery-main--halo': artwork.halo }]}>
         {artwork.halo && <Halo class="gallery-halo" />}
@@ -41,7 +52,7 @@ const siblings = (room?.works ?? []).map((work) => ({
         <div class="gallery-thumbs">
           {images.map((src, i) => (
             <label for={`gallery-${i}`} class="gallery-thumb">
-              <img src={sizedImage(src, THUMB_WIDTH)} alt={`${artwork.title} thumbnail ${i + 1}`} />
+              <img src={sizedImage(src, THUMB_WIDTH)} alt="" />
             </label>
           ))}
         </div>
@@ -57,9 +68,6 @@ const siblings = (room?.works ?? []).map((work) => ({
     grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
     gap: clamp(2rem, 6vw, 7rem);
     align-items: start;
-  }
-  .gallery-radio {
-    display: none;
   }
   /* Images stack in one grid cell and crossfade; hidden ones are also
      visibility:hidden so screen readers skip them, as display:none did. */
@@ -118,6 +126,18 @@ const siblings = (room?.works ?? []).map((work) => ({
   .gallery-radio:nth-of-type(7):checked ~ .gallery-thumbs .gallery-thumb:nth-of-type(7),
   .gallery-radio:nth-of-type(8):checked ~ .gallery-thumbs .gallery-thumb:nth-of-type(8) {
     opacity: 1;
+  }
+  /* The focused radio is invisible, so its thumbnail carries the focus ring. */
+  .gallery-radio:nth-of-type(1):focus-visible ~ .gallery-thumbs .gallery-thumb:nth-of-type(1),
+  .gallery-radio:nth-of-type(2):focus-visible ~ .gallery-thumbs .gallery-thumb:nth-of-type(2),
+  .gallery-radio:nth-of-type(3):focus-visible ~ .gallery-thumbs .gallery-thumb:nth-of-type(3),
+  .gallery-radio:nth-of-type(4):focus-visible ~ .gallery-thumbs .gallery-thumb:nth-of-type(4),
+  .gallery-radio:nth-of-type(5):focus-visible ~ .gallery-thumbs .gallery-thumb:nth-of-type(5),
+  .gallery-radio:nth-of-type(6):focus-visible ~ .gallery-thumbs .gallery-thumb:nth-of-type(6),
+  .gallery-radio:nth-of-type(7):focus-visible ~ .gallery-thumbs .gallery-thumb:nth-of-type(7),
+  .gallery-radio:nth-of-type(8):focus-visible ~ .gallery-thumbs .gallery-thumb:nth-of-type(8) {
+    outline: 1px solid var(--color-bone);
+    outline-offset: 4px;
   }
   @media (max-width: 860px) {
     .detail { grid-template-columns: 1fr; }
