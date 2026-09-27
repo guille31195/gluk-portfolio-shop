@@ -45,3 +45,9 @@ A custom-built portfolio and e-commerce website for the artist Gluk (Guillermo C
 
 Read the project brief before any non-trivial work in this repo. At the end of a
 session, log what was accomplished back to the brief's Log table.
+
+## Domain & Client Presentations
+
+- Primary domain: **glukart.com** (registered at Porkbun, DNS pointed at Netlify site `thriving-halva-34e095`). `astro.config.mjs` `site` is set to it. The `.netlify.app` URL keeps working and is still what `scripts/rebuild-if-changed.mjs` checks.
+- Client presentations (commission trackers, sold-piece pages) are static pages in `public/p/<slug>-<4 hex>/index.html`, served at `glukart.com/p/<slug>-<hex>/`. Unlisted: `noindex` meta + `X-Robots-Tag` header in `netlify.toml`. The random suffix keeps the links from being guessed.
+- They start as claude.ai artifacts. To publish or refresh one, read the artifact, copy it (and its image files) into `public/p/…`, add the noindex/title/favicon head tags, and for editable commission trackers default `writable` to false so clients see a read-only view. Each push to `main` costs a Netlify deploy (15 credits).
