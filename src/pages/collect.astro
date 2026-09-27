@@ -1,0 +1,124 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Painting from '../components/Painting.astro';
+import RuptureRule from '../components/RuptureRule.astro';
+import { getAllArtworks } from '../lib/sanity';
+import { collectable, inquiryHref } from '../lib/collect';
+import { formatPrice } from '../data/format-price';
+import { pad2 } from '../lib/numerals';
+import { CARD_WIDTH, CARD_WIDTHS } from '../lib/image-url';
+
+const works = collectable(await getAllArtworks());
+const available = works.filter((w) => w.originalStatus === 'available').length;
+// Lowest price among print sizes still in stock; null until prices exist in Sanity.
+const printsFrom = (prices: number[]) => (prices.length ? formatPrice(Math.min(...prices)) : null);
+---
+<BaseLayout title="Collect">
+  <section class="page">
+    <div class="collect-head">
+      <h1 class="display" data-intro>COLLECT</h1>
+      <p class="label" data-intro><span class="dim">{pad2(available)}</span> Originals available</p>
+    </div>
+    <RuptureRule weight="base" class="collect-rule" />
+
+    <ul class="collect-list">
+      {works.map((artwork) => {
+        const from = printsFrom(artwork.printOptions.filter((o) => !o.soldOut).map((o) => o.price));
+        return (
+          <li class="collect-item" data-reveal>
+            <a class="collect-link" href={`/artwork/${artwork.slug}?from=collect`} data-cursor="view">
+              <Painting artwork={artwork} width={CARD_WIDTH} widths={CARD_WIDTHS} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 45vw, 30vw" />
+              <p class="collect-title">{artwork.title}</p>
+            </a>
+            <dl class="collect-offer">
+              {artwork.originalStatus !== 'notForSale' && (
+                <div>
+                  <dt class="label dim">Original</dt>
+                  <dd>
+                    {artwork.originalStatus === 'available' ? (
+                      <a href={inquiryHref('original', artwork.title)}>Available · Inquire</a>
+                    ) : (
+                      <span class="dim">Sold</span>
+                    )}
+                  </dd>
+                </div>
+              )}
+              <div>
+                <dt class="label dim">Prints</dt>
+                <dd>
+                  {from ? (
+                    <a href={`/artwork/${artwork.slug}?from=collect`}>From {from}</a>
+                  ) : (
+                    <a href={inquiryHref('print', artwork.title)}>Inquire</a>
+                  )}
+                </dd>
+              </div>
+            </dl>
+          </li>
+        );
+      })}
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .collect-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1.5rem;
+  }
+  .collect-head .label {
+    margin: 0;
+  }
+  :global(.collect-rule) {
+    margin: 2.4rem 0 clamp(3rem, 6vw, 5rem);
+  }
+  .collect-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(3rem, 6vw, 6rem) clamp(1.5rem, 4vw, 4rem);
+    align-items: start;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .collect-link {
+    display: block;
+    text-decoration: none;
+  }
+  .collect-title {
+    margin: 1.4rem 0 1rem;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.2rem;
+    line-height: 1.2;
+  }
+  .collect-offer {
+    margin: 0;
+  }
+  .collect-offer div {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.55rem 0;
+    border-top: var(--rule-hair) solid var(--color-hairline);
+  }
+  .collect-offer div:last-child {
+    border-bottom: var(--rule-hair) solid var(--color-hairline);
+  }
+  .collect-offer dd {
+    margin: 0;
+  }
+  .collect-offer a {
+    text-underline-offset: 0.25em;
+  }
+  @media (max-width: 1100px) {
+    .collect-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 700px) {
+    .collect-list { grid-template-columns: 1fr; }
+  }
+</style>

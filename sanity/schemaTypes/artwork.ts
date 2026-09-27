@@ -29,6 +29,7 @@ export const artwork = defineType({
           { title: 'Tattoo', value: 'tattoo' },
           { title: 'Sculpture', value: 'sculpture' },
           { title: 'Mixed Media', value: 'mixed-media' },
+          { title: 'Installation', value: 'installation' },
         ],
       },
       validation: (Rule) => Rule.required(),
