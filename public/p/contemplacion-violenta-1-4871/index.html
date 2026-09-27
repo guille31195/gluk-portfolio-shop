@@ -1,0 +1,458 @@
+<!doctype html><html><head><meta charset=utf8><meta name="robots" content="noindex, nofollow"><title>Contemplación Violenta 1</title><link rel="icon" href="/favicon.png"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=Karla:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:dark;
+    --ink:#120e0d;
+    --paper:#f4efe6;
+    --muted:rgba(244,239,230,.64);
+    --line:rgba(244,239,230,.14);
+    --ember:#c34f05;
+    --ember-soft:rgba(195,79,5,.5);
+    --violet:#463356;
+    --label:#efe8dc;
+    --label-ink:#1b1513;
+    --label-muted:rgba(27,21,19,.62);
+    --sans:'Karla',system-ui,-apple-system,sans-serif;
+    --display:'Archivo',system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--paper);
+    font-family:var(--sans);
+    font-size:17px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:'';
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 12% 6%, rgba(70,51,86,.55), transparent 60%),
+      radial-gradient(90% 70% at 90% 96%, rgba(195,79,5,.16), transparent 55%),
+      var(--ink);
+  }
+  h1,h2,h3,p,dl,figure{margin:0;}
+
+  .page{
+    max-width:1200px;
+    margin:0 auto;
+    padding-inline:clamp(16px,5vw,64px);
+    padding-block:clamp(20px,4vw,40px) 0;
+    overflow-x:clip;
+  }
+  .logo{
+    display:block;
+    height:22px;
+    width:auto;
+    opacity:.92;
+  }
+  .eyebrow{
+    font-weight:600;
+    font-size:12px;
+    line-height:1.3;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+
+  /* Hero */
+  .hero{
+    display:grid;
+    grid-template-columns:minmax(0,5fr) minmax(0,6fr);
+    gap:clamp(28px,6vw,96px);
+    align-items:center;
+    padding-block:clamp(36px,6vw,72px) clamp(44px,7vw,88px);
+  }
+  .figure-col{
+    grid-column:1;
+    grid-row:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+  }
+  .text-col{
+    grid-column:2;
+    grid-row:1;
+    min-width:0;
+  }
+  .frame{
+    position:relative;
+    width:min(100%, calc(76vh * .7747));
+  }
+  .frame img{
+    display:block;
+    width:100%;
+    height:auto;
+    border:1px solid var(--line);
+    box-shadow:0 30px 80px rgba(0,0,0,.55);
+    cursor:zoom-in;
+  }
+  .frame .numeral{
+    position:absolute;
+    top:-.6em;
+    left:-.3em;
+    font-family:var(--display);
+    font-weight:800;
+    font-size:clamp(64px,11vw,132px);
+    line-height:1;
+    color:var(--ember);
+    text-shadow:0 2px 24px rgba(0,0,0,.5);
+    pointer-events:none;
+    user-select:none;
+  }
+  .zoom-tip{
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .name{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:clamp(30px,4vw,64px);
+    line-height:1.02;
+    letter-spacing:.005em;
+    text-transform:uppercase;
+    text-wrap:balance;
+    margin-block:20px 22px;
+    overflow-wrap:break-word;
+  }
+  .lead{
+    font-size:clamp(18px,2vw,22px);
+    line-height:1.5;
+    max-width:34ch;
+    margin-bottom:34px;
+  }
+
+  /* Museum wall label */
+  .label{
+    background:var(--label);
+    color:var(--label-ink);
+    padding:22px 24px 24px;
+    max-width:430px;
+    border-radius:2px;
+  }
+  .label-top{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-weight:600;
+    font-size:11px;
+    line-height:1.3;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--label-muted);
+    margin-bottom:18px;
+  }
+  .red-dot{
+    width:14px;
+    height:14px;
+    flex:none;
+    border-radius:50%;
+    background:var(--ember);
+    border:0;
+    padding:0;
+    cursor:pointer;
+    box-shadow:0 0 0 4px rgba(195,79,5,.18);
+  }
+  .red-dot:focus-visible{outline:2px solid var(--label-ink);outline-offset:3px;}
+  .label .artist{
+    font-weight:600;
+    font-size:14px;
+    letter-spacing:.03em;
+    color:var(--label-muted);
+  }
+  .label .work{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:clamp(20px,2.4vw,26px);
+    line-height:1.1;
+    text-transform:uppercase;
+    text-wrap:balance;
+    margin-block:6px 14px;
+  }
+  .label .meta{
+    font-size:15px;
+    line-height:1.55;
+    padding-bottom:14px;
+  }
+  .label .collection{
+    font-size:14px;
+    line-height:1.5;
+    border-top:1px solid rgba(27,21,19,.2);
+    padding-top:14px;
+  }
+  .label .collection strong{font-weight:600;}
+
+  /* Sections */
+  .section{
+    display:grid;
+    grid-template-columns:minmax(0,5fr) minmax(0,6fr);
+    gap:clamp(28px,6vw,96px);
+    border-top:1px solid var(--line);
+    padding-block:clamp(36px,6vw,72px);
+  }
+  .statement p{
+    font-size:clamp(17px,1.9vw,20px);
+    line-height:1.7;
+    max-width:62ch;
+    margin-bottom:1.2em;
+  }
+  .statement p:first-child::first-letter{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:2.6em;
+    float:left;
+    line-height:.85;
+    padding-right:10px;
+    margin-top:4px;
+    color:var(--ember);
+  }
+  .care{display:grid;gap:22px;max-width:62ch;}
+  .care > div + div{border-top:1px solid var(--line);padding-top:22px;}
+  .care h3{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:14px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  .care p{color:var(--muted);}
+
+  .thanks{
+    border-top:1px solid var(--line);
+    padding-block:clamp(48px,8vw,104px);
+  }
+  .thanks p{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:clamp(34px,6vw,76px);
+    line-height:1.02;
+    text-transform:uppercase;
+    text-wrap:balance;
+  }
+  .thanks p span{color:var(--ember);}
+
+  .foot{
+    border-top:1px solid var(--line);
+    padding-block:32px clamp(28px,5vw,48px);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:14px 24px;
+    flex-wrap:wrap;
+    color:var(--muted);
+    font-size:13px;
+    letter-spacing:.03em;
+  }
+
+  /* Zoom */
+  .zoom{
+    position:fixed;
+    inset:0;
+    z-index:70;
+    background:rgba(8,6,5,.96);
+    display:flex;
+    overflow:auto;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease;
+    cursor:zoom-out;
+  }
+  .zoom.open{opacity:1;pointer-events:auto;}
+  .zoom img{
+    max-width:none;
+    width:min(200vw,1162px);
+    display:block;
+    margin:auto;
+  }
+  .zoom span{
+    position:fixed;
+    left:50%;
+    bottom:calc(20px + env(safe-area-inset-bottom, 0px));
+    transform:translateX(-50%);
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--muted);
+    pointer-events:none;
+  }
+  .confetti{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    z-index:60;
+  }
+
+  @media (max-width:820px){
+    .hero,.section{grid-template-columns:minmax(0,1fr);}
+    .text-col{grid-column:1;grid-row:1;}
+    .figure-col{grid-column:1;grid-row:2;}
+    .frame{width:min(100%, calc(70vh * .7747));}
+    .frame .numeral{left:-.1em;}
+    .name{font-size:clamp(30px,10vw,64px);}
+    .lead{max-width:none;}
+    .label{max-width:none;}
+  }
+</style>
+
+<div class="page">
+  <img class="logo" src="img/logo-white.png" alt="GLUK">
+
+  <section class="hero">
+    <div class="text-col">
+      <p class="eyebrow">Welcome to the collection</p>
+      <h1 class="name">Gilberto Carrasquero</h1>
+      <p class="lead">Contemplación Violenta 1 now belongs to you. Thank you for becoming a GLUK collector.</p>
+
+      <div class="label">
+        <div class="label-top">
+          <button class="red-dot" id="dot" type="button" aria-label="Celebrate again"></button>
+          <span>Collected, September 2026</span>
+        </div>
+        <p class="artist">GLUK (Guillermo Carrasquero)</p>
+        <p class="work">Contemplación Violenta&nbsp;1</p>
+        <p class="meta">2026<br>Oil on canvas</p>
+        <p class="collection">Collection of <strong>Gilberto Carrasquero</strong></p>
+      </div>
+    </div>
+
+    <figure class="figure-col">
+      <div class="frame">
+        <span class="numeral">1</span>
+        <img id="art" src="img/contemplacion-violenta-1-meadow.jpg" alt="Contemplación Violenta 1: a woman in a red dress and crossed bandoliers lies with her eyes closed in a meadow of wildflowers, seen from above.">
+      </div>
+      <figcaption class="zoom-tip">Click the painting to zoom</figcaption>
+    </figure>
+  </section>
+
+  <section class="section">
+    <p class="eyebrow">About the work</p>
+    <div class="statement">
+      <p>VIOLENTA holds the simultaneous presence of beauty and violence, refusing to let either redeem, justify, or erase the other. Neither condition cancels the other. Tenderness, danger, memory, longing, and loss coexist in the same frame.</p>
+      <p>Like oral histories and folk songs passed down, the story survives only through fragments, arriving too late, or too early, to witness the event itself. What remains is an atmosphere charged with possibility: the viewer becomes investigator, witness, and storyteller at once, in the space where attraction and threat, care and aggression, hold without resolution.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <p class="eyebrow">Caring for your painting</p>
+    <div class="care">
+      <div>
+        <h3>Light</h3>
+        <p>Keep it out of direct sunlight. Strong light fades pigment over time.</p>
+      </div>
+      <div>
+        <h3>Air</h3>
+        <p>Hang it away from heat sources, kitchens and damp walls. Steady room conditions are best for oil on canvas.</p>
+      </div>
+      <div>
+        <h3>Cleaning</h3>
+        <p>Dust gently with a dry, soft brush or cloth. Don't use water or cleaning products on the surface.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="thanks">
+    <p>Thank you, Gilberto<span>.</span></p>
+  </section>
+
+  <footer class="foot">
+    <img class="logo" src="img/logo-white.png" alt="GLUK">
+    <span>GLUK, Guillermo Carrasquero</span>
+    <span>Contemplación Violenta 1, 2026</span>
+  </footer>
+</div>
+
+<div class="zoom" id="zoom">
+  <img id="zoom-img" src="" alt="">
+  <span>Click to close</span>
+</div>
+
+<script>
+(function(){
+  var zoom = document.getElementById('zoom');
+  var zoomImg = document.getElementById('zoom-img');
+  var art = document.getElementById('art');
+
+  art.addEventListener('click', function(){
+    zoomImg.src = art.getAttribute('src');
+    zoomImg.alt = art.alt;
+    zoom.classList.add('open');
+  });
+  function closeZoom(){ zoom.classList.remove('open'); }
+  zoom.addEventListener('click', closeZoom);
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') closeZoom();
+  });
+
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var colors = ['#c34f05', '#e8b923', '#7d5ba6', '#f4efe6'];
+
+  function burst(){
+    if (reduce) return;
+    var c = document.createElement('canvas');
+    c.className = 'confetti';
+    document.body.appendChild(c);
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = window.innerWidth, h = window.innerHeight;
+    c.width = w * dpr;
+    c.height = h * dpr;
+    var ctx = c.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    var ps = [];
+    for (var i = 0; i < 150; i++){
+      var left = i % 2 === 0;
+      var ang = (left ? -60 : -120) * Math.PI / 180 + (Math.random() - .5) * .7;
+      var sp = 9 + Math.random() * 9;
+      ps.push({
+        x: left ? 0 : w, y: h,
+        vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp,
+        r: Math.random() * Math.PI, vr: (Math.random() - .5) * .3,
+        s: 5 + Math.random() * 6, c: colors[i % colors.length], life: 0
+      });
+    }
+
+    function tick(){
+      ctx.clearRect(0, 0, w, h);
+      var alive = false;
+      ps.forEach(function(p){
+        p.vy += .35;
+        p.vx *= .992;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.r += p.vr;
+        p.life++;
+        var a = Math.max(0, 1 - p.life / 150);
+        if (a > 0 && p.y < h + 20){
+          alive = true;
+          ctx.save();
+          ctx.globalAlpha = a;
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.r);
+          ctx.fillStyle = p.c;
+          ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2);
+          ctx.restore();
+        }
+      });
+      if (alive) requestAnimationFrame(tick); else c.remove();
+    }
+    requestAnimationFrame(tick);
+  }
+
+  document.getElementById('dot').addEventListener('click', burst);
+  setTimeout(burst, 500);
+})();
+</script>
+
+</body></html>

@@ -10,6 +10,7 @@ const { PUBLIC_SANITY_PROJECT_ID, PUBLIC_SANITY_DATASET } = loadEnv(
 );
 
 export default defineConfig({
+  site: 'https://glukart.com',
   integrations: [
     react(),
     sanity({

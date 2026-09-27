@@ -15,3 +15,10 @@
 # Deploy previews and local builds keep the warn + empty-fallback behaviour.
 [context.production.environment]
   JOURNAL_FEED_REQUIRED = "true"
+
+# Private client presentations (commissions, sold pieces) live in public/p/<slug>/.
+# Unlisted links only: keep them out of search engines.
+[[headers]]
+  for = "/p/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
