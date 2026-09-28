@@ -1,7 +1,7 @@
 // Artwork types and the pure raw→view mapping. Free of `sanity:client` so it can
 // be unit-tested; src/lib/sanity.ts supplies the image URL builder.
 
-export const MEDIUMS = ['oil-painting', 'tattoo', 'sculpture', 'mixed-media'] as const;
+export const MEDIUMS = ['oil-painting', 'tattoo', 'sculpture', 'mixed-media', 'installation'] as const;
 export type Medium = (typeof MEDIUMS)[number];
 export type HaloSetting = 'auto' | 'always' | 'never';
 export type SeriesKind = 'series' | 'diptych';

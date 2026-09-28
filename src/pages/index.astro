@@ -2,14 +2,23 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import RuptureRule from '../components/RuptureRule.astro';
 import BrandField from '../components/BrandField.astro';
-import Painting from '../components/Painting.astro';
 import DataEgg from '../components/DataEgg.astro';
-import { getHomePage, mediumLabel } from '../lib/sanity';
-import { toRoman } from '../lib/numerals';
-import { CARD_WIDTH, CARD_WIDTHS } from '../lib/image-url';
+import { getAllArtworks, getHomePage } from '../lib/sanity';
+import { pad2, toRoman } from '../lib/numerals';
 
-const { heroList, heroFootnote, featuredWorks } = await getHomePage();
+const { heroList, heroFootnote } = await getHomePage();
 const middle = Math.floor(heroList.length / 2);
+// The two roads under the hero: see everything, or buy a piece.
+const artworks = await getAllArtworks();
+const roads = [
+  { href: '/portfolio', word: 'PORTFOLIO', count: artworks.length, note: 'Works' },
+  {
+    href: '/collect',
+    word: 'COLLECT',
+    count: artworks.filter((a) => a.originalStatus === 'available').length,
+    note: 'Originals available',
+  },
+];
 ---
 <BaseLayout title="Home" backdrop="field-2">
   <div data-motion-page="home">
@@ -38,25 +47,21 @@ const middle = Math.floor(heroList.length / 2);
       <div class="hero-egg"><DataEgg /></div>
     </section>
 
-    {featuredWorks.length > 0 && (
-      <section class="featured" aria-label="Selected work">
-        <BrandField kind="veil" class="featured-field" />
-        <ol class="featured-list">
-          {featuredWorks.map((artwork) => (
-            <li class="featured-item" data-reveal>
-              <a class="featured-link" href={`/artwork/${artwork.slug}`} data-cursor="view">
-                <Painting artwork={artwork} width={CARD_WIDTH} widths={CARD_WIDTHS} sizes="(max-width: 700px) 100vw, 34rem" />
-                <p class="featured-title">{artwork.title}</p>
-                <p class="label dim">
-                  {mediumLabel(artwork.medium)}{artwork.series && ` · ${artwork.series.name}`}
-                </p>
-              </a>
-            </li>
-          ))}
-        </ol>
-        <p class="view-all" data-reveal><a class="button" href="/portfolio">Work</a></p>
-      </section>
-    )}
+    <section class="roads" aria-label="Portfolio and collect">
+      <BrandField kind="veil" class="roads-field" />
+      <RuptureRule weight="base" class="roads-rule" />
+      <ul class="roads-list">
+        {roads.map((road, i) => (
+          <li data-reveal>
+            <a class="road" href={road.href}>
+              <span class="mono dim">{toRoman(i + 1)}</span>
+              <span class="road-word">{road.word}</span>
+              <span class="label"><span class="dim">{pad2(road.count)}</span> {road.note}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
   </div>
 </BaseLayout>
 
@@ -150,48 +155,56 @@ const middle = Math.floor(heroList.length / 2);
     right: var(--gutter);
     bottom: 2.4rem;
   }
-  .featured {
+  .roads {
     position: relative;
     padding: var(--section-space) var(--gutter);
     isolation: isolate;
-    overflow-x: clip; /* painting halos near the edge must not widen the page on phones */
+    overflow-x: clip; /* the rupture rule bleeds off the edges, not into a scrollbar */
   }
   /* The veil field under a 40% dark wash (was the veil image). */
-  .featured :global(.featured-field) {
+  .roads :global(.roads-field) {
     z-index: -2;
   }
-  .featured::before {
+  .roads::before {
     content: '';
     position: absolute;
     inset: 0;
     z-index: -1;
     background: var(--veil-wash);
   }
-  .featured-list {
+  .roads :global(.roads-rule) {
+    margin: 0 -8% clamp(3rem, 6vw, 6rem) -3%;
+  }
+  .roads-list {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: clamp(3rem, 8vw, 8rem);
-    max-width: 72rem;
-    margin: 0 auto;
+    margin: 0;
     padding: 0;
     list-style: none;
   }
-  .featured-item:nth-child(even) {
-    margin-top: clamp(6rem, 16vw, 14rem);
+  .roads-list li + li {
+    border-left: var(--rule-hair) solid var(--color-hairline);
+    padding-left: clamp(1.5rem, 4vw, 4rem);
   }
-  .featured-link {
-    display: block;
+  .road {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    padding: 1rem 0 2rem;
     text-decoration: none;
+    transition: opacity 0.4s var(--ease-out);
   }
-  .featured-title {
-    margin: 1.4rem 0 0.3rem;
+  .road-word {
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: 1.4rem;
+    font-stretch: 125%;
+    font-size: clamp(2.4rem, 1rem + 4.2vw, 6.2rem);
+    line-height: 0.9;
+    letter-spacing: -0.03em;
   }
-  .view-all {
-    margin: var(--section-space) 0 0;
-    text-align: center;
+  /* Hovering one road dims the other. */
+  .roads-list:hover .road:not(:hover) {
+    opacity: 0.4;
   }
   @media (max-width: 760px) {
     .hero {
@@ -200,7 +213,13 @@ const middle = Math.floor(heroList.length / 2);
     }
     .hero-hairline { display: none; }
     .hero-egg { left: var(--gutter); }
-    .featured-list { grid-template-columns: 1fr; }
-    .featured-item:nth-child(even) { margin-top: 0; }
+    .roads-list { grid-template-columns: 1fr; }
+    .roads-list li + li {
+      border-left: 0;
+      border-top: var(--rule-hair) solid var(--color-hairline);
+      padding: 2rem 0 0;
+      margin-top: 1rem;
+    }
+    .road-word { font-size: min(12vw, 4rem); }
   }
 </style>

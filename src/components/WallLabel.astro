@@ -3,6 +3,7 @@ import NumberedIndex, { type IndexItem } from './NumberedIndex.astro';
 import RuptureRule from './RuptureRule.astro';
 import { mediumLabel, type Artwork } from '../lib/sanity';
 import { formatPrice } from '../data/format-price';
+import { inquiryHref } from '../lib/collect';
 
 interface Props {
   artwork: Artwork;
@@ -12,7 +13,7 @@ interface Props {
 
 const { artwork, heading, siblings } = Astro.props;
 const details = [artwork.year, artwork.dimensions].filter(Boolean).join(' · ');
-const inquire = `/contact?interest=original&artwork=${encodeURIComponent(artwork.title)}`;
+const inquire = inquiryHref('original', artwork.title);
 // Available → Inquire button; sold → "Sold"; not for sale → no Original block.
 const showOriginal = artwork.originalStatus !== 'notForSale';
 ---
@@ -47,6 +48,13 @@ const showOriginal = artwork.originalStatus !== 'notForSale';
           </li>
         ))}
       </ul>
+    </div>
+  )}
+  {/* No print sizes priced yet: prints of a collectable piece are by inquiry, matching /collect. */}
+  {artwork.printOptions.length === 0 && showOriginal && (
+    <div class="wall-block" data-intro>
+      <p class="label dim">Prints</p>
+      <a class="button" href={inquiryHref('print', artwork.title)}>Inquire</a>
     </div>
   )}
   {siblings.length > 1 && (

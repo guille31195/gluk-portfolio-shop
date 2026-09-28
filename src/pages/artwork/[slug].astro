@@ -23,6 +23,8 @@ const siblings = (room?.works ?? []).map((work) => ({
 ---
 <BaseLayout title={artwork.title}>
   <section class="detail page">
+    {/* Default target; the script below points it at Collect when the URL says so. */}
+    <a class="back label" href="/portfolio" data-back-link>← <span data-back-label>Portfolio</span></a>
     <div class="gallery">
       {/* Visually hidden, not display:none, so keyboards can reach them: Tab
           into the group, arrows switch images. A lone image has nothing to
@@ -62,12 +64,48 @@ const siblings = (room?.works ?? []).map((work) => ({
   </section>
 </BaseLayout>
 
+<script>
+  import { backLink } from '../../lib/collect';
+
+  document.addEventListener('astro:page-load', () => {
+    const link = document.querySelector<HTMLAnchorElement>('[data-back-link]');
+    const label = link?.querySelector('[data-back-label]');
+    if (!link || !label) return;
+    const target = backLink(location.search);
+    link.href = target.href;
+    label.textContent = target.label;
+    // The nav marks Portfolio active on artwork pages at build time; follow the visitor's road.
+    if (target.href === '/collect') {
+      for (const a of document.querySelectorAll<HTMLAnchorElement>('.nav-desktop a')) {
+        const on = a.getAttribute('href') === '/collect';
+        a.classList.toggle('is-active', on);
+        if (on) a.setAttribute('aria-current', 'page');
+        else a.removeAttribute('aria-current');
+      }
+    }
+  });
+</script>
+
 <style>
   .detail {
+    --detail-gap: clamp(2rem, 6vw, 7rem);
     display: grid;
     grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-    gap: clamp(2rem, 6vw, 7rem);
+    gap: var(--detail-gap);
     align-items: start;
+  }
+  /* Spans both columns; the negative margin cancels most of the row gap. */
+  .back {
+    grid-column: 1 / -1;
+    justify-self: start;
+    margin-bottom: calc(1.5rem - var(--detail-gap));
+    text-decoration: none;
+    opacity: 0.55;
+    transition: opacity 0.3s var(--ease-out);
+  }
+  .back:hover,
+  .back:focus-visible {
+    opacity: 1;
   }
   /* Images stack in one grid cell and crossfade; hidden ones are also
      visibility:hidden so screen readers skip them, as display:none did. */
