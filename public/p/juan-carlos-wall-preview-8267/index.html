@@ -139,7 +139,7 @@ svg text{font-family:var(--body)}
           <dt>Share of wall width</dt><dd id="q-cov">—</dd>
           <dt class="total">Price (USD)</dt><dd class="total" id="q-price">—</dd>
         </dl>
-        <p class="note">All preset sizes are whole centimetres and keep roughly the 7:10 proportion of the requested 35 × 50 in. Oil on canvas by GLUK.</p>
+        <p class="note">All preset sizes are rounded to the nearest 5 cm and keep roughly the 7:10 proportion of the requested 35 × 50 in. Oil on canvas by GLUK.</p>
       </div>
     </aside>
   </div>
@@ -153,8 +153,8 @@ svg text{font-family:var(--body)}
 <script>
 const IN=2.54, RATE=0.45, WALL_W=60*IN, WALL_H=100*IN;
 const C={wall:"#2a2124",floor:"#4a3a3c",line:"#f1eee855",dim:"#f1eee88c",fg:"#f1eee8",acc:"#e8732b",frame:"#0d0a0b",person:"#f1eee840"};
-// Sizes are whole centimetres; inches are derived for reference only.
-const sizes=[{w:89,h:127,tag:"Requested"},{w:98,h:140},{w:107,h:152},{w:116,h:165},{w:124,h:178,tag:"Largest"}];
+// Sizes are in centimetres, rounded to the nearest 5; inches are derived for reference only.
+const sizes=[{w:90,h:125,tag:"Requested"},{w:100,h:140},{w:105,h:150},{w:115,h:165},{w:125,h:180,tag:"Largest"}];
 let sel={...sizes[0]}, orient="port", centre=145, showPerson=true, custom=false;
 const fmt=(n,d=0)=>n.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
 const money=n=>"$"+n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
