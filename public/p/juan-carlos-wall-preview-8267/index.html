@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}</style>
+<title>Wall Size Preview — GLUK</title>
+<link rel="icon" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=Karla:wght@300;400;700&display=swap">
+<style>
+/* Layout: GLUK site language — dark ground with orange/blue glow, wall elevation left, sizes + quote right */
+:root{
+  --black:#1e1619; --bone:#f1eee8; --bone-dim:#f1eee88c; --hair:#f1eee838;
+  --orange:#c34f05; --orange-hi:#e8732b; --blue:#0c89d5; --deep-blue:#011458;
+  --wall:#2a2124; --floor:#3b2f31;
+  --display:"Archivo",system-ui,sans-serif; --body:"Karla",system-ui,sans-serif;
+  --gutter:clamp(1rem,4vw,4rem);
+  color-scheme:dark;
+}
+html{background:var(--black)}
+body{background:var(--black);color:var(--bone);font-family:var(--body);font-size:clamp(.95rem,.9rem + .2vw,1.1rem);line-height:1.5;min-height:100vh;
+  background-image:radial-gradient(60% 55% at 0% 100%,#c34f05cc 0%,#c34f0540 40%,transparent 75%),radial-gradient(55% 50% at 100% 0%,#011458 0%,#0c89d533 45%,transparent 75%);
+  background-attachment:fixed}
+.label{font-size:clamp(.68rem,.62rem + .2vw,.8rem);letter-spacing:.2em;text-transform:uppercase;color:var(--bone-dim)}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:var(--gutter);padding-block:0 4rem}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:clamp(4.5rem,8vw,6.5rem)}
+.logo img{height:30px;width:auto;display:block}
+.logo .txt{font-family:var(--display);font-weight:900;font-size:24px;letter-spacing:-.04em}
+nav.top a{color:var(--bone);text-decoration:none}
+nav.top .label a:hover{color:var(--bone)}
+header.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px 40px;align-items:end;padding-block:2rem 2.5rem;border-bottom:1px solid var(--hair);margin-bottom:2rem}
+h1{font-family:var(--display);font-weight:800;letter-spacing:-.03em;font-size:clamp(2.2rem,1.2rem + 3.6vw,4.6rem);line-height:.95;margin:.6rem 0 0;text-wrap:balance}
+h1 em{font-style:normal;color:var(--orange-hi)}
+.lede{max-width:56ch;color:var(--bone-dim);margin:1rem 0 0}
+.wallspec{text-align:right;font-family:var(--display);font-weight:700;font-size:1.3rem;line-height:1.2}
+.wallspec small{display:block;font-family:var(--body);font-weight:400;font-size:.85rem;color:var(--bone-dim)}
+@media (max-width:860px){header.hero{grid-template-columns:1fr}.wallspec{text-align:left}}
+.grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(1.5rem,3vw,3rem);align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.stage{min-width:0;background:#1e161999;border:1px solid var(--hair);padding:clamp(10px,2vw,20px);backdrop-filter:blur(6px)}
+.stage svg{display:block;width:100%;height:auto;max-height:80vh}
+.controls{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center;margin-top:14px}
+.controls label{display:flex;align-items:center;gap:8px;cursor:pointer}
+.controls input[type=range]{accent-color:var(--orange);width:140px}
+.controls input[type=checkbox]{accent-color:var(--orange)}
+.seg{display:inline-flex;border:1px solid var(--hair)}
+.seg button{font:inherit;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;background:transparent;color:var(--bone-dim);border:0;padding:7px 12px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--bone);color:var(--black)}
+.side{display:flex;flex-direction:column;gap:2rem;min-width:0}
+.opts{display:flex;flex-direction:column;border-top:1px solid var(--hair)}
+.opt{display:grid;grid-template-columns:2.2rem minmax(0,1fr) auto;gap:2px 16px;align-items:center;text-align:left;font:inherit;color:inherit;
+  background:transparent;border:0;border-bottom:1px solid var(--hair);padding:14px 4px 14px 0;cursor:pointer;position:relative;transition:background .2s}
+.opt:hover{background:#f1eee80d}
+.opt[aria-pressed=true]{background:linear-gradient(90deg,#c34f0533,transparent 80%)}
+.opt[aria-pressed=true]::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--orange)}
+.opt:focus-visible,.seg button:focus-visible,input:focus-visible,.custom button:focus-visible{outline:2px solid var(--orange-hi);outline-offset:2px}
+.idx{font-family:var(--display);font-weight:800;font-size:.8rem;color:var(--bone-dim);padding-left:12px}
+.opt .cm{font-family:var(--display);font-weight:800;font-size:1.25rem;letter-spacing:-.02em}
+.opt .inch{font-size:.85rem;color:var(--bone-dim)}
+.opt .tag{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--orange-hi);margin-left:8px;vertical-align:3px}
+.opt .price{font-family:var(--display);font-weight:700;text-align:right;font-variant-numeric:tabular-nums;font-size:1.05rem}
+.opt .area{font-size:.78rem;color:var(--bone-dim);text-align:right;font-variant-numeric:tabular-nums}
+.custom .row{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin-top:10px}
+.custom label{display:flex;flex-direction:column;gap:6px}
+.custom input{font:inherit;width:100px;padding:8px 10px;border:1px solid var(--hair);background:#1e1619aa;color:var(--bone)}
+.custom button{font:inherit;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;padding:10px 16px;border:1px solid var(--bone);background:var(--bone);color:var(--black);cursor:pointer}
+.custom button:hover{background:var(--orange);border-color:var(--orange);color:var(--bone)}
+.quote{border-top:5px solid var(--bone);padding-top:1.1rem}
+.quote h2{font-family:var(--display);font-weight:800;letter-spacing:-.02em;font-size:1.6rem;margin:.3rem 0 1rem}
+dl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 16px;margin:0;font-variant-numeric:tabular-nums}
+dt{color:var(--bone-dim)} dd{margin:0;text-align:right}
+dt.total{color:var(--bone);align-self:center;padding-top:12px;border-top:1px solid var(--hair)}
+dd.total{font-family:var(--display);font-weight:900;font-size:clamp(1.8rem,1.2rem + 2vw,2.6rem);letter-spacing:-.03em;padding-top:12px;border-top:1px solid var(--hair);color:var(--orange-hi)}
+.note{font-size:.85rem;color:var(--bone-dim);margin:1rem 0 0;max-width:52ch}
+footer{margin-top:4rem;padding-top:1.2rem;border-top:1px solid var(--hair);display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px}
+footer a{color:var(--bone-dim);text-decoration:none} footer a:hover{color:var(--bone)}
+svg text{font-family:var(--body)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="top">
+    <a class="logo" href="https://glukart.com" aria-label="GLUK home">
+      <img src="https://glukart.com/brand/wordmark-white.png" alt="GLUK" onerror="this.outerHTML='<span class=&quot;txt&quot;>GLUK</span>'">
+    </a>
+    <span class="label"><a href="https://glukart.com/contact?interest=commission">Commissions</a></span>
+  </nav>
+
+  <header class="hero">
+    <div>
+      <div class="label">Commission · Sizing study</div>
+      <h1>The painting, <em>to scale</em>, on your wall.</h1>
+      <p class="lede">Choose a size to see how it sits on the wall. Measurements are in centimetres with inches for reference. Price is the canvas area in cm² × $0.45 USD.</p>
+    </div>
+    <div class="wallspec"><span class="label">Wall</span><br>152.4 × 254 cm<small>60 × 100 in</small></div>
+  </header>
+
+  <div class="grid">
+    <section class="stage" aria-label="Wall preview">
+      <svg id="wall" viewBox="0 0 520 760" role="img" aria-label="Scale drawing of the wall with the selected painting"></svg>
+      <div class="controls label">
+        <div class="seg" role="group" aria-label="Orientation">
+          <button id="o-port" aria-pressed="true">Vertical</button>
+          <button id="o-land" aria-pressed="false">Horizontal</button>
+        </div>
+        <label for="h">Centre height <input id="h" type="range" min="100" max="190" step="1" value="145"> <span id="hv">145 cm</span></label>
+        <label for="person"><input id="person" type="checkbox" checked> Person 175 cm</label>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div>
+        <div class="label" style="margin-bottom:10px">Size options</div>
+        <div class="opts" id="opts"></div>
+      </div>
+
+      <div class="custom">
+        <div class="label">Custom size</div>
+        <form class="row" id="cform">
+          <label for="cw" class="label">Width (in)<input id="cw" type="number" min="5" max="60" step="0.5" value="40"></label>
+          <label for="ch" class="label">Height (in)<input id="ch" type="number" min="5" max="100" step="0.5" value="55"></label>
+          <button type="submit">Show on wall</button>
+        </form>
+      </div>
+
+      <div class="quote">
+        <div class="label">Quote</div>
+        <h2 id="qtitle">Selected size</h2>
+        <dl>
+          <dt>Size</dt><dd id="q-size">—</dd>
+          <dt>Inches</dt><dd id="q-in">—</dd>
+          <dt>Area</dt><dd id="q-area">—</dd>
+          <dt>Rate</dt><dd>$0.45 / cm²</dd>
+          <dt>Wall left and right</dt><dd id="q-side">—</dd>
+          <dt>Share of wall width</dt><dd id="q-cov">—</dd>
+          <dt class="total">Price (USD)</dt><dd class="total" id="q-price">—</dd>
+        </dl>
+        <p class="note">All preset sizes keep the 7:10 proportion of the requested 35 × 50 in. Oil on canvas by GLUK.</p>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="label">
+    <span>GLUK — Oil, ink and code</span>
+    <span><a href="https://glukart.com">glukart.com</a> · Ciudad de México</span>
+  </footer>
+</div>
+
+<script>
+const IN=2.54, RATE=0.45, WALL_W=60*IN, WALL_H=100*IN;
+const C={wall:"#2a2124",floor:"#4a3a3c",line:"#f1eee855",dim:"#f1eee88c",fg:"#f1eee8",acc:"#e8732b",frame:"#0d0a0b",person:"#f1eee840"};
+const sizes=[{w:35,h:50,tag:"Requested"},{w:38.5,h:55},{w:42,h:60},{w:45.5,h:65},{w:49,h:70,tag:"Largest"}];
+let sel={...sizes[0]}, orient="port", centre=145, showPerson=true, custom=false;
+const fmt=(n,d=1)=>n.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+const money=n=>"$"+n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const inch=n=>(Math.round(n*10)/10).toString();
+function dims(s){const a=Math.min(s.w,s.h),b=Math.max(s.w,s.h);return orient==="port"?{w:a*IN,h:b*IN,wi:a,hi:b}:{w:b*IN,h:a*IN,wi:b,hi:a}}
+const price=s=>s.w*IN*s.h*IN*RATE;
+
+function renderOpts(){
+  const box=document.getElementById("opts");box.innerHTML="";
+  sizes.forEach((s,i)=>{
+    const d=dims(s),b=document.createElement("button");b.className="opt";b.id="opt"+i;
+    b.setAttribute("aria-pressed",!custom&&s.w===sel.w&&s.h===sel.h);
+    b.innerHTML=`<span class="idx">0${i+1}</span><span><span class="cm">${fmt(d.w)} × ${fmt(d.h)} cm</span>${s.tag?`<span class="tag">${s.tag}</span>`:""}<br><span class="inch">${inch(d.wi)} × ${inch(d.hi)} in</span></span><span><div class="price">${money(price(s))}</div><div class="area">${fmt(s.w*IN*s.h*IN,0)} cm²</div></span>`;
+    b.onclick=()=>{sel={...s};custom=false;update()};
+    box.appendChild(b);
+  });
+}
+function el(t,a,txt){const e=document.createElementNS("http://www.w3.org/2000/svg",t);for(const k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;return e}
+function renderWall(){
+  const svg=document.getElementById("wall");svg.innerHTML="";
+  const VH=760,padL=70,padT=40,padB=60,sc=(VH-padT-padB)/WALL_H;
+  const wx=padL,wy=padT,ww=WALL_W*sc,wh=WALL_H*sc,floorY=wy+wh;
+  const defs=el("defs",{});
+  const g=el("linearGradient",{id:"cv",x1:"0",y1:"1",x2:"1",y2:"0"});
+  [["0","#c34f05"],["0.45","#1e1619"],["0.8","#011458"],["1","#0c89d5"]].forEach(([o,c])=>g.appendChild(el("stop",{offset:o,"stop-color":c})));
+  const lg=el("radialGradient",{id:"glow",cx:"0.5",cy:"0.4",r:"0.6"});
+  [["0","#f1eee812"],["1","#f1eee800"]].forEach(([o,c])=>lg.appendChild(el("stop",{offset:o,"stop-color":c})));
+  defs.append(g,lg);svg.appendChild(defs);
+  svg.appendChild(el("rect",{x:wx,y:wy,width:ww,height:wh,fill:C.wall,stroke:C.line,"stroke-width":1}));
+  svg.appendChild(el("rect",{x:wx,y:wy,width:ww,height:wh,fill:"url(#glow)"}));
+  svg.appendChild(el("rect",{x:wx-20,y:floorY,width:ww+40,height:6,fill:C.floor}));
+  const d=dims(sel),pw=d.w*sc,ph=d.h*sc;
+  const cy=Math.min(Math.max(centre,d.h/2+2),WALL_H-d.h/2-2);
+  const px=wx+(ww-pw)/2,py=floorY-cy*sc-ph/2;
+  svg.appendChild(el("rect",{x:px+4,y:py+8,width:pw,height:ph,fill:"#000",opacity:.45}));
+  svg.appendChild(el("rect",{x:px,y:py,width:pw,height:ph,fill:"url(#cv)",stroke:C.frame,"stroke-width":3}));
+  if(showPerson){
+    const ph2=175*sc,x0=wx+ww+18,s=ph2/175,pg=el("g",{fill:C.person});
+    pg.append(el("circle",{cx:x0+19*s,cy:floorY-ph2+11*s,r:11*s}),el("rect",{x:x0,y:floorY-ph2+24*s,width:38*s,height:70*s,rx:8*s}),
+      el("rect",{x:x0+3*s,y:floorY-ph2+90*s,width:14*s,height:85*s,rx:4*s}),el("rect",{x:x0+21*s,y:floorY-ph2+90*s,width:14*s,height:85*s,rx:4*s}));
+    svg.appendChild(pg);
+    svg.appendChild(el("text",{x:x0+19*s,y:floorY+26,"text-anchor":"middle","font-size":10,fill:C.dim},"175 cm"));
+  }
+  const line=(x1,y1,x2,y2,c=C.line)=>svg.appendChild(el("line",{x1,y1,x2,y2,stroke:c,"stroke-width":1}));
+  const tick=(x,y,v,c)=>v?line(x-4,y,x+4,y,c):line(x,y-4,x,y+4,c);
+  const by=floorY+30;line(wx,by,wx+ww,by);tick(wx,by,false);tick(wx+ww,by,false);
+  svg.appendChild(el("text",{x:wx+ww/2,y:by+16,"text-anchor":"middle","font-size":12,fill:C.dim,"letter-spacing":"1"},"152.4 CM · 60 IN"));
+  const lx=wx-28;line(lx,wy,lx,floorY);tick(lx,wy,true);tick(lx,floorY,true);
+  svg.appendChild(el("text",{x:lx-6,y:wy+wh/2,"text-anchor":"middle","font-size":12,fill:C.dim,"letter-spacing":"1",transform:`rotate(-90 ${lx-6} ${wy+wh/2})`},"254 CM · 100 IN"));
+  const ty=py-14;line(px,ty,px+pw,ty,C.acc);tick(px,ty,false,C.acc);tick(px+pw,ty,false,C.acc);
+  svg.appendChild(el("text",{x:px+pw/2,y:ty-6,"text-anchor":"middle","font-size":13,"font-weight":700,fill:C.fg},fmt(d.w)+" cm"));
+  const rx=px+pw+12;line(rx,py,rx,py+ph,C.acc);tick(rx,py,true,C.acc);tick(rx,py+ph,true,C.acc);
+  svg.appendChild(el("text",{x:rx+9,y:py+ph/2,"text-anchor":"middle","font-size":13,"font-weight":700,fill:C.fg,transform:`rotate(90 ${rx+9} ${py+ph/2})`},fmt(d.h)+" cm"));
+  const gap=(WALL_W-d.w)/2,gy=py+ph+18;
+  if(gap>0){line(wx,gy,px,gy);line(px+pw,gy,wx+ww,gy);
+    svg.appendChild(el("text",{x:wx+(px-wx)/2,y:gy+14,"text-anchor":"middle","font-size":10,fill:C.dim},fmt(gap)));
+    svg.appendChild(el("text",{x:px+pw+(wx+ww-px-pw)/2,y:gy+14,"text-anchor":"middle","font-size":10,fill:C.dim},fmt(gap)));}
+  const bottom=cy-d.h/2,fx=px+pw/2;
+  line(fx,py+ph+28,fx,floorY);
+  svg.appendChild(el("text",{x:fx+6,y:(py+ph+28+floorY)/2+4,"font-size":10,fill:C.dim},fmt(bottom)+" cm to floor"));
+  line(fx,wy,fx,py-30);
+  svg.appendChild(el("text",{x:wx+ww/2,y:wy-12,"text-anchor":"middle","font-size":10,fill:C.dim},fmt(WALL_H-(cy+d.h/2))+" cm to top of wall"));
+}
+function renderQuote(){
+  const d=dims(sel),area=sel.w*IN*sel.h*IN,gap=(WALL_W-d.w)/2;
+  document.getElementById("qtitle").textContent=custom?"Custom size":(sel.tag==="Requested"?"Requested size":"Selected size");
+  document.getElementById("q-size").textContent=`${fmt(d.w)} × ${fmt(d.h)} cm`;
+  document.getElementById("q-in").textContent=`${inch(d.wi)} × ${inch(d.hi)} in`;
+  document.getElementById("q-area").textContent=`${fmt(area,1)} cm²`;
+  document.getElementById("q-side").textContent=gap>=0?`${fmt(gap)} cm each`:"Wider than wall";
+  document.getElementById("q-cov").textContent=fmt(d.w/WALL_W*100,0)+"%";
+  document.getElementById("q-price").textContent=money(area*RATE);
+}
+function update(){renderOpts();renderWall();renderQuote()}
+function setSeg(){document.getElementById("o-port").setAttribute("aria-pressed",orient==="port");document.getElementById("o-land").setAttribute("aria-pressed",orient==="land")}
+document.getElementById("o-port").onclick=()=>{orient="port";setSeg();update()};
+document.getElementById("o-land").onclick=()=>{orient="land";setSeg();update()};
+document.getElementById("h").oninput=e=>{centre=+e.target.value;document.getElementById("hv").textContent=centre+" cm";renderWall()};
+document.getElementById("person").onchange=e=>{showPerson=e.target.checked;renderWall()};
+document.getElementById("cform").addEventListener("submit",e=>{e.preventDefault();
+  const w=parseFloat(document.getElementById("cw").value),h=parseFloat(document.getElementById("ch").value);
+  if(!(w>0&&h>0))return;sel={w,h};custom=true;orient=h>=w?"port":"land";setSeg();update();});
+update();
+</script>
+</body>
+</html>
