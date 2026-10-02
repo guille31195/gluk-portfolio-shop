@@ -96,7 +96,7 @@ svg text{font-family:var(--body)}
       <h1>The painting, <em>to scale</em>, on your wall.</h1>
       <p class="lede">Choose a size to see how it sits on the wall. Measurements are in centimetres with inches for reference. Price is the canvas area in cm² × $0.45 USD.</p>
     </div>
-    <div class="wallspec"><span class="label">Wall</span><br>152.4 × 254 cm<small>60 × 100 in</small></div>
+    <div class="wallspec"><span class="label">Wall</span><br>152 × 254 cm<small>60 × 100 in</small></div>
   </header>
 
   <div class="grid">
@@ -139,7 +139,7 @@ svg text{font-family:var(--body)}
           <dt>Share of wall width</dt><dd id="q-cov">—</dd>
           <dt class="total">Price (USD)</dt><dd class="total" id="q-price">—</dd>
         </dl>
-        <p class="note">All preset sizes keep the 7:10 proportion of the requested 35 × 50 in. Oil on canvas by GLUK.</p>
+        <p class="note">All preset sizes are whole centimetres and keep roughly the 7:10 proportion of the requested 35 × 50 in. Oil on canvas by GLUK.</p>
       </div>
     </aside>
   </div>
@@ -153,20 +153,21 @@ svg text{font-family:var(--body)}
 <script>
 const IN=2.54, RATE=0.45, WALL_W=60*IN, WALL_H=100*IN;
 const C={wall:"#2a2124",floor:"#4a3a3c",line:"#f1eee855",dim:"#f1eee88c",fg:"#f1eee8",acc:"#e8732b",frame:"#0d0a0b",person:"#f1eee840"};
-const sizes=[{w:35,h:50,tag:"Requested"},{w:38.5,h:55},{w:42,h:60},{w:45.5,h:65},{w:49,h:70,tag:"Largest"}];
+// Sizes are whole centimetres; inches are derived for reference only.
+const sizes=[{w:89,h:127,tag:"Requested"},{w:98,h:140},{w:107,h:152},{w:116,h:165},{w:124,h:178,tag:"Largest"}];
 let sel={...sizes[0]}, orient="port", centre=145, showPerson=true, custom=false;
-const fmt=(n,d=1)=>n.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmt=(n,d=0)=>n.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
 const money=n=>"$"+n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
 const inch=n=>(Math.round(n*10)/10).toString();
-function dims(s){const a=Math.min(s.w,s.h),b=Math.max(s.w,s.h);return orient==="port"?{w:a*IN,h:b*IN,wi:a,hi:b}:{w:b*IN,h:a*IN,wi:b,hi:a}}
-const price=s=>s.w*IN*s.h*IN*RATE;
+function dims(s){const a=Math.min(s.w,s.h),b=Math.max(s.w,s.h);return orient==="port"?{w:a,h:b,wi:a/IN,hi:b/IN}:{w:b,h:a,wi:b/IN,hi:a/IN}}
+const price=s=>s.w*s.h*RATE;
 
 function renderOpts(){
   const box=document.getElementById("opts");box.innerHTML="";
   sizes.forEach((s,i)=>{
     const d=dims(s),b=document.createElement("button");b.className="opt";b.id="opt"+i;
     b.setAttribute("aria-pressed",!custom&&s.w===sel.w&&s.h===sel.h);
-    b.innerHTML=`<span class="idx">0${i+1}</span><span><span class="cm">${fmt(d.w)} × ${fmt(d.h)} cm</span>${s.tag?`<span class="tag">${s.tag}</span>`:""}<br><span class="inch">${inch(d.wi)} × ${inch(d.hi)} in</span></span><span><div class="price">${money(price(s))}</div><div class="area">${fmt(s.w*IN*s.h*IN,0)} cm²</div></span>`;
+    b.innerHTML=`<span class="idx">0${i+1}</span><span><span class="cm">${fmt(d.w)} × ${fmt(d.h)} cm</span>${s.tag?`<span class="tag">${s.tag}</span>`:""}<br><span class="inch">${inch(d.wi)} × ${inch(d.hi)} in</span></span><span><div class="price">${money(price(s))}</div><div class="area">${fmt(s.w*s.h)} cm²</div></span>`;
     b.onclick=()=>{sel={...s};custom=false;update()};
     box.appendChild(b);
   });
@@ -200,7 +201,7 @@ function renderWall(){
   const line=(x1,y1,x2,y2,c=C.line)=>svg.appendChild(el("line",{x1,y1,x2,y2,stroke:c,"stroke-width":1}));
   const tick=(x,y,v,c)=>v?line(x-4,y,x+4,y,c):line(x,y-4,x,y+4,c);
   const by=floorY+30;line(wx,by,wx+ww,by);tick(wx,by,false);tick(wx+ww,by,false);
-  svg.appendChild(el("text",{x:wx+ww/2,y:by+16,"text-anchor":"middle","font-size":12,fill:C.dim,"letter-spacing":"1"},"152.4 CM · 60 IN"));
+  svg.appendChild(el("text",{x:wx+ww/2,y:by+16,"text-anchor":"middle","font-size":12,fill:C.dim,"letter-spacing":"1"},"152 CM · 60 IN"));
   const lx=wx-28;line(lx,wy,lx,floorY);tick(lx,wy,true);tick(lx,floorY,true);
   svg.appendChild(el("text",{x:lx-6,y:wy+wh/2,"text-anchor":"middle","font-size":12,fill:C.dim,"letter-spacing":"1",transform:`rotate(-90 ${lx-6} ${wy+wh/2})`},"254 CM · 100 IN"));
   const ty=py-14;line(px,ty,px+pw,ty,C.acc);tick(px,ty,false,C.acc);tick(px+pw,ty,false,C.acc);
@@ -218,11 +219,11 @@ function renderWall(){
   svg.appendChild(el("text",{x:wx+ww/2,y:wy-12,"text-anchor":"middle","font-size":10,fill:C.dim},fmt(WALL_H-(cy+d.h/2))+" cm to top of wall"));
 }
 function renderQuote(){
-  const d=dims(sel),area=sel.w*IN*sel.h*IN,gap=(WALL_W-d.w)/2;
+  const d=dims(sel),area=sel.w*sel.h,gap=(WALL_W-d.w)/2;
   document.getElementById("qtitle").textContent=custom?"Custom size":(sel.tag==="Requested"?"Requested size":"Selected size");
   document.getElementById("q-size").textContent=`${fmt(d.w)} × ${fmt(d.h)} cm`;
   document.getElementById("q-in").textContent=`${inch(d.wi)} × ${inch(d.hi)} in`;
-  document.getElementById("q-area").textContent=`${fmt(area,1)} cm²`;
+  document.getElementById("q-area").textContent=`${fmt(area)} cm²`;
   document.getElementById("q-side").textContent=gap>=0?`${fmt(gap)} cm each`:"Wider than wall";
   document.getElementById("q-cov").textContent=fmt(d.w/WALL_W*100,0)+"%";
   document.getElementById("q-price").textContent=money(area*RATE);
@@ -235,7 +236,7 @@ document.getElementById("h").oninput=e=>{centre=+e.target.value;document.getElem
 document.getElementById("person").onchange=e=>{showPerson=e.target.checked;renderWall()};
 document.getElementById("cform").addEventListener("submit",e=>{e.preventDefault();
   const w=parseFloat(document.getElementById("cw").value),h=parseFloat(document.getElementById("ch").value);
-  if(!(w>0&&h>0))return;sel={w,h};custom=true;orient=h>=w?"port":"land";setSeg();update();});
+  if(!(w>0&&h>0))return;sel={w:Math.round(w*IN),h:Math.round(h*IN)};custom=true;orient=h>=w?"port":"land";setSeg();update();});
 update();
 </script>
 </body>
