@@ -73,17 +73,28 @@ def rounded_sticker(bg, letters, with_handle, name):
     card.save(OUT / name, dpi=(600, 600))
 
 
-def diecut(name):
-    """Black wordmark + gradient rule with a smooth white border to cut around."""
-    border = 90
+def diecut(name, handle=None, border=46):
+    """Black wordmark + gradient rule, hugged by a tight white border to cut around.
+
+    handle: optional text set in the empty space above the rule, left-aligned to it.
+    """
     margin = border * 3          # room for the blur so the outline is never clipped
-    logo = fit(load_logo(BLACK), W - 2 * (border + 40))
+    base = load_logo(BLACK)      # cropped to the artwork; rule starts at x=1016, y~296..323
+    scale = 1900 / base.width
+    logo = fit(base, 1900)
     canvas = Image.new("RGBA", (logo.width + 2 * margin, logo.height + 2 * margin), (0, 0, 0, 0))
     canvas.alpha_composite(logo, (margin, margin))
+    if handle:
+        font = ImageFont.truetype(FONT, round(100 * scale))
+        font.set_variation_by_axes([800, 100])
+        d = ImageDraw.Draw(canvas)
+        bb = d.textbbox((0, 0), handle, font=font)
+        x = margin + round(1016 * scale) - bb[0]
+        y = margin + round(262 * scale) - bb[3]      # sits just above the rule
+        d.text((x, y), handle, font=font, fill=BLACK)
     a = canvas.split()[3]
-    grown = a.filter(ImageFilter.GaussianBlur(border * 0.9)).point(lambda v: 255 if v > 6 else 0)
-    # smooth the outline so the cutter path has no jagged steps
-    grown = grown.filter(ImageFilter.GaussianBlur(24)).point(lambda v: 255 if v > 128 else 0)
+    grown = a.filter(ImageFilter.GaussianBlur(border * 0.7)).point(lambda v: 255 if v > 4 else 0)
+    grown = grown.filter(ImageFilter.GaussianBlur(14)).point(lambda v: 255 if v > 128 else 0)
     out = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     out.paste(WHITE, mask=grown)
     out.alpha_composite(canvas)
@@ -98,4 +109,7 @@ if FONT:
     rounded_sticker(BLACK, BONE, True, "gluk-sticker-3-dark-handle.png")
     rounded_sticker(WHITE, BLACK, True, "gluk-sticker-4-light-handle.png")
 diecut("gluk-sticker-5-diecut.png")
+if FONT:
+    diecut("gluk-sticker-6-diecut-handle.png", "@gluk")
+    diecut("gluk-sticker-7-diecut-handle-full.png", "@gluk______")
 print("done")
