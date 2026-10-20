@@ -8,12 +8,37 @@ export const DEFAULT_ABOUT = {
   body: [
     'Disruptive not in terms of subject matter, but in terms of method and attitude: he articulates ideas using non-traditional media and contemporary technologies alongside oil painting and tattooing. His symbolism, rhythm, and source of consciousness come from the Caribbean, the nucleus from which he approaches identity and representation. He currently lives and works in Mexico City.',
     'For Gluk, art is neither a neutral nor decorative space. It is a tool for confrontation and, at the same time, for care. Even in his most raw or violent explorations, there is a good intention to sustain something that he fears will be lost if he does not narrate it: a story, a bodily memory, a way of inhabiting the world without asking permission.',
-    'He studied at NYU Shanghai, during which time, at the age of 20, he exhibited at the Yicangart Museum in Shanghai. Subsequently, he lived in Berlin for eight years, where he furthered his training in new media. During that period, in 2020, he produced Onde du Midi at the Louvre Museum (Paris) and developed interdisciplinary collaborations with artists such as Rawayana, Nicola Cruz, and Salomón, among others.',
+    'He studied at NYU Shanghai, during which time, at the age of 20, he exhibited at the Yicangart Museum in Shanghai. Subsequently, he lived in Berlin for eight years, where he furthered his training in new media. During that period, in 2020, he produced Onde du Midi at the Louvre Museum (Paris) and developed interdisciplinary collaborations with artists such as Rawayana, Nicola Cruz, and Solomun, among others.',
     'On canvas, Gluk takes on a central gesture: painting in oil what the canon tends to relegate. By choosing oil—a noble, slow, and demanding medium—he places symbols and iconographies of the Caribbean and its contemporary identity at the heart of the pictorial tradition, elevating them without folklorizing them and shifting clichés from postcards to complex narratives.',
     'In the technological sphere, he converts data and urban signals into reactive experiences: visualizations, generative systems, and screens that respond to the body and context. He does not oppose painting and technology; he puts them in friction to raise questions about identity, memory, and power.',
     'His aesthetic is both precise and streetwise: elegant without being domesticated. No matter how harsh or ironic his themes may be, there is an underlying desire for tenderness. For the world—art, the body, the system—to be touched without being dominated.',
   ],
 } as const;
+
+// Gallery-CV list under the BIO, newest first. Facts from Guillermo, checked
+// against public sources (Louvre press, Latin Grammy site) on 2026-10-20.
+export interface SelectedProject {
+  year: number;
+  title: string;
+  role: string;
+  note?: string;
+}
+
+export const SELECTED_PROJECTS: readonly SelectedProject[] = [
+  { year: 2026, title: 'Orestes Gómez — No me fui porque quise', role: 'Album cover' },
+  {
+    year: 2024,
+    title: 'Viniloversus — Mi Mejor Enemigo',
+    role: 'Album cover',
+    note: 'Latin Grammy nominee, Best Rock Album',
+  },
+  {
+    year: 2020,
+    title: 'L’Onde du Midi, Elias Crespin — Musée du Louvre, Paris',
+    role: 'Production and installation team',
+  },
+  { year: 2018, title: 'Solomun +1 — Pacha Ibiza', role: 'Visuals for the season' },
+];
 
 // Plain text with no markup characters, so it is safe to wrap directly.
 export const DEFAULT_ABOUT_BODY_HTML = DEFAULT_ABOUT.body.map((p) => `<p>${p}</p>`).join('');

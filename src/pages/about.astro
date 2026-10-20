@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import RuptureRule from '../components/RuptureRule.astro';
 import { getAboutPage } from '../lib/sanity';
+import { SELECTED_PROJECTS } from '../lib/about-page';
 
 const about = await getAboutPage();
 ---
@@ -26,6 +27,20 @@ const about = await getAboutPage();
       <p class="statement" data-intro>{about.statement}</p>
       <RuptureRule weight="thin" class="about-rule" />
       <div class="about-body" data-intro set:html={about.bodyHtml} />
+      <section class="about-projects" aria-labelledby="selected-projects" data-intro>
+        <h2 id="selected-projects" class="mono dim">Selected Projects</h2>
+        <ul>
+          {SELECTED_PROJECTS.map((p) => (
+            <li>
+              <span class="mono dim">{p.year}</span>
+              <span>
+                {p.title}
+                <span class="dim"> — {p.role}{p.note && `. ${p.note}`}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
       {about.photoCredit && (
         <p class="label dim about-credit">
           Photography — {about.photoCreditUrl ? <a href={about.photoCreditUrl} rel="noopener">{about.photoCredit}</a> : about.photoCredit}
@@ -71,6 +86,23 @@ const about = await getAboutPage();
     margin: 0 0 1em;
     opacity: 0.85;
     max-width: 36rem;
+  }
+  .about-projects h2 {
+    margin: 0 0 1.2rem;
+    font-weight: inherit;
+  }
+  .about-projects ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-width: 36rem;
+  }
+  .about-projects li {
+    display: grid;
+    grid-template-columns: 4rem 1fr;
+    gap: 1rem;
+    padding: 0.7rem 0;
+    border-top: 1px solid var(--color-bone-dim);
   }
   .about-credit {
     margin-top: auto;
