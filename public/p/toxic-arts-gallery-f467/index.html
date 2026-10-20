@@ -1,0 +1,268 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>GLUK · Toxic Arts Gallery</title><link rel="icon" href="/favicon.png"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=Karla:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:dark;
+    --ink:#120e0d;
+    --paper:#f4efe6;
+    --muted:rgba(244,239,230,.64);
+    --line:rgba(244,239,230,.14);
+    --ember:#c34f05;
+    --sans:'Karla',system-ui,-apple-system,sans-serif;
+    --display:'Archivo',system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--paper);
+    font-family:var(--sans);
+    font-size:17px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:'';
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 12% 6%, rgba(70,51,86,.55), transparent 60%),
+      radial-gradient(90% 70% at 90% 96%, rgba(195,79,5,.16), transparent 55%),
+      var(--ink);
+  }
+  h1,h2,h3,p,dl,dd,figure,ul{margin:0;}
+  img{max-width:100%;display:block;}
+  a{color:inherit;}
+
+  .page{
+    max-width:1200px;
+    margin:0 auto;
+    padding-inline:clamp(16px,5vw,64px);
+    padding-block:clamp(20px,4vw,40px) 0;
+    overflow-x:clip;
+  }
+  .logo{height:22px;width:auto;opacity:.92;}
+  .eyebrow{
+    font-weight:600;
+    font-size:12px;
+    line-height:1.3;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+
+  /* Header */
+  .intro{padding-block:clamp(40px,7vw,88px) clamp(32px,5vw,56px);}
+  .intro h1{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:clamp(34px,5.4vw,72px);
+    line-height:1.02;
+    text-transform:uppercase;
+    text-wrap:balance;
+    margin-block:18px 20px;
+  }
+  .intro h1 span{color:var(--ember);}
+  .intro .note{color:var(--muted);max-width:52ch;}
+
+  /* Works */
+  .works{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:clamp(40px,6vw,72px) clamp(24px,4vw,56px);
+    border-top:1px solid var(--line);
+    padding-block:clamp(36px,6vw,64px);
+  }
+  .work{display:flex;flex-direction:column;gap:18px;}
+  .work.wide{grid-column:1 / -1;}
+  .plates{display:flex;gap:10px;align-items:flex-end;}
+  .plates img{
+    flex:1 1 0;
+    min-width:0;
+    height:auto;
+    border:1px solid var(--line);
+    box-shadow:0 24px 64px rgba(0,0,0,.5);
+  }
+  .work h2{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:clamp(20px,2.2vw,26px);
+    line-height:1.1;
+    text-transform:uppercase;
+    text-wrap:balance;
+  }
+  .meta{color:var(--muted);font-size:15px;line-height:1.5;margin-top:6px;}
+  .price{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:12px;
+    border-top:1px solid var(--line);
+    padding-top:12px;
+    font-variant-numeric:tabular-nums;
+  }
+  .price .status{
+    font-weight:600;
+    font-size:12px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .price .status.open{color:var(--ember);}
+  .price .amount{font-family:var(--display);font-weight:600;font-size:20px;}
+
+  /* Sections */
+  .section{
+    display:grid;
+    grid-template-columns:minmax(0,4fr) minmax(0,7fr);
+    gap:clamp(28px,6vw,96px);
+    border-top:1px solid var(--line);
+    padding-block:clamp(36px,6vw,72px);
+  }
+  .rows{list-style:none;padding:0;max-width:640px;}
+  .rows li{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:6px 24px;
+    padding-block:14px;
+    border-top:1px solid var(--line);
+    font-variant-numeric:tabular-nums;
+  }
+  .rows li:first-child{border-top:0;padding-top:0;}
+  .rows .sub{grid-column:1 / -1;color:var(--muted);font-size:15px;line-height:1.5;}
+  .rows .year{color:var(--muted);margin-right:14px;}
+  .fineprint{color:var(--muted);font-size:15px;margin-top:20px;max-width:56ch;}
+
+  .foot{
+    border-top:1px solid var(--line);
+    padding-block:32px clamp(28px,5vw,48px);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:14px 24px;
+    flex-wrap:wrap;
+    color:var(--muted);
+    font-size:13px;
+    letter-spacing:.03em;
+  }
+  .foot a{color:var(--paper);}
+
+  @media (max-width:820px){
+    .works{grid-template-columns:minmax(0,1fr);}
+    .section{grid-template-columns:minmax(0,1fr);}
+  }
+</style></head><body>
+
+<div class="page">
+  <img class="logo" src="img/logo-white.png" alt="GLUK" width="480" height="224">
+
+  <header class="intro">
+    <p class="eyebrow">Prepared for Toxic Arts Gallery, London · October 2026</p>
+    <h1>Selected works <span>&amp;</span> prices</h1>
+    <p class="note">GLUK (Guillermo Carrasquero). Prices in USD, for reference.</p>
+  </header>
+
+  <section class="works" aria-label="Works">
+    <article class="work wide">
+      <div class="plates"><img src="img/de-chirico-en-la-guaira.jpg" width="1400" height="535" alt="De Chirico en La Guaira" loading="eager"></div>
+      <div>
+        <h2>De Chirico en La Guaira</h2>
+        <p class="meta">2025 · Oil on canvas · 235 × 90 cm</p>
+      </div>
+      <p class="price"><span class="status">Sold</span><span class="amount">USD 8,000</span></p>
+    </article>
+
+    <article class="work">
+      <div class="plates"><img src="img/anestesia-para-invierno.jpg" width="1400" height="1755" alt="Anestesia para invierno"></div>
+      <div>
+        <h2>Anestesia para invierno</h2>
+        <p class="meta">2024 · Oil on canvas · 120 × 150 cm</p>
+      </div>
+      <p class="price"><span class="status">Sold</span><span class="amount">USD 6,000</span></p>
+    </article>
+
+    <article class="work">
+      <div class="plates">
+        <img src="img/violenta-i.jpg" width="1400" height="2423" alt="Violenta I">
+        <img src="img/violenta-ii.jpg" width="1400" height="2447" alt="Violenta II">
+      </div>
+      <div>
+        <h2>Violenta I &amp; II</h2>
+        <p class="meta">2026 · Oil on canvas · Diptych, two panels of 105 × 60 cm</p>
+      </div>
+      <p class="price"><span class="status">Sold</span><span class="amount">USD 6,000</span></p>
+    </article>
+
+    <article class="work">
+      <div class="plates"><img src="img/contemplacion-violenta-1.jpg" width="1400" height="1807" alt="Contemplación Violenta 1"></div>
+      <div>
+        <h2>Contemplación Violenta 1</h2>
+        <p class="meta">2026 · Oil on canvas · 70 × 90 cm</p>
+      </div>
+      <p class="price"><span class="status">Sold</span><span class="amount">USD 4,000</span></p>
+    </article>
+
+    <article class="work">
+      <div class="plates"><img src="img/perdi-el-coco-en-un-pueblo-caribeno.jpg" width="1400" height="1807" alt="Perdí el coco en un pueblo caribeño"></div>
+      <div>
+        <h2>Perdí el coco en un pueblo caribeño</h2>
+        <p class="meta">2026 · Oil on canvas · 70 × 90 cm</p>
+      </div>
+      <p class="price"><span class="status">Sold</span><span class="amount">USD 4,000</span></p>
+    </article>
+
+    <article class="work">
+      <div class="plates">
+        <img src="img/pobrecita-la-vaquita-que-bonita-la-cartera.jpg" width="1400" height="1750" alt="Pobrecita la vaquita, qué bonita la cartera">
+        <img src="img/pobrecita-la-vaquita-que-bonita-la-cartera-invertido.jpg" width="1400" height="1750" alt="Pobrecita la vaquita, qué bonita la cartera (invertido)">
+      </div>
+      <div>
+        <h2>Pobrecita la vaquita, qué bonita la cartera</h2>
+        <p class="meta">2026 · Tattoo on hide · Two works, 100 × 100 cm each</p>
+      </div>
+      <p class="price"><span class="status open">Available</span><span class="amount">USD 4,000 each</span></p>
+    </article>
+
+    <article class="work">
+      <div class="plates"><img src="img/valet-parking-en-las-mercedes.jpg" width="1400" height="1405" alt="Valet parking en Las Mercedes"></div>
+      <div>
+        <h2>Valet parking en Las Mercedes</h2>
+        <p class="meta">2026 · Oil on truck tarpaulin · 70 × 70 cm</p>
+      </div>
+      <p class="price"><span class="status open">At auction</span><a class="amount" href="https://fairart.com/auctions/group/4bysix-vehicles-for-change-auction-1/gluk-guillermo-carrasquero-valet-parking-en-las-mercedes-15" rel="noopener">FairArt, until 25 Oct</a></p>
+    </article>
+  </section>
+
+  <section class="section">
+    <p class="eyebrow">Commissions · price reference</p>
+    <div>
+      <ul class="rows">
+        <li><span>Oil on canvas, up to 70 × 90 cm</span><span>from USD 4,000</span></li>
+        <li><span>Oil on canvas, up to 120 × 150 cm</span><span>from USD 6,000</span><span class="sub">Includes diptychs of the same overall size.</span></li>
+        <li><span>Oil on canvas, large format, around 235 × 90 cm</span><span>from USD 8,000</span></li>
+        <li><span>Tattoo on hide, 100 × 100 cm</span><span>from USD 4,000</span></li>
+      </ul>
+      <p class="fineprint">Based on the sale prices above. Final price depends on size, subject and timeline, and is agreed before work starts.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <p class="eyebrow">Selected projects</p>
+    <ul class="rows">
+      <li><span><span class="year">2026</span>Orestes Gómez, <em>No me fui porque quise</em></span><span class="sub">Album cover</span></li>
+      <li><span><span class="year">2024</span>Viniloversus, <em>Mi Mejor Enemigo</em></span><span class="sub">Album cover. Latin Grammy nominee, Best Rock Album</span></li>
+      <li><span><span class="year">2020</span><em>L’Onde du Midi</em>, Elias Crespin, Musée du Louvre, Paris</span><span class="sub">Production and installation team</span></li>
+      <li><span><span class="year">2018</span>Solomun +1, Pacha Ibiza</span><span class="sub">Visuals for the season</span></li>
+    </ul>
+  </section>
+
+  <footer class="foot">
+    <img class="logo" src="img/logo-white.png" alt="GLUK" width="480" height="224">
+    <span>GLUK, Guillermo Carrasquero · <a href="https://glukart.com">glukart.com</a> · <a href="https://glukart.com/contact">Contact</a></span>
+  </footer>
+</div>
+
+</body></html>
