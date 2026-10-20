@@ -186,6 +186,16 @@
   .rows li:first-child{border-top:0;padding-top:0;}
   .rows .sub{grid-column:1 / -1;color:var(--muted);font-size:15px;line-height:1.5;}
   .rows .year{color:var(--muted);margin-right:14px;}
+  .refs{list-style:none;padding:0;margin:0;max-width:720px;}
+  .ref{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;padding-block:18px;border-top:1px solid var(--line);}
+  .ref:first-child{border-top:0;padding-top:0;}
+  .ref.has-img{grid-template-columns:88px minmax(0,1fr);}
+  .ref-img{width:88px;height:88px;object-fit:cover;border:1px solid var(--line);}
+  .ref-img[data-caption]{cursor:zoom-in;}
+  .ref p{margin:0;}
+  .ref .year{color:var(--muted);margin-right:14px;font-variant-numeric:tabular-nums;}
+  .ref .sub{color:var(--muted);font-size:15px;line-height:1.5;margin-top:4px;}
+  .ref .src{display:inline-block;margin-top:8px;font-size:13px;letter-spacing:.04em;color:var(--paper);text-decoration:none;border-bottom:1px solid var(--ember);}
   .fineprint{color:var(--muted);font-size:15px;margin-top:20px;max-width:60ch;}
 
   /* Closing */
@@ -420,15 +430,65 @@
 
   <section class="section">
     <p class="eyebrow">Selected projects &amp; exhibitions</p>
-    <ul class="rows">
-      <li><span><span class="year">2026</span>THE GARAGE, 4BYSIX Vehicles For Change, Manchester</span><span class="sub">18 artists from 11 countries, with SLAWN, Chito, Marcus Jansen and Super Future Kid</span></li>
-      <li><span><span class="year">2026</span>Orestes Gómez, <em>No me fui porque quise</em></span><span class="sub">Album cover</span></li>
-      <li><span><span class="year">2024</span>Viniloversus, <em>Mi Mejor Enemigo</em></span><span class="sub">Album cover. Latin Grammy nominee, Best Rock Album</span></li>
-      <li><span><span class="year">2020</span><em>L’Onde du Midi</em>, Elias Crespin, Musée du Louvre, Paris</span><span class="sub">Production and installation team</span></li>
-      <li><span><span class="year">2019</span>Brandenburger Tor Museum, Berlin</span><span class="sub">Interactive installation</span></li>
-      <li><span><span class="year">2018</span>Biesenthal, Berlin</span><span class="sub">Exhibition</span></li>
-      <li><span><span class="year">2018</span>Solomun +1, Pacha Ibiza</span><span class="sub">Visuals for the season</span></li>
-      <li><span><span class="year">2017</span>Salón ACME, Mexico City</span><span class="sub">Production and fabrication of Carlos García Noriega’s piece</span></li>
+    <ul class="refs">
+      <li class="ref has-img">
+        <img class="ref-img" src="img/valet-parking-en-las-mercedes.jpg" alt="Valet parking en Las Mercedes">
+        <div>
+          <p><span class="year">2026</span>THE GARAGE, 4BYSIX Vehicles For Change, Manchester</p>
+          <p class="sub">Group show and charity auction. 18 artists from 11 countries, with SLAWN, Chito, Marcus Jansen and Super Future Kid. Shown: <em>Valet parking en Las Mercedes</em>.</p>
+          <a class="src" href="https://fairart.com/auctions/group/4bysix-vehicles-for-change-auction-1" rel="noopener">Auction on FairArt ↗</a>
+        </div>
+      </li>
+      <li class="ref has-img">
+        <img class="ref-img" src="img/orestes-gomez-no-me-fui-porque-quise.jpg" alt="No me fui porque quise, album cover" data-caption="Orestes Gómez, No me fui porque quise · album cover by Gluk">
+        <div>
+          <p><span class="year">2026</span>Orestes Gómez, <em>No me fui porque quise</em></p>
+          <p class="sub">Album cover.</p>
+          <a class="src" href="https://eldiario.com/2026/04/22/orestes-gomez-no-me-fui-porque-quise/" rel="noopener">El Diario ↗</a>
+        </div>
+      </li>
+      <li class="ref has-img">
+        <img class="ref-img" src="img/viniloversus-mi-mejor-enemigo.jpg" alt="Mi Mejor Enemigo, album cover" data-caption="Viniloversus, Mi Mejor Enemigo · album cover by Gluk">
+        <div>
+          <p><span class="year">2024</span>Viniloversus, <em>Mi Mejor Enemigo</em></p>
+          <p class="sub">Album cover. Latin Grammy nominee, Best Rock Album (25th Latin Grammy Awards).</p>
+          <a class="src" href="https://cms.latingrammy.com/en/artists/viniloversus-23904/" rel="noopener">Latin Grammy ↗</a>
+        </div>
+      </li>
+      <li class="ref has-img">
+        <img class="ref-img" src="img/onde-du-midi-louvre.jpg" alt="L’Onde du Midi by Elias Crespin at the Louvre" data-caption="L’Onde du Midi, Elias Crespin, Musée du Louvre · visual: Pascal Maillard">
+        <div>
+          <p><span class="year">2020</span><em>L’Onde du Midi</em>, Elias Crespin, Musée du Louvre, Paris</p>
+          <p class="sub">Production and installation team. Permanent kinetic sculpture, 128 suspended tubes, installed January 2020. Visual: Pascal Maillard.</p>
+          <a class="src" href="https://presse.louvre.fr/elias-crespinbr-londe-du-midibr-a-new-permanent-installationbr-for-the-louvre" rel="noopener">Louvre press release ↗</a>
+        </div>
+      </li>
+      <li class="ref">
+        <div>
+          <p><span class="year">2019</span>Art Biesenthal 2019, Wehrmühle Biesenthal, near Berlin</p>
+          <p class="sub">Group exhibition, 17 August – 7 September 2019. Curated by Tjioe Meyer-Hecken.</p>
+          <a class="src" href="https://www.wehrmuehle.de/exhibition/2019" rel="noopener">Artist list, Wehrmühle ↗</a>
+        </div>
+      </li>
+      <li class="ref">
+        <div>
+          <p><span class="year">2019</span>eyeart – SENSEation, Brandenburger Tor Museum, Berlin</p>
+          <p class="sub">Interactive installation, 6 February 2019.</p>
+        </div>
+      </li>
+      <li class="ref">
+        <div>
+          <p><span class="year">2018</span>Solomun +1, Pacha Ibiza</p>
+          <p class="sub">Visuals for the season.</p>
+        </div>
+      </li>
+      <li class="ref">
+        <div>
+          <p><span class="year">2017</span>Salón ACME No. 5, Mexico City</p>
+          <p class="sub">Production and fabrication of Carlos García-Noriega Bueno’s piece, a guest project with Galería de Arte Mexicano. 9–12 February 2017.</p>
+          <a class="src" href="https://salonacme.com/en/editions" rel="noopener">Salón ACME editions ↗</a>
+        </div>
+      </li>
     </ul>
   </section>
 
