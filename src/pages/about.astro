@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import RuptureRule from '../components/RuptureRule.astro';
 import { getAboutPage } from '../lib/sanity';
-import { SELECTED_PROJECTS } from '../lib/about-page';
+import { REPRESENTATION, SELECTED_PROJECTS } from '../lib/about-page';
 
 const about = await getAboutPage();
 ---
@@ -27,6 +27,19 @@ const about = await getAboutPage();
       <p class="statement" data-intro>{about.statement}</p>
       <RuptureRule weight="thin" class="about-rule" />
       <div class="about-body" data-intro set:html={about.bodyHtml} />
+      <section class="about-projects" aria-labelledby="representation" data-intro>
+        <h2 id="representation" class="mono dim">Representation</h2>
+        <ul>
+          {REPRESENTATION.map((r) => (
+            <li class="no-year">
+              <span>
+                {r.gallery}
+                <span class="dim"> — {r.place}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
       <section class="about-projects" aria-labelledby="selected-projects" data-intro>
         <h2 id="selected-projects" class="mono dim">Selected Projects</h2>
         <ul>
@@ -37,7 +50,7 @@ const about = await getAboutPage();
                 {p.title}
                 <span class="dim"> — {p.role}{p.note && `. ${p.note}`}</span>
               </span>
-              {p.cover && <img class="project-cover" src={p.cover} alt={`${p.title}, album cover`} width="480" height="480" loading="lazy" decoding="async" />}
+              {p.cover && <img class="project-cover" src={p.cover} alt={p.title} width="480" height="480" loading="lazy" decoding="async" />}
             </li>
           ))}
         </ul>
@@ -104,6 +117,9 @@ const about = await getAboutPage();
     gap: 1rem;
     padding: 0.7rem 0;
     border-top: 1px solid var(--color-bone-dim);
+  }
+  .about-projects li.no-year {
+    grid-template-columns: 1fr;
   }
   .project-cover {
     grid-column: 3;

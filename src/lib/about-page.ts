@@ -16,7 +16,8 @@ export const DEFAULT_ABOUT = {
 } as const;
 
 // Gallery-CV list under the BIO, newest first. Facts from Guillermo, checked
-// against public sources (Louvre press, Latin Grammy site) on 2026-10-20.
+// against public sources (Louvre press, Latin Grammy, Wehrmühle and Salón ACME
+// archives) and his email on 2026-10-20.
 export interface SelectedProject {
   year: number;
   title: string;
@@ -26,7 +27,24 @@ export interface SelectedProject {
   cover?: string;
 }
 
+export interface Representation {
+  gallery: string;
+  place: string;
+}
+
+export const REPRESENTATION: readonly Representation[] = [
+  { gallery: 'West Chelsea Contemporary', place: 'Austin, Texas' },
+  { gallery: 'Mooni Gallery', place: 'New York and Mexico City' },
+];
+
 export const SELECTED_PROJECTS: readonly SelectedProject[] = [
+  {
+    year: 2026,
+    title: 'THE GARAGE, 4BYSIX Vehicles For Change — Manchester',
+    role: 'Group show',
+    note: 'Valet parking en Las Mercedes',
+    cover: '/projects/the-garage-valet-parking.jpg',
+  },
   {
     year: 2026,
     title: 'Orestes Gómez — No me fui porque quise',
@@ -44,8 +62,23 @@ export const SELECTED_PROJECTS: readonly SelectedProject[] = [
     year: 2020,
     title: 'L’Onde du Midi, Elias Crespin — Musée du Louvre, Paris',
     role: 'Production and installation team',
+    note: 'Visual: Pascal Maillard',
+    cover: '/projects/onde-du-midi-louvre.jpg',
   },
-  { year: 2018, title: 'Solomun +1 — Pacha Ibiza', role: 'Visuals for the season' },
+  { year: 2019, title: 'Art Biesenthal 2019 — Wehrmühle Biesenthal, Berlin', role: 'Group exhibition' },
+  { year: 2019, title: 'eyeart – SENSEation — Brandenburger Tor Museum, Berlin', role: 'Interactive installation' },
+  {
+    year: 2018,
+    title: 'Solomun +1 — Pacha Ibiza',
+    role: 'Visuals for the season',
+    cover: '/projects/solomun-plus-1.jpg',
+  },
+  {
+    year: 2017,
+    title: 'Salón ACME No. 5 — Mexico City',
+    role: 'Production and fabrication',
+    note: 'Carlos García-Noriega Bueno, guest project with Galería de Arte Mexicano',
+  },
 ];
 
 // Plain text with no markup characters, so it is safe to wrap directly.
