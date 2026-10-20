@@ -17,8 +17,7 @@ const client = createClient({
   useCdn: false,
 });
 
-// Images in display order: the first is the main image. Original status stays
-// "notForSale" (Portfolio only, hidden from Collect) until Guillermo sets it.
+// Images in display order: the first is the main image.
 const pieces = [
   {
     folder: 'Anestesia para invierno',
@@ -27,7 +26,8 @@ const pieces = [
     materials: 'Oil on canvas',
     year: 2024,
     dimensions: '120 × 150 cm',
-    images: ['_MCM3660-2.jpg', 'M.jpg', '_MCM3716.jpg'],
+    originalStatus: 'sold',
+    images: ['COPY PAINTING TEXTURE.jpg', 'M.jpg', '_MCM3716.jpg'],
   },
   {
     folder: 'Valet parking en las Mercedes',
@@ -36,6 +36,9 @@ const pieces = [
     materials: 'Oil on truck tarpaulin',
     year: 2026,
     dimensions: '70 × 70 cm',
+    // Lot 8, 4BYSIX Vehicles For Change on FairArt; bidding ends 2026-10-25 16:00 GMT.
+    originalStatus: 'auction',
+    auctionUrl: 'https://fairart.com/auctions/group/4bysix-vehicles-for-change-auction-1/gluk-guillermo-carrasquero-valet-parking-en-las-mercedes-15',
     images: ['IMG_4445.jpg', 'IMG_4473.JPG', 'IMG_4462.JPG', 'IMG_5302.JPG'],
   },
   {
@@ -44,7 +47,8 @@ const pieces = [
     title: 'De Chirico en La Guaira',
     materials: 'Oil on canvas',
     year: 2025,
-    dimensions: '145 × 90 cm',
+    dimensions: '235 × 90 cm',
+    originalStatus: 'sold',
     images: ['IMG_5520.jpg', 'IMG_5521.JPG', 'IMG_5522.JPG'],
   },
 ];
@@ -92,7 +96,8 @@ for (const piece of pieces) {
     materials: piece.materials,
     year: piece.year,
     dimensions: piece.dimensions,
-    originalStatus: 'notForSale',
+    originalStatus: piece.originalStatus,
+    ...(piece.auctionUrl && { auctionUrl: piece.auctionUrl }),
     images: imageRefs,
   });
   console.log(`Created "${piece.title}" -> ${created._id}`);

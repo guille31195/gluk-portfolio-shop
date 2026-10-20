@@ -22,15 +22,23 @@ export interface SelectedProject {
   title: string;
   role: string;
   note?: string;
+  // Square image in public/, e.g. an album cover.
+  cover?: string;
 }
 
 export const SELECTED_PROJECTS: readonly SelectedProject[] = [
-  { year: 2026, title: 'Orestes Gómez — No me fui porque quise', role: 'Album cover' },
+  {
+    year: 2026,
+    title: 'Orestes Gómez — No me fui porque quise',
+    role: 'Album cover',
+    cover: '/projects/orestes-gomez-no-me-fui-porque-quise.jpg',
+  },
   {
     year: 2024,
     title: 'Viniloversus — Mi Mejor Enemigo',
     role: 'Album cover',
     note: 'Latin Grammy nominee, Best Rock Album',
+    cover: '/projects/viniloversus-mi-mejor-enemigo.jpg',
   },
   {
     year: 2020,

@@ -92,11 +92,24 @@ export const artwork = defineType({
         list: [
           { title: 'Available — show "Inquire"', value: 'available' },
           { title: 'Sold — show "Sold"', value: 'sold' },
+          { title: 'At auction — link to the lot', value: 'auction' },
           { title: 'Not for sale — hide', value: 'notForSale' },
         ],
         layout: 'radio',
       },
       initialValue: 'notForSale',
+    }),
+    defineField({
+      name: 'auctionUrl',
+      title: 'Auction lot link',
+      type: 'url',
+      hidden: ({ document }) => document?.originalStatus !== 'auction',
+      validation: (Rule) =>
+        Rule.custom((url, context) =>
+          (context.document as { originalStatus?: string })?.originalStatus === 'auction' && !url
+            ? 'Add the lot link, or pick another status.'
+            : true
+        ),
     }),
     defineField({
       name: 'printOptions',

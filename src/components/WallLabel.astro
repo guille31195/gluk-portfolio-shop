@@ -14,7 +14,8 @@ interface Props {
 const { artwork, heading, siblings } = Astro.props;
 const details = [artwork.year, artwork.dimensions].filter(Boolean).join(' · ');
 const inquire = inquiryHref('original', artwork.title);
-// Available → Inquire button; sold → "Sold"; not for sale → no Original block.
+// Available → Inquire button; sold → "Sold"; auction → link to the lot;
+// not for sale → no Original block.
 const showOriginal = artwork.originalStatus !== 'notForSale';
 ---
 <aside class="wall-label">
@@ -32,6 +33,8 @@ const showOriginal = artwork.originalStatus !== 'notForSale';
       <p class="label dim">Original</p>
       {artwork.originalStatus === 'available' ? (
         <a class="button" href={inquire}>Inquire</a>
+      ) : artwork.originalStatus === 'auction' && artwork.auctionUrl ? (
+        <a class="button" href={artwork.auctionUrl} rel="noopener">At auction · View lot</a>
       ) : (
         <p class="label wall-sold">Sold</p>
       )}

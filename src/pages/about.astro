@@ -37,6 +37,7 @@ const about = await getAboutPage();
                 {p.title}
                 <span class="dim"> — {p.role}{p.note && `. ${p.note}`}</span>
               </span>
+              {p.cover && <img class="project-cover" src={p.cover} alt={`${p.title}, album cover`} width="480" height="480" loading="lazy" decoding="async" />}
             </li>
           ))}
         </ul>
@@ -99,10 +100,16 @@ const about = await getAboutPage();
   }
   .about-projects li {
     display: grid;
-    grid-template-columns: 4rem 1fr;
+    grid-template-columns: 4rem 1fr 3.5rem;
     gap: 1rem;
     padding: 0.7rem 0;
     border-top: 1px solid var(--color-bone-dim);
+  }
+  .project-cover {
+    grid-column: 3;
+    width: 3.5rem;
+    height: 3.5rem;
+    object-fit: cover;
   }
   .about-credit {
     margin-top: auto;

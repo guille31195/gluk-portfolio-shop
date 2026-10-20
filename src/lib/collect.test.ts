@@ -13,6 +13,7 @@ function art(slug: string, originalStatus: OriginalStatus, printOptions: PrintOp
     description: null,
     images: [],
     originalStatus,
+    auctionUrl: null,
     printOptions,
     series: null,
     seriesPosition: null,

@@ -37,6 +37,8 @@ const printsFrom = (prices: number[]) => (prices.length ? formatPrice(Math.min(.
                   <dd>
                     {artwork.originalStatus === 'available' ? (
                       <a href={inquiryHref('original', artwork.title)}>Available · Inquire</a>
+                    ) : artwork.originalStatus === 'auction' && artwork.auctionUrl ? (
+                      <a href={artwork.auctionUrl} rel="noopener">At auction · View lot</a>
                     ) : (
                       <span class="dim">Sold</span>
                     )}

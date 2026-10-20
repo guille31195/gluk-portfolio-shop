@@ -14,6 +14,7 @@ function raw(overrides: Partial<RawArtwork> = {}): RawArtwork {
     description: null,
     images: [{ asset: { _ref: 'a1', _type: 'reference' } }],
     originalStatus: null,
+    auctionUrl: null,
     availableAsOriginal: null,
     printOptions: null,
     series: null,
@@ -35,6 +36,7 @@ describe('mapArtwork', () => {
       description: null,
       images: ['https://cdn.sanity.io/images/p/d/a1.jpg'],
       originalStatus: 'notForSale',
+      auctionUrl: null,
       printOptions: [],
       series: null,
       seriesPosition: null,
@@ -57,6 +59,17 @@ describe('mapArtwork', () => {
     // Old `availableAsOriginal: true` (set before the status field existed) still means available.
     expect(mapArtwork(raw({ availableAsOriginal: true }), urlFor).originalStatus).toBe('available');
     expect(mapArtwork(raw({ originalStatus: 'sold', availableAsOriginal: true }), urlFor).originalStatus).toBe('sold');
+  });
+
+  it('keeps the lot link only while the work is at auction', () => {
+    const lot = 'https://fairart.com/auctions/lot-1';
+    const atAuction = mapArtwork(raw({ originalStatus: 'auction', auctionUrl: lot }), urlFor);
+    expect(atAuction.originalStatus).toBe('auction');
+    expect(atAuction.auctionUrl).toBe(lot);
+    // Sold after the auction: a leftover link is dropped.
+    expect(mapArtwork(raw({ originalStatus: 'sold', auctionUrl: lot }), urlFor).auctionUrl).toBeNull();
+    // At auction with no link has nothing to show.
+    expect(mapArtwork(raw({ originalStatus: 'auction' }), urlFor).originalStatus).toBe('notForSale');
   });
 
   it('marks print sizes sold out only when flagged', () => {

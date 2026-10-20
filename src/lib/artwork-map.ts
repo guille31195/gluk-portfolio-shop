@@ -8,9 +8,10 @@ export type SeriesKind = 'series' | 'diptych';
 
 const HALO_SETTINGS: readonly HaloSetting[] = ['auto', 'always', 'never'];
 
-// available → "Inquire"; sold → "Sold"; notForSale → the Original block is hidden.
-export type OriginalStatus = 'available' | 'sold' | 'notForSale';
-const ORIGINAL_STATUSES: readonly OriginalStatus[] = ['available', 'sold', 'notForSale'];
+// available → "Inquire"; sold → "Sold"; auction → "At auction" linking to the lot;
+// notForSale → the Original block is hidden.
+export type OriginalStatus = 'available' | 'sold' | 'auction' | 'notForSale';
+const ORIGINAL_STATUSES: readonly OriginalStatus[] = ['available', 'sold', 'auction', 'notForSale'];
 
 export interface SeriesInfo {
   slug: string;
@@ -44,6 +45,8 @@ export interface Artwork {
   description: string | null;
   images: string[];
   originalStatus: OriginalStatus;
+  // Set only while originalStatus is 'auction'.
+  auctionUrl: string | null;
   printOptions: PrintOption[];
   series: SeriesInfo | null;
   seriesPosition: number | null;
@@ -85,6 +88,7 @@ export interface RawArtwork {
   description: string | null;
   images: RawImageSlot[] | null;
   originalStatus: string | null;
+  auctionUrl: string | null;
   // Legacy checkbox, read only as a fallback for documents edited before originalStatus.
   availableAsOriginal: boolean | null;
   printOptions: RawPrintOption[] | null;
@@ -104,6 +108,7 @@ export const ARTWORK_PROJECTION = `{
   description,
   images,
   originalStatus,
+  auctionUrl,
   availableAsOriginal,
   printOptions[]{size, price, stripePriceId, soldOut},
   "series": series->{ "slug": slug.current, name, order, kind, halo },
@@ -116,6 +121,8 @@ function haloSetting(value: string | null | undefined): HaloSetting {
 }
 
 function originalStatus(raw: RawArtwork): OriginalStatus {
+  // An auction with no lot link has nothing to show, so it reads as not for sale.
+  if (raw.originalStatus === 'auction' && !raw.auctionUrl) return 'notForSale';
   if (ORIGINAL_STATUSES.includes(raw.originalStatus as OriginalStatus)) return raw.originalStatus as OriginalStatus;
   return raw.availableAsOriginal ? 'available' : 'notForSale';
 }
@@ -143,6 +150,7 @@ export function mapArtwork(raw: RawArtwork, urlFor: (image: RawImage) => string)
     description: raw.description ?? null,
     images: (raw.images ?? []).filter(hasAsset).map(urlFor),
     originalStatus: originalStatus(raw),
+    auctionUrl: raw.originalStatus === 'auction' ? (raw.auctionUrl ?? null) : null,
     printOptions: (raw.printOptions ?? []).map((option) => ({ ...option, soldOut: option.soldOut ?? false })),
     series,
     seriesPosition: series ? (raw.seriesPosition ?? null) : null,
