@@ -10,9 +10,10 @@ import '../styles/theme.css';
 interface Props {
   title: string;
   backdrop?: BackdropKind;
+  noindex?: boolean;
 }
 
-const { title, backdrop = 'veil' } = Astro.props;
+const { title, backdrop = 'veil', noindex = false } = Astro.props;
 const settings = await getSiteSettings();
 ---
 <html lang="en" transition:animate={fade({ duration: '0.3s' })}>
@@ -20,6 +21,7 @@ const settings = await getSiteSettings();
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/brand/monogram-white.png" />
+    {noindex && <meta name="robots" content="noindex" />}
     <title>{title} — GLUK</title>
     <ClientRouter />
     <script is:inline>

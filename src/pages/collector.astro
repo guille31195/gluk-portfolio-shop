@@ -1,0 +1,168 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import RuptureRule from '../components/RuptureRule.astro';
+---
+<BaseLayout title="Your order" backdrop="veil" noindex>
+  <section class="page order" data-order data-state="loading">
+    <figure class="piece" data-piece hidden>
+      <img alt="" decoding="async" data-piece-img />
+    </figure>
+
+    <div class="info">
+      <div data-panel="confirming" hidden>
+        <h1 class="status">Confirming</h1>
+        <RuptureRule weight="thin" class="order-rule" />
+        <p class="statement">Your payment has arrived. Your edition number is being assigned and this page will show it in a moment.</p>
+      </div>
+
+      <div data-panel="order" hidden>
+        <p class="mono dim" data-f="date"></p>
+        <p class="edition dim">Edition</p>
+        <h1 class="status status--edition" data-f="edition"></h1>
+        <RuptureRule weight="thin" class="order-rule" />
+        <p class="piece-title" data-f="title"></p>
+        <p data-f="format"></p>
+        <dl>
+          <dt class="label dim">Status</dt>
+          <dd data-f="status"></dd>
+          <dt class="label dim">Price paid</dt>
+          <dd data-f="price"></dd>
+          <dt class="label dim">Shipping</dt>
+          <dd data-f="shipping"></dd>
+          <dt class="label dim">Ship to</dt>
+          <dd data-f="shipTo"></dd>
+          <dt class="label dim">Collector</dt>
+          <dd data-f="collector"></dd>
+          <dt class="label dim" data-tracking-row hidden>Tracking</dt>
+          <dd data-tracking-row hidden>
+            <span data-f="trackingNumber"></span>
+            <a class="label track" href="#" rel="noopener" data-f-link="tracking" hidden>Track</a>
+          </dd>
+        </dl>
+        <p class="fine dim">Import duties and taxes are paid by the collector on arrival.</p>
+      </div>
+
+      <div data-panel="not-found" hidden>
+        <h1 class="status">Order not found</h1>
+        <RuptureRule weight="thin" class="order-rule" />
+        <p class="statement">This link does not match an order.</p>
+        <a class="button" href="/">Home</a>
+      </div>
+
+      <div data-panel="error" hidden>
+        <h1 class="status">Order unavailable</h1>
+        <RuptureRule weight="thin" class="order-rule" />
+        <p class="statement">The order could not be loaded.</p>
+        <a class="button" href="" data-retry>Try again</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import '../scripts/collector';
+</script>
+
+<style>
+  .order {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(2rem, 6vw, 7rem);
+    align-items: start;
+    min-height: 80svh;
+  }
+  .order:has(.piece:not([hidden])) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .piece {
+    margin: 0;
+  }
+  .piece img {
+    display: block;
+    width: 100%;
+    max-width: 34rem;
+    height: auto;
+    box-shadow: var(--shadow-painting);
+  }
+  .info {
+    display: flex;
+    flex-direction: column;
+    max-width: 44rem;
+  }
+  .info > div {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+  }
+  .info [hidden] {
+    display: none;
+  }
+  .status {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-stretch: 125%;
+    font-size: var(--text-title);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+  }
+  .status--edition {
+    margin-top: -1rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .edition {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: var(--text-statement);
+  }
+  .info p {
+    margin: 0;
+  }
+  .piece-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-stretch: 125%;
+    font-size: var(--text-statement);
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  :global(.order-rule) {
+    width: 9rem !important;
+  }
+  dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0 2rem;
+    margin: 0;
+  }
+  dt,
+  dd {
+    margin: 0;
+    padding: 0.7rem 0;
+    border-top: var(--rule-hair) solid var(--color-hairline);
+  }
+  dt {
+    align-self: center;
+  }
+  dd {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .track {
+    display: inline-block;
+    margin-left: 0.5rem;
+  }
+  .fine {
+    font-size: 0.9em;
+  }
+  .info .button {
+    align-self: flex-start;
+  }
+  @media (max-width: 860px) {
+    .order:has(.piece:not([hidden])) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>
