@@ -3,6 +3,9 @@ import type { SanityClient } from '@sanity/client';
 import { handleOrder, sanityOrderReader, ORDER_QUERY, type OrderReader } from '../functions/order';
 import type { Order } from '../../src/lib/prints/order';
 
+const clientFetch = vi.hoisted(() => vi.fn());
+vi.mock('../lib/clients', () => ({ ordersClient: () => ({ fetch: clientFetch }) }));
+
 const TOKEN = 'tok_abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG';
 
 const ORDER: Order = {
@@ -88,12 +91,12 @@ describe('handleOrder', () => {
 });
 
 describe('sanityOrderReader', () => {
-  it('passes the token as a GROQ parameter', async () => {
+  it('passes the token as the $orderToken GROQ parameter', async () => {
     const fetch = vi.fn(async () => ORDER);
     const read = sanityOrderReader({ fetch } as unknown as SanityClient);
     expect(await read(TOKEN)).toBe(ORDER);
-    expect(fetch).toHaveBeenCalledWith(ORDER_QUERY, { token: TOKEN });
-    expect(ORDER_QUERY).toBe('*[_type=="order" && token==$token][0]');
+    expect(fetch).toHaveBeenCalledWith(ORDER_QUERY, { orderToken: TOKEN });
+    expect(ORDER_QUERY).toBe('*[_type=="order" && token==$orderToken][0]');
   });
 });
 
@@ -112,5 +115,28 @@ describe('order handler', () => {
     expect(res.status).toBe(400);
     expect(res.headers.get('Cache-Control')).toBe('no-store');
     expect(res.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
+  });
+});
+
+describe('order handler with a client', () => {
+  it('answers 200 with no-store and noindex headers', async () => {
+    clientFetch.mockResolvedValueOnce(ORDER);
+    const { default: handler } = await import('../functions/order');
+    const res = await handler(new Request(`https://glukart.test/api/order?o=${TOKEN}`));
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
+    expect(res.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
+    expect(await res.json()).toMatchObject({ artworkTitle: 'La Espera' });
+  });
+
+  it('answers 500 {error:"server"} without a stack when the read throws', async () => {
+    clientFetch.mockRejectedValueOnce(new Error('sanity down'));
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { default: handler } = await import('../functions/order');
+    const res = await handler(new Request(`https://glukart.test/api/order?o=${TOKEN}`));
+    expect(res.status).toBe(500);
+    expect(await res.text()).toBe('{"error":"server"}');
+    expect(res.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
+    log.mockRestore();
   });
 });

@@ -1,15 +1,15 @@
-import type { QueryParams, SanityClient } from '@sanity/client';
+import type { SanityClient } from '@sanity/client';
 import { ordersClient } from '../lib/clients';
 import { json, type Reply } from '../lib/http';
+import { TOKEN_PATTERN } from '../../src/lib/prints/collector-flow';
 import { toCollectorView, type CollectorView, type Order } from '../../src/lib/prints/order';
 
 export type OrderReader = (token: string) => Promise<Order | null>;
 
-export const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43,}$/;
-export const ORDER_QUERY: string = '*[_type=="order" && token==$token][0]';
+export const ORDER_QUERY: string = '*[_type=="order" && token==$orderToken][0]';
 
 export function sanityOrderReader(client: SanityClient): OrderReader {
-  return (token) => client.fetch<Order | null>(ORDER_QUERY, { token } as unknown as QueryParams); // `token` is a reserved option name in the client types only
+  return (token) => client.fetch<Order | null>(ORDER_QUERY, { orderToken: token });
 }
 
 export async function handleOrder(

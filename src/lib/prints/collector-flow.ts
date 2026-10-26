@@ -20,7 +20,7 @@ export type FlowDeps = {
 
 export const POLL_MS = 3000;
 export const GIVE_UP_MS = 60_000;
-const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43,}$/;
+export const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43,}$/;
 
 // The webhook may not have created the order yet, so 404 means "still
 // confirming" until the 60 s window closes. Null when aborted.
