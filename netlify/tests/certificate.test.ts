@@ -35,6 +35,7 @@ const ORDER: Order = {
   carrier: null,
   trackingNumber: null,
   trackingUrl: null,
+  ownerNotifiedAt: null,
 };
 
 // Fonts are embedded as glyph ids, so text is checked on the placed-text list

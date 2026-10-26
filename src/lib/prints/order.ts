@@ -41,6 +41,8 @@ export type Order = {
   carrier: string | null;
   trackingNumber: string | null;
   trackingUrl: string | null;
+  // Set once Guillermo's sale email has gone out; a redelivered event resends while null.
+  ownerNotifiedAt: string | null;
 };
 
 // What the collector page may show: no street, postal code, phone or email.

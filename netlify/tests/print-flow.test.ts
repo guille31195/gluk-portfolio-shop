@@ -81,6 +81,15 @@ function setup() {
   let webhookNow = new Date(T0.getTime() + 5 * 60_000);
   const webhookDeps: WebhookDeps = {
     store,
+    orders: {
+      async get(id) {
+        return (store.created.get(id) as Order | undefined) ?? null;
+      },
+      async markOwnerNotified(id, at) {
+        const doc = store.created.get(id);
+        if (doc) doc.ownerNotifiedAt = at;
+      },
+    },
     stripe: webhookStripe,
     sendMail: async (mail) => {
       mails.push(mail);

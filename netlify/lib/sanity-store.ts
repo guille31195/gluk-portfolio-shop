@@ -1,5 +1,6 @@
 import type { SanityClient } from '@sanity/client';
 import type { EditionCounter, EditionStore, Reservation } from '../../src/lib/prints/edition';
+import type { Order } from '../../src/lib/prints/order';
 
 type CounterDoc = { _id: string; _rev: string; sold: number; reservations?: (Reservation & { _key: string })[] };
 type MutationErrorItem = { error?: { type?: string } };
@@ -46,6 +47,22 @@ export function createSanityEditionStore(client: SanityClient): EditionStore {
 
     async exists(id) {
       return (await client.getDocument(id)) != null;
+    },
+  };
+}
+
+export type OrderLedger = {
+  get(id: string): Promise<Order | null>;
+  markOwnerNotified(id: string, at: string): Promise<void>;
+};
+
+export function createSanityOrderLedger(client: SanityClient): OrderLedger {
+  return {
+    async get(id) {
+      return (await client.getDocument<Order>(id)) ?? null;
+    },
+    async markOwnerNotified(id, at) {
+      await client.patch(id).set({ ownerNotifiedAt: at }).commit();
     },
   };
 }

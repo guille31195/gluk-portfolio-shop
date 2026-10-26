@@ -65,6 +65,7 @@ export const order = defineType({
     }),
     defineField({ name: 'createdAt', title: 'Created at', type: 'datetime', ...locked }),
     defineField({ name: 'stripeSessionId', title: 'Stripe session', type: 'string', ...locked }),
+    defineField({ name: 'ownerNotifiedAt', title: 'Owner notified at', type: 'datetime', ...locked }),
     defineField({ name: 'token', title: 'Collector link token', type: 'string', ...locked, hidden: true }),
   ],
   orderings: [{ title: 'Newest first', name: 'createdAtDesc', by: [{ field: 'createdAt', direction: 'desc' }] }],

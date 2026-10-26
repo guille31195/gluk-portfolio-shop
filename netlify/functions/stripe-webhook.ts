@@ -13,7 +13,7 @@ import {
   type Mailer,
 } from '../lib/email';
 import { defaultSiteUrl, json, serverError, type Reply } from '../lib/http';
-import { createSanityEditionStore } from '../lib/sanity-store';
+import { createSanityEditionStore, createSanityOrderLedger, type OrderLedger } from '../lib/sanity-store';
 import {
   counterId,
   EDITION_SIZE,
@@ -37,6 +37,7 @@ export type WebhookStripe = {
 
 export type WebhookDeps = {
   store: EditionStore;
+  orders: OrderLedger;
   stripe: WebhookStripe;
   sendMail: Mailer;
   now: () => Date;
@@ -153,18 +154,41 @@ function draftOrder(
     carrier: null,
     trackingNumber: null,
     trackingUrl: null,
+    ownerNotifiedAt: null,
   };
   return { order, meta };
 }
 
 // Emails are built and sent after the outcome is settled: any failure, including a
-// template that throws, is logged and never retried, because a retried event would
-// find the order and send nothing.
-async function bestEffort(deps: WebhookDeps, which: string, id: string, mail: () => Mail) {
+// template that throws, is logged and never turns into a 500. Only the owner email is
+// retried, on a redelivery, through the order's ownerNotifiedAt flag.
+async function bestEffort(deps: WebhookDeps, which: string, id: string, mail: () => Mail): Promise<boolean> {
   try {
     await deps.sendMail(mail());
+    return true;
   } catch (err) {
     log(`${which} email failed for ${id}: ${errorKind(err)}`);
+    return false;
+  }
+}
+
+async function notify(order: Order, deps: WebhookDeps) {
+  const sent = await bestEffort(deps, 'owner', order._id, () => ({
+    to: deps.ownerEmail,
+    ...ownerNotification(order, certificateUrl(order._id, deps.certSecret, deps.siteUrl), deps.siteUrl),
+  }));
+  if (sent) {
+    try {
+      await deps.orders.markOwnerNotified(order._id, deps.now().toISOString());
+    } catch (err) {
+      log(`owner-notified flag failed for ${order._id}: ${message(err)}`);
+    }
+  }
+  if (order.customer.email) {
+    await bestEffort(deps, 'collector', order._id, () => ({
+      to: order.customer.email,
+      ...collectorConfirmation(order, deps.siteUrl),
+    }));
   }
 }
 
@@ -228,21 +252,16 @@ export async function handleCompleted(
     (editionNumber) => ({ ...base, editionNumber }),
     deps.retry,
   );
-  if (result.status === 'already-processed') return OK;
+  if (result.status === 'already-processed') {
+    const existing = await deps.orders.get(base._id);
+    if (existing && existing.ownerNotifiedAt == null) await notify(existing, deps);
+    return OK;
+  }
   if (result.status === 'sold-out') return refundSoldOut(base, session, deps);
 
   const order = { ...base, editionNumber: result.editionNumber };
   console.log(`stripe-webhook: issued edition ${order.editionNumber} for ${order._id}`);
-  await bestEffort(deps, 'owner', order._id, () => ({
-    to: deps.ownerEmail,
-    ...ownerNotification(order, certificateUrl(order._id, deps.certSecret, deps.siteUrl), deps.siteUrl),
-  }));
-  if (order.customer.email) {
-    await bestEffort(deps, 'collector', order._id, () => ({
-      to: order.customer.email,
-      ...collectorConfirmation(order, deps.siteUrl),
-    }));
-  }
+  await notify(order, deps);
   return OK;
 }
 
@@ -279,8 +298,10 @@ export default async (req: Request): Promise<Response> => {
     const certSecret = process.env.CERT_SECRET;
     if (!webhookSecret || !certSecret) throw new Error('webhook is not configured');
     const body = await req.text();
+    const orders = ordersClient();
     const deps: WebhookDeps = {
-      store: createSanityEditionStore(ordersClient()),
+      store: createSanityEditionStore(orders),
+      orders: createSanityOrderLedger(orders),
       stripe: stripe(),
       sendMail: resendMailer(resend),
       now: () => new Date(),

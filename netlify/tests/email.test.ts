@@ -52,6 +52,7 @@ const ORDER: Order = {
   carrier: null,
   trackingNumber: null,
   trackingUrl: null,
+  ownerNotifiedAt: null,
 };
 
 const CERT = certificateUrl(ORDER._id, 'cert-secret', SITE);

@@ -44,6 +44,7 @@ const ORDER: Order = {
   carrier: null,
   trackingNumber: null,
   trackingUrl: null,
+  ownerNotifiedAt: null,
 };
 
 const SHIPPED: Order = {

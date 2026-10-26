@@ -1,6 +1,6 @@
 import { ClientError, type SanityClient } from '@sanity/client';
 import { describe, expect, it } from 'vitest';
-import { createSanityEditionStore } from './sanity-store';
+import { createSanityEditionStore, createSanityOrderLedger } from './sanity-store';
 
 const ID = 'edition-la-espera-large';
 const ORDER = { _id: 'order-cs_test_1', _type: 'order', editionNumber: 3 };
@@ -29,7 +29,23 @@ const duplicateId = () =>
 function stubClient(docs: Record<string, Doc> = {}, commitError?: Error) {
   const committed: Op[][] = [];
   const created: Doc[] = [];
+  const patched: { id: string; set: Record<string, unknown> }[] = [];
   const client = {
+    patch(id: string) {
+      let set: Record<string, unknown> = {};
+      const p = {
+        set(fields: Record<string, unknown>) {
+          set = { ...set, ...fields };
+          return p;
+        },
+        async commit() {
+          if (commitError) throw commitError;
+          patched.push({ id, set });
+          return { _id: id };
+        },
+      };
+      return p;
+    },
     async getDocument(id: string) {
       return docs[id];
     },
@@ -58,7 +74,7 @@ function stubClient(docs: Record<string, Doc> = {}, commitError?: Error) {
       return tx;
     },
   };
-  return { client: client as unknown as SanityClient, committed, created };
+  return { client: client as unknown as SanityClient, committed, created, patched };
 }
 
 const counterDoc = (sold: number) => ({
@@ -142,5 +158,20 @@ describe('createSanityEditionStore', () => {
     const store = createSanityEditionStore(client);
     expect(await store.exists(ORDER._id)).toBe(true);
     expect(await store.exists('order-cs_test_2')).toBe(false);
+  });
+});
+
+describe('createSanityOrderLedger', () => {
+  it('reads an order or null', async () => {
+    const { client } = stubClient({ [ORDER._id]: ORDER });
+    const ledger = createSanityOrderLedger(client);
+    expect(await ledger.get(ORDER._id)).toEqual(ORDER);
+    expect(await ledger.get('order-cs_test_2')).toBeNull();
+  });
+
+  it('sets ownerNotifiedAt with a patch', async () => {
+    const { client, patched } = stubClient({ [ORDER._id]: ORDER });
+    await createSanityOrderLedger(client).markOwnerNotified(ORDER._id, '2026-10-26T12:00:00.000Z');
+    expect(patched).toEqual([{ id: ORDER._id, set: { ownerNotifiedAt: '2026-10-26T12:00:00.000Z' } }]);
   });
 });

@@ -130,6 +130,15 @@ function setup({
   };
   const deps: WebhookDeps = {
     store,
+    orders: {
+      async get(id) {
+        return (store.created.get(id) as Order | undefined) ?? null;
+      },
+      async markOwnerNotified(id, at) {
+        const doc = store.created.get(id);
+        if (doc) doc.ownerNotifiedAt = at;
+      },
+    },
     stripe,
     sendMail: async (mail) => {
       if (failMail(mail)) throw Object.assign(new Error(`smtp down for ${mail.to}`), { code: 'ECONNRESET' });
@@ -226,6 +235,7 @@ describe('checkout.session.completed', () => {
         carrier: null,
         trackingNumber: null,
         trackingUrl: null,
+        ownerNotifiedAt: NOW.toISOString(),
       },
     ]);
   });
@@ -546,5 +556,62 @@ describe('shipping address across API versions', () => {
     expect((await store.load(LARGE)).sold).toBe(0);
     expect(mails).toHaveLength(0);
     expect(log).toHaveBeenCalled();
+  });
+});
+
+describe('owner notification retry', () => {
+  it('leaves the flag unset when the owner email fails, then a redelivery sends and sets it', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    let ownerDown = true;
+    const { store, mails, deps } = setup({ initial: [counter(0, ['res-1'])], failMail: (m) => ownerDown && m.to === OWNER });
+    const body = eventBody('checkout.session.completed', paidSession());
+    const header = await signed(body);
+
+    expect((await handleWebhook(body, header, deps)).status).toBe(200);
+    expect(mails.map((m) => m.to)).toEqual(['ana@example.com']);
+    expect(orders(store)[0].ownerNotifiedAt).toBeNull();
+
+    ownerDown = false;
+    expect((await handleWebhook(body, header, deps)).status).toBe(200);
+    expect(mails.map((m) => m.to)).toEqual(['ana@example.com', OWNER, 'ana@example.com']);
+    expect(mails[1].text).toContain('1 / 50');
+    expect(orders(store)[0].ownerNotifiedAt).toBe(NOW.toISOString());
+    expect(store.created.size).toBe(1);
+    expect((await store.load(LARGE)).sold).toBe(1);
+    expect(log).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends nothing on a redelivery after the owner was notified', async () => {
+    const { store, mails, deps } = setup({ initial: [counter(0, ['res-1'])] });
+    const body = eventBody('checkout.session.completed', paidSession());
+    const header = await signed(body);
+    await handleWebhook(body, header, deps);
+    expect(orders(store)[0].ownerNotifiedAt).toBe(NOW.toISOString());
+    await handleWebhook(body, header, deps);
+    expect(mails).toHaveLength(2);
+  });
+
+  it('still answers 200 on a redelivery whose owner email fails again', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { store, mails, deps } = setup({ initial: [counter(0, ['res-1'])], failMail: (m) => m.to === OWNER });
+    const body = eventBody('checkout.session.completed', paidSession());
+    const header = await signed(body);
+    await handleWebhook(body, header, deps);
+    expect((await handleWebhook(body, header, deps)).status).toBe(200);
+    expect(mails.map((m) => m.to)).toEqual(['ana@example.com', 'ana@example.com']);
+    expect(orders(store)[0].ownerNotifiedAt).toBeNull();
+    expect(log).toHaveBeenCalledTimes(2);
+  });
+
+  it('answers 200 and logs when the flag cannot be saved', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { store, mails, deps } = setup({ initial: [counter(0, ['res-1'])] });
+    deps.orders.markOwnerNotified = async () => {
+      throw new Error('sanity down');
+    };
+    expect((await deliver(deps, 'checkout.session.completed', paidSession())).status).toBe(200);
+    expect(store.created.size).toBe(1);
+    expect(mails).toHaveLength(2);
+    expect(log).toHaveBeenCalledWith(`stripe-webhook: owner-notified flag failed for ${orderId('cs_test_1')}: sanity down`);
   });
 });
