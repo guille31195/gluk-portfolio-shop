@@ -15,6 +15,7 @@
     "seed:details": "node --env-file=.env scripts/seed-artwork-details.mjs",
     "seed:tattoo": "node --env-file=.env scripts/seed-tattoo-images.mjs",
     "brand:assets": "node scripts/build-brand-assets.mjs",
+    "certificate:assets": "node scripts/build-certificate-assets.mjs",
     "seed:new-works": "node --env-file=.env scripts/seed-new-works.mjs"
   },
   "dependencies": {

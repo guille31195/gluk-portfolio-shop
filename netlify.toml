@@ -26,6 +26,8 @@
 # Print checkout API (Stripe, Sanity orders dataset, Resend).
 [functions]
   directory = "netlify/functions"
+  # Certificate PDF fonts and brand images, read at runtime (see netlify/lib/certificate-pdf.ts).
+  included_files = ["netlify/assets/**"]
 
 # Collector order pages are reached by an unguessable token link only.
 [[headers]]
