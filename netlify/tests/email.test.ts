@@ -277,3 +277,17 @@ describe('ship-to address order', () => {
     ]);
   });
 });
+
+describe('collector name the certificate cannot print', () => {
+  const NOTE = 'Collector name could not be printed on the certificate: write it by hand';
+
+  it('tells Guillermo to write a non-Latin name by hand', () => {
+    const mail = ownerNotification({ ...ORDER, customer: { ...ORDER.customer, name: '山田 太郎' } }, CERT, SITE);
+    expect(mail.text).toContain(NOTE);
+    expect(mail.html).toContain(NOTE);
+  });
+
+  it('says nothing for a name the certificate prints', () => {
+    expect(ownerNotification(ORDER, CERT, SITE).text).not.toContain(NOTE);
+  });
+});

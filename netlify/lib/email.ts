@@ -1,6 +1,7 @@
 import { signKey, type Order } from '../../src/lib/prints/order';
 import { sizeLabel } from '../../src/lib/prints/print-sizes';
 import { REGION_NAMES } from '../../src/lib/prints/shipping';
+import { canPrintCollectorName } from './certificate-pdf';
 import { defaultSiteUrl } from './http';
 
 export const FROM = 'Gluk <orders@glukart.com>';
@@ -95,6 +96,15 @@ function amountRows(o: Order): Row[] {
   ];
 }
 
+// Unknown (font unreadable) counts as printable: the certificate link would fail anyway.
+function namePrintable(name: string): boolean {
+  try {
+    return canPrintCollectorName(name);
+  } catch {
+    return true;
+  }
+}
+
 export function ownerNotification(order: Order, certUrl: string, site = defaultSiteUrl()): Message {
   const heading = 'New print sale. Ship via DHL Express.';
   const rows: Row[] = [
@@ -108,6 +118,9 @@ export function ownerNotification(order: Order, certUrl: string, site = defaultS
     ['Certificate (PDF)', certUrl, certUrl],
   ];
   const intro = ['The collector pays import duties and taxes on arrival.'];
+  if (!namePrintable(order.customer.name)) {
+    intro.push('Collector name could not be printed on the certificate: write it by hand.');
+  }
   return {
     subject: `Sale: ${order.artworkTitle}, ${formatName(order)}, edition ${edition(order)} · ship to ${countryName(order.customer.address.country)}`,
     html: plainHtml(heading, intro, rows),

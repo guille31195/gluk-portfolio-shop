@@ -1,6 +1,12 @@
 import { PDFDocument } from 'pdf-lib';
 import { describe, expect, it, vi } from 'vitest';
-import { CERTIFICATE_COPY, CERTIFICATE_LIMITS, renderCertificate, renderCertificateDetailed } from '../lib/certificate-pdf';
+import {
+  canPrintCollectorName,
+  CERTIFICATE_COPY,
+  CERTIFICATE_LIMITS,
+  renderCertificate,
+  renderCertificateDetailed,
+} from '../lib/certificate-pdf';
 import { handleCertificate, ID_PATTERN, CERTIFICATE_QUERY, sanityCertificateReader, toResponse } from '../functions/certificate';
 import { signKey, type Order } from '../../src/lib/prints/order';
 
@@ -94,6 +100,24 @@ describe('renderCertificate', () => {
   it('leaves out an unknown year instead of inventing one', async () => {
     const all = (await placed({ ...ORDER, year: null })).map((t) => t.text);
     expect(all).not.toContain('Year'.toUpperCase());
+  });
+
+  it('prints a Latin collector name with accents', async () => {
+    const name = 'José Núñez Øster';
+    expect(canPrintCollectorName(name)).toBe(true);
+    const { texts, collectorNamePrinted } = await renderCertificateDetailed({ ...ORDER, customer: { ...ORDER.customer, name } });
+    expect(collectorNamePrinted).toBe(true);
+    expect(texts.map((t) => t.text)).toContain(name);
+  });
+
+  it('leaves a blank line for a collector name the font cannot draw', async () => {
+    const name = '山田 太郎';
+    expect(canPrintCollectorName(name)).toBe(false);
+    const { texts, collectorNamePrinted } = await renderCertificateDetailed({ ...ORDER, customer: { ...ORDER.customer, name } });
+    expect(collectorNamePrinted).toBe(false);
+    const all = texts.map((t) => t.text);
+    expect(all).toContain('COLLECTOR');
+    expect(all.join(' ')).not.toMatch(/山|田|太|郎/);
   });
 
   it('switches wording by variant', async () => {

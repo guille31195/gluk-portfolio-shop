@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -69,6 +69,16 @@ function assetDir(): string {
   return found;
 }
 
+const BODY_FONT = 'fonts/Karla-Regular.ttf';
+let bodyGlyphs: fontkit.Font | undefined;
+
+// The collector name is drawn in Karla; a character it has no glyph for (CJK, Cyrillic,
+// emoji) would print as an empty box, so such a name is left for Guillermo to write.
+export function canPrintCollectorName(name: string): boolean {
+  bodyGlyphs ??= fontkit.create(readFileSync(join(assetDir(), BODY_FONT)));
+  return [...clean(name)].every((ch) => ch === ' ' || bodyGlyphs!.hasGlyphForCodePoint(ch.codePointAt(0)!));
+}
+
 const clean = (s: string) => s.replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim();
 const formatDate = (iso: string) =>
   new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(iso));
@@ -101,13 +111,13 @@ function fitTitle(text: string, font: PDFFont, maxW: number) {
 export async function renderCertificateDetailed(
   order: Order,
   variant: CertificateVariant = DEFAULT_VARIANT,
-): Promise<{ pdf: Uint8Array; texts: PlacedText[] }> {
+): Promise<{ pdf: Uint8Array; texts: PlacedText[]; collectorNamePrinted: boolean }> {
   const copy = CERTIFICATE_COPY[variant];
   const dir = assetDir();
   const [titleFont, lightFont, bodyFont, wordmarkBytes, ruleBytes] = await Promise.all([
     readFile(join(dir, 'fonts/ArchivoExpanded-ExtraBold.ttf')),
     readFile(join(dir, 'fonts/Archivo-Light.ttf')),
-    readFile(join(dir, 'fonts/Karla-Regular.ttf')),
+    readFile(join(dir, BODY_FONT)),
     readFile(join(dir, 'wordmark-black.png')),
     readFile(join(dir, 'rupture-rule.png')),
   ]);
@@ -174,7 +184,9 @@ export async function renderCertificateDetailed(
   title.lines.forEach((l, i) => text(l, display, title.size, MARGIN.x, firstBase + step * i, { spacing: -0.025 }));
   text(copy.kicker, light, 1.9, MARGIN.x, firstBase - title.size * 0.7 - KICKER_GAP, { spacing: -0.01 });
 
-  // Facts: two columns, hairline above each row. Missing facts are left out.
+  // Facts: two columns, hairline above each row. Missing facts are left out, except a
+  // collector name the font cannot draw (null): that row keeps a blank line to write on.
+  const collectorNamePrinted = canPrintCollectorName(order.customer.name);
   const facts = (
     [
       [copy.labels.year, order.year == null ? '' : String(order.year)],
@@ -182,8 +194,8 @@ export async function renderCertificateDetailed(
       [copy.labels.size, sizeLabel(order)],
       [copy.labels.edition, `${order.editionNumber} / ${order.editionSize}`],
       [copy.labels.date, formatDate(order.createdAt)],
-      [copy.labels.collector, clean(order.customer.name)],
-    ] as [string, string][]
+      [copy.labels.collector, collectorNamePrinted ? clean(order.customer.name) : null],
+    ] as [string, string | null][]
   ).filter(([, value]) => value !== '');
   const COL_W = (CONTENT_W - 5) / 2;
   facts.forEach(([label, value], i) => {
@@ -192,6 +204,11 @@ export async function renderCertificateDetailed(
     page.drawLine({ start: { x: X(colX), y: Y(top) }, end: { x: X(colX + COL_W), y: Y(top) }, thickness: 0.5, color: INK, opacity: 0.25 });
     text(label.toUpperCase(), body, 1.05, colX, top + 2.7, { spacing: 0.2, opacity: 0.6 });
     const ddW = COL_W - 11;
+    if (value === null) {
+      const y = Y(top + 3.1);
+      page.drawLine({ start: { x: X(colX + 11), y }, end: { x: X(colX + COL_W), y }, thickness: 0.5, color: INK, opacity: 0.5 });
+      return;
+    }
     const size = Math.min(1.5, (1.5 * ddW * CQW) / body.widthOfTextAtSize(value, 1.5 * CQW));
     text(value, body, size, colX + 11, top + 2.7);
   });
@@ -203,7 +220,7 @@ export async function renderCertificateDetailed(
 
   // No object streams: keeps the file simple to inspect; text is checked via `texts`.
   const pdf = await doc.save({ useObjectStreams: false });
-  return { pdf, texts };
+  return { pdf, texts, collectorNamePrinted };
 }
 
 export async function renderCertificate(order: Order, variant: CertificateVariant = DEFAULT_VARIANT): Promise<Uint8Array> {
