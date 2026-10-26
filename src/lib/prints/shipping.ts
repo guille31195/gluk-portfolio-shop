@@ -16,14 +16,15 @@ const words = (s: string) => s.split(/\s+/).filter(Boolean);
 const MX = ['MX'];
 const US_CA = ['US', 'CA'];
 const LATAM = words(`
-  AG AI AR AW BB BO BQ BR BS BZ CL CO CR CW DM DO EC GD GT GY HN HT JM KN KY LC
-  MS NI PA PE PR PY SR SV SX TC TT UY VC VE VG
+  AG AI AR AW BB BL BO BQ BR BS BZ CL CO CR CW DM DO EC FK GD GF GP GT GY HN HT JM KN KY LC
+  MF MQ MS NI PA PE PR PY SR SV SX TC TT UY VC VE VG
 `);
 const EU_UK = words(`
   AD AL AT BA BE BG CH CY CZ DE DK EE ES FI FO FR GB GG GI GR HR HU IE IM IS IT
   JE LI LT LU LV MC ME MK MT NL NO PL PT RO RS SE SI SK SM VA XK
 `);
 
+// AC, TA and XK are non-ISO codes that Stripe accepts.
 // Countries Stripe Checkout accepts in allowed_countries. Re-check against Stripe's docs before launch.
 const STRIPE_COUNTRIES = words(`
   AC AD AE AF AG AI AL AM AO AQ AR AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT
@@ -40,7 +41,7 @@ const NAMED: Record<Exclude<RegionId, 'ROW'>, string[]> = { MX, US_CA, LATAM, EU
 const taken = new Set([...Object.values(NAMED).flat(), ...EXCLUDED_COUNTRIES]);
 
 const COUNTRIES: Record<RegionId, string[]> = {
-  MX: [...MX].sort(),
+  MX,
   US_CA: [...US_CA].sort(),
   LATAM: [...LATAM].sort(),
   EU_UK: [...EU_UK].sort(),
@@ -54,6 +55,7 @@ const REGION_BY_COUNTRY = new Map<string, RegionId>(
 );
 
 export function regionForCountry(iso2: string): RegionId | null {
+  if (typeof iso2 !== 'string') return null;
   return REGION_BY_COUNTRY.get(iso2.toUpperCase()) ?? null;
 }
 
