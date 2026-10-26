@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { handleCertificate } from '../functions/certificate';
 import { handleCheckout, type CheckoutDeps, type CheckoutStripe } from '../functions/checkout';
 import { handleOrder } from '../functions/order';
-import { handleWebhook, type WebhookDeps, type WebhookStripe } from '../functions/stripe-webhook';
+import { handleWebhook, type CompletedSession, type WebhookDeps, type WebhookStripe } from '../functions/stripe-webhook';
 import type { PrintableArtwork } from '../lib/artworks';
 import { renderCertificate } from '../lib/certificate-pdf';
 import type { Mail } from '../lib/email';
@@ -37,6 +37,7 @@ function setup() {
   const sessions = new Map<string, SessionParams>();
   const mails: Mail[] = [];
   const refunds: string[] = [];
+  const paid = new Map<string, unknown>();
 
   const checkoutStripe: CheckoutStripe = {
     checkout: {
@@ -50,6 +51,14 @@ function setup() {
     },
   };
   const webhookStripe: WebhookStripe = {
+    checkout: {
+      sessions: {
+        async retrieve(id) {
+          if (!paid.has(id)) throw new Error(`No such checkout.session: ${id}`);
+          return paid.get(id) as CompletedSession;
+        },
+      },
+    },
     webhooks: { constructEventAsync: async (payload) => JSON.parse(payload) as Stripe.Event },
     refunds: {
       list: async ({ payment_intent }) => ({ data: refunds.includes(payment_intent) ? [{ status: 'succeeded' }] : [] }),
@@ -127,7 +136,11 @@ function setup() {
     } as unknown as Stripe.Event;
   }
 
-  const deliver = (event: Stripe.Event) => handleWebhook(JSON.stringify(event), 'sig', webhookDeps);
+  const deliver = (event: Stripe.Event) => {
+    const object = event.data.object as { id?: string };
+    if (object.id) paid.set(object.id, object);
+    return handleWebhook(JSON.stringify(event), 'sig', webhookDeps);
+  };
   const checkout = (country = 'US', format = 'large') => handleCheckout({ slug: 'la-espera', format, country }, checkoutDeps);
   const setWebhookNow = (d: Date) => {
     webhookNow = d;

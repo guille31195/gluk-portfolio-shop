@@ -27,6 +27,7 @@ import type { Format } from '../../src/lib/prints/print-sizes';
 import { REGION_NAMES, type RegionId } from '../../src/lib/prints/shipping';
 
 export type WebhookStripe = {
+  checkout: { sessions: { retrieve(id: string): Promise<CompletedSession> } };
   webhooks: { constructEventAsync(payload: string, header: string, secret: string): Promise<Stripe.Event> };
   refunds: {
     list(params: { payment_intent: string; limit: number }): Promise<{ data: { status: string | null }[] }>;
@@ -48,6 +49,8 @@ export type WebhookDeps = {
 
 // The fields read from a Checkout Session. In API 2026-09-30 the shipping address is
 // under collected_information.shipping_details; email and phone under customer_details.
+// Older API versions sent it as a top-level shipping_details.
+type ShippingDetails = Stripe.Checkout.Session.CollectedInformation.ShippingDetails;
 export type CompletedSession = Pick<
   Stripe.Checkout.Session,
   | 'id'
@@ -58,7 +61,7 @@ export type CompletedSession = Pick<
   | 'metadata'
   | 'customer_details'
   | 'collected_information'
->;
+> & { shipping_details?: ShippingDetails | null };
 
 export type WebhookReply = Reply<{ received: true } | { error: 'signature' | 'server' }>;
 
@@ -97,18 +100,23 @@ function printMeta(metadata: Stripe.Metadata | null): PrintMeta | null {
 }
 
 // The order as it would be stored, minus the edition number, which only finalize knows.
-// Null when the metadata our checkout writes is incomplete or malformed.
-function draftOrder(session: CompletedSession, createdAt: string): { order: Order; meta: PrintMeta } | null {
+// 'metadata' when what our checkout writes is incomplete or malformed; 'address' when
+// Stripe gave no shipping street (never fall back to the billing address).
+function draftOrder(
+  session: CompletedSession,
+  createdAt: string,
+): { order: Order; meta: PrintMeta } | 'metadata' | 'address' {
   const m = session.metadata ?? {};
   const meta = printMeta(m);
   const widthCm = positive(m.widthCm);
   const heightCm = positive(m.heightCm);
   const year = m.year ? positive(m.year) : null;
-  if (!meta || !m.token || !isRegion(m.region) || widthCm === null || heightCm === null) return null;
-  if (m.year && year === null) return null;
-  const shipping = session.collected_information?.shipping_details;
+  if (!meta || !m.token || !isRegion(m.region) || widthCm === null || heightCm === null) return 'metadata';
+  if (m.year && year === null) return 'metadata';
+  const shipping = session.collected_information?.shipping_details ?? session.shipping_details;
   const details = session.customer_details;
-  const address = shipping?.address ?? details?.address;
+  const address = shipping?.address;
+  if (!address?.line1?.trim()) return 'address';
   const order: Order = {
     _id: orderId(session.id),
     _type: 'order',
@@ -192,16 +200,19 @@ async function refundSoldOut(order: Order, session: CompletedSession, deps: Webh
 }
 
 export async function handleCompleted(
-  session: CompletedSession,
+  payload: CompletedSession,
   createdAt: string,
   deps: WebhookDeps,
 ): Promise<WebhookReply> {
-  if (session.payment_status !== 'paid') return OK;
+  if (payload.payment_status !== 'paid') return OK;
+  const m = payload.metadata ?? {};
+  if (!m.slug && !m.reservationId) return OK; // not a print checkout (e.g. a dashboard payment link)
+  // The payload follows the endpoint's API version; the pinned client returns the shape
+  // this code reads. A failed fetch throws, so Stripe retries the event.
+  const session = await deps.stripe.checkout.sessions.retrieve(payload.id);
   const draft = draftOrder(session, createdAt);
-  if (!draft) {
-    const m = session.metadata ?? {};
-    if (!m.slug && !m.reservationId) return OK; // not a print checkout (e.g. a dashboard payment link)
-    log(`paid session ${session.id} has invalid print metadata`);
+  if (typeof draft === 'string') {
+    log(`paid session ${session.id} ${draft === 'address' ? 'has no shipping address' : 'has invalid print metadata'}`);
     await bestEffort(deps, 'broken-session alert', session.id, () => ({
       to: deps.ownerEmail,
       ...brokenSessionAlert(session.id, paymentIntentId(session) ?? 'unknown'),

@@ -80,7 +80,12 @@ function paidSession(n = 1, over: Partial<CompletedSession> = {}): CompletedSess
   };
 }
 
+// What the pinned client's sessions.retrieve answers: the last payload sent per session id.
+const sent = new Map<string, CompletedSession>();
+
 function eventBody(type: string, object: unknown, id = 'evt_1') {
+  const session = object as CompletedSession;
+  if (session?.id) sent.set(session.id, session);
   return JSON.stringify({ id, object: 'event', type, created: EVENT_CREATED, data: { object } });
 }
 
@@ -99,12 +104,18 @@ function setup({
   failRefund = false,
   failMail = (_: Mail): boolean => false,
   existingRefunds = [] as RefundRow[],
+  retrieve = async (id: string): Promise<CompletedSession> => {
+    const session = sent.get(id);
+    if (!session) throw new Error(`No such checkout.session: ${id}`);
+    return session;
+  },
 } = {}) {
   const store = createFakeStore(initial);
   const mails: Mail[] = [];
   const refunds: { params: { payment_intent: string }; options: { idempotencyKey: string } }[] = [];
   const stripe: WebhookStripe = {
     webhooks: stripeLib.webhooks,
+    checkout: { sessions: { retrieve } },
     refunds: {
       async list() {
         const made = refunds.filter(() => !failRefund).map((): RefundRow => ({ status: 'succeeded' }));
@@ -143,6 +154,7 @@ const orders = (store: ReturnType<typeof createFakeStore>) => [...store.created.
 
 let info: ReturnType<typeof vi.spyOn>;
 beforeEach(() => {
+  sent.clear();
   info = vi.spyOn(console, 'log').mockImplementation(() => {});
 });
 afterEach(() => vi.restoreAllMocks());
@@ -472,5 +484,67 @@ describe('review fixes', () => {
     expect(res.status).toBe(200);
     expect(store.created.size).toBe(1);
     expect(log).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('shipping address across API versions', () => {
+  const withoutAddress = (s: CompletedSession): CompletedSession => ({ ...s, collected_information: null });
+
+  it('reads the address from the session fetched with the pinned client', async () => {
+    const full = paidSession();
+    const { store, deps } = setup({ initial: [counter(0, ['res-1'])], retrieve: async () => full });
+    const res = await deliver(deps, 'checkout.session.completed', withoutAddress(full));
+    expect(res.status).toBe(200);
+    const [order] = orders(store);
+    expect(order.customer.name).toBe('Ana Collector');
+    expect(order.customer.address).toEqual({
+      line1: 'Calle Ejemplo 7',
+      line2: 'Piso 1A',
+      city: 'Madrid',
+      state: null,
+      postalCode: '28000',
+      country: 'ES',
+    });
+  });
+
+  it('falls back to the legacy shipping_details field', async () => {
+    const full = paidSession();
+    const legacy = { ...withoutAddress(full), shipping_details: full.collected_information!.shipping_details };
+    const { store, deps } = setup({ retrieve: async () => legacy });
+    await deliver(deps, 'checkout.session.completed', withoutAddress(full));
+    expect(orders(store)[0].customer.address.line1).toBe('Calle Ejemplo 7');
+  });
+
+  it('alerts Guillermo and issues no order when no shipping address can be found', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const bare = withoutAddress(paidSession(3));
+    const { store, mails, deps } = setup({ initial: [counter(0, ['res-3'])], retrieve: async () => bare });
+    const res = await deliver(deps, 'checkout.session.completed', bare);
+
+    expect(res.status).toBe(200);
+    expect(store.created.size).toBe(0);
+    expect((await store.load(LARGE)).sold).toBe(0);
+    expect(mails).toHaveLength(1);
+    expect(mails[0].to).toBe(OWNER);
+    expect(mails[0].subject).toBe('ACTION NEEDED: paid session cs_test_3 could not become an order');
+    expect(mails[0].text).toContain('pi_test_3');
+    expect(mails[0].text).not.toContain('Billing 1');
+    expect(log).toHaveBeenCalledWith('stripe-webhook: paid session cs_test_3 has no shipping address');
+  });
+
+  it('answers 500 and writes nothing when the session cannot be fetched', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { store, mails, deps } = setup({
+      initial: [counter(0, ['res-1'])],
+      retrieve: async () => {
+        throw new Error('api down');
+      },
+    });
+    const res = await deliver(deps, 'checkout.session.completed', paidSession());
+    expect(res.status).toBe(500);
+    expect(store.created.size).toBe(0);
+    expect((await store.load(LARGE)).sold).toBe(0);
+    expect(mails).toHaveLength(0);
+    expect(log).toHaveBeenCalled();
   });
 });
