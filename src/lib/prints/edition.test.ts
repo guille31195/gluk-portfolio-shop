@@ -160,6 +160,18 @@ describe('finalizeEdition', () => {
     expect(numbers).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     expect((await store.load(ID)).sold).toBe(10);
   });
+
+  it.each([2, 3])('settles %i concurrent redeliveries of the last unit as one issue', async (copies) => {
+    const store = createFakeStore([counter(49)]);
+    const results = await Promise.all(
+      Array.from({ length: copies }, () => finalizeEdition(store, ID, 'a', NOW, order('order-a'), RACE)),
+    );
+
+    expect(results.filter((r) => r.status === 'issued')).toEqual([{ status: 'issued', editionNumber: 50 }]);
+    expect(results.filter((r) => r.status === 'already-processed')).toHaveLength(copies - 1);
+    expect((await store.load(ID)).sold).toBe(50);
+    expect(store.created.size).toBe(1);
+  });
 });
 
 describe('conflict retries', () => {

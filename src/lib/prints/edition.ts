@@ -47,12 +47,12 @@ type Step<T> = { done: T } | { next: EditionCounter; create?: OrderDoc; result: 
 async function update<T>(
   store: EditionStore,
   id: string,
-  step: (c: EditionCounter) => Step<T>,
+  step: (c: EditionCounter) => Step<T> | Promise<Step<T>>,
   { maxAttempts = MAX_ATTEMPTS, backoffMs = BACKOFF_BASE_MS }: RetryOptions = {},
 ): Promise<T> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const current = await store.load(id);
-    const s = step(current);
+    const s = await step(current);
     if ('done' in s) return s.done;
     const outcome = await store.save(s.next, current.rev, s.create);
     if (outcome === 'ok') return s.result;
@@ -92,7 +92,9 @@ export function releaseReservation(store: EditionStore, id: string, reservationI
 }
 
 // `order` must return the same _id for any edition number: the _id identifies the payment.
-export async function finalizeEdition(
+// The order is looked up on every attempt, so a redelivery that loses a race to its
+// twin at the last unit reports 'already-processed', never 'sold-out'.
+export function finalizeEdition(
   store: EditionStore,
   id: string,
   reservationId: string,
@@ -100,11 +102,12 @@ export async function finalizeEdition(
   order: (editionNumber: number) => OrderDoc,
   opts?: RetryOptions,
 ): Promise<FinalizeResult> {
-  if (await store.exists(order(0)._id)) return { status: 'already-processed' };
+  const orderId = order(0)._id;
   return update<FinalizeResult>(
     store,
     id,
-    (c) => {
+    async (c) => {
+      if (await store.exists(orderId)) return { done: { status: 'already-processed' } };
       if (c.sold >= EDITION_SIZE) return { done: { status: 'sold-out' } };
       const editionNumber = c.sold + 1;
       const reservations = live(c.reservations, now).filter((r) => r.reservationId !== reservationId);
