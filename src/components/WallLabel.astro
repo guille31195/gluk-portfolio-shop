@@ -1,8 +1,8 @@
 ---
 import NumberedIndex, { type IndexItem } from './NumberedIndex.astro';
+import PrintBlock from './PrintBlock.astro';
 import RuptureRule from './RuptureRule.astro';
 import { mediumLabel, type Artwork } from '../lib/sanity';
-import { formatPrice } from '../data/format-price';
 import { inquiryHref } from '../lib/collect';
 
 interface Props {
@@ -41,17 +41,7 @@ const showOriginal = artwork.originalStatus !== 'notForSale';
     </div>
   )}
   {artwork.printOffers.length > 0 && (
-    <div class="wall-block" data-intro>
-      <p class="label dim">Prints</p>
-      <ul class="wall-prints">
-        {artwork.printOffers.map((offer) => (
-          <li>
-            <span>{offer.sizeLabel}</span>
-            <span>{formatPrice(offer.priceCents)}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <PrintBlock slug={artwork.slug} title={artwork.title} offers={artwork.printOffers} />
   )}
   {/* No print sizes priced yet: prints of a collectable piece are by inquiry, matching /collect. */}
   {artwork.printOffers.length === 0 && showOriginal && (
@@ -86,18 +76,6 @@ const showOriginal = artwork.originalStatus !== 'notForSale';
   }
   .wall-block .label {
     margin: 0 0 0.8rem;
-  }
-  .wall-prints {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  .wall-prints li {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.5rem 0;
-    border-top: var(--rule-hair) solid var(--color-hairline);
-    font-variant-numeric: tabular-nums;
   }
   .wall-sold {
     margin: 0;

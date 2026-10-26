@@ -1,0 +1,197 @@
+---
+import { formatPrice } from '../data/format-price';
+import { inquiryHref } from '../lib/collect';
+import { EDITION_SIZE } from '../lib/prints/edition';
+import type { PrintOffer } from '../lib/prints/offer';
+
+interface Props {
+  slug: string;
+  title: string;
+  offers: PrintOffer[];
+}
+
+const { slug, title, offers } = Astro.props;
+const names = { large: 'Large', small: 'Small' };
+const inquire = inquiryHref('print', title);
+---
+<div class="wall-block print-block" data-print-block data-slug={slug} data-intro>
+  <p class="label dim print-heading" data-heading>Limited edition prints · {EDITION_SIZE} per format</p>
+  <ul class="fmt" data-formats>
+    {offers.map((offer) => (
+      <li data-format={offer.format}>
+        <label>
+          <input type="radio" name={`print-format-${slug}`} value={offer.format} disabled />
+          <span class="name">{names[offer.format]}</span>
+          <span class="price">{formatPrice(offer.priceCents)}</span>
+          <span class="size">{offer.sizeLabel}</span>
+          <span class="left mono" data-left>Checking availability</span>
+        </label>
+      </li>
+    ))}
+  </ul>
+  <div class="ship" data-ship hidden>
+    <label class="label dim" for={`print-country-${slug}`}>Ship to</label>
+    <span class="label dim carrier">DHL Express<span data-region></span></span>
+    <select id={`print-country-${slug}`} data-country></select>
+    <span class="cost" data-cost></span>
+  </div>
+  <div data-actions hidden>
+    <p class="duty dim">Import duties and taxes are paid by the collector on arrival.</p>
+    <p class="act"><button type="button" class="button" data-collect disabled>Collect</button></p>
+    <p class="message" data-message role="status"></p>
+  </div>
+  <p class="label soldout" data-soldout hidden>Sold out</p>
+  <a class="button inquire" data-inquire href={inquire} hidden>Inquire</a>
+  <noscript><a class="button inquire" href={inquire}>Inquire</a></noscript>
+</div>
+
+<script>
+  import '../scripts/print-block';
+</script>
+
+<style>
+  .print-heading {
+    margin: 0 0 0.8rem;
+  }
+  .fmt {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .fmt[hidden] {
+    display: none;
+  }
+  .fmt li {
+    border-top: var(--rule-hair) solid var(--color-hairline);
+  }
+  .fmt label {
+    display: grid;
+    grid-template-columns: 1.2rem 1fr auto;
+    gap: 0.2rem 1rem;
+    align-items: baseline;
+    padding: 1rem 0;
+    cursor: pointer;
+  }
+  .fmt input {
+    appearance: none;
+    width: 0.85rem;
+    height: 0.85rem;
+    border: 1px solid var(--color-bone);
+    border-radius: 50%;
+    margin: 0;
+    align-self: center;
+    grid-row: 1;
+  }
+  .fmt input:checked {
+    background: var(--color-bone);
+  }
+  .fmt .name {
+    grid-column: 2;
+    grid-row: 1;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-stretch: 125%;
+    font-size: var(--text-statement);
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .fmt .size {
+    grid-column: 2;
+    grid-row: 2;
+    font-variant-numeric: tabular-nums;
+  }
+  .fmt .price {
+    grid-column: 3;
+    grid-row: 1;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .fmt .left {
+    grid-column: 3;
+    grid-row: 2;
+    text-align: right;
+  }
+  .fmt li.out label {
+    cursor: default;
+    opacity: 0.45;
+  }
+  .fmt li.out input {
+    border-color: var(--color-bone-dim);
+  }
+  .ship {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.6rem 1rem;
+    align-items: center;
+    padding: 1rem 0;
+    border-top: var(--rule-hair) solid var(--color-hairline);
+  }
+  .ship[hidden],
+  [data-actions][hidden] {
+    display: none;
+  }
+  .carrier {
+    text-align: right;
+  }
+  .carrier :global([data-region]:not(:empty))::before {
+    content: ' · ';
+  }
+  .ship select {
+    min-width: 0;
+    max-width: 100%;
+    background: transparent;
+    color: var(--color-bone);
+    border: 0;
+    border-bottom: 1px solid var(--color-bone);
+    border-radius: 0;
+    font: inherit;
+    padding: 0.4rem 0;
+  }
+  .ship select option {
+    background: var(--color-black);
+  }
+  .cost {
+    text-align: right;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: var(--text-statement);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .duty {
+    margin: 0;
+    font-size: 0.9em;
+  }
+  .act {
+    margin: 1rem 0 0;
+  }
+  .button:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  .button:disabled:hover {
+    background: none;
+    color: var(--color-bone);
+  }
+  .button[aria-busy='true'] {
+    cursor: progress;
+  }
+  .message {
+    margin: 0.8rem 0 0;
+    min-height: 1lh;
+  }
+  .message:empty {
+    display: none;
+  }
+  .soldout {
+    margin: 1rem 0 0.8rem;
+    padding-top: 1rem;
+    border-top: var(--rule-hair) solid var(--color-hairline);
+  }
+  .inquire {
+    margin-top: 1rem;
+  }
+  .inquire[hidden] {
+    display: none;
+  }
+</style>

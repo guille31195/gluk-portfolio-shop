@@ -1,0 +1,83 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PrintBlock from '../../components/PrintBlock.astro';
+import RuptureRule from '../../components/RuptureRule.astro';
+import type { PrintOffer } from '../../lib/prints/offer';
+
+// Dev-only visual check: never emitted by a build.
+export function getStaticPaths() {
+  return import.meta.env.DEV ? [{ params: { demo: 'print-block' } }] : [];
+}
+
+// Fixture prices, not real ones.
+const offers: PrintOffer[] = [
+  { format: 'large', size: { widthCm: 80, heightCm: 100 }, sizeLabel: '80 × 100 cm', priceCents: 90000 },
+  { format: 'small', size: { widthCm: 40, heightCm: 50 }, sizeLabel: '40 × 50 cm', priceCents: 40000 },
+];
+---
+<BaseLayout title="Print block fixture">
+  <section class="page demo">
+    <aside class="wall-label">
+      <p class="mono dim">Fixture · 120 × 150 cm · test prices, not real</p>
+      <h1 class="title">Motopirueta fixture</h1>
+      <RuptureRule weight="thin" class="demo-rule" />
+      <hr class="hairline" />
+      <PrintBlock slug="motopirueta-fixture" title="Motopirueta fixture" offers={offers} />
+    </aside>
+  </section>
+</BaseLayout>
+
+<script is:inline>
+  // ?stock=37,4 | ?stock=0,0 | ?stock=fail | ?checkout=sold-out|busy|server
+  (function () {
+    var params = new URLSearchParams(location.search);
+    var real = window.fetch.bind(window);
+    window.fetch = function (url, init) {
+      var u = String(url);
+      if (u.indexOf('/api/stock') === 0) {
+        var s = params.get('stock') || '37,4';
+        if (s === 'fail') return Promise.reject(new Error('stock fixture'));
+        var p = s.split(',');
+        return Promise.resolve(new Response(JSON.stringify({ large: Number(p[0]), small: Number(p[1]) }), { status: 200 }));
+      }
+      if (u.indexOf('/api/checkout') === 0) {
+        var c = params.get('checkout') || 'server';
+        var status = c === 'sold-out' ? 409 : c === 'busy' ? 503 : 500;
+        return Promise.resolve(new Response(JSON.stringify({ error: c }), { status: status }));
+      }
+      return real(url, init);
+    };
+  })();
+</script>
+
+<style>
+  .demo {
+    max-width: 38rem;
+  }
+  .wall-label {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+  }
+  :global([data-intro]) {
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  :global(.demo-rule) {
+    width: 9rem !important;
+  }
+</style>
+
+<script is:inline>
+  // ?country=ES preselects a destination so that state can be screenshotted.
+  document.addEventListener('astro:page-load', function () {
+    var code = new URLSearchParams(location.search).get('country');
+    var select = document.querySelector('[data-country]');
+    if (!code || !select) return;
+    setTimeout(function () {
+      select.value = code;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    }, 300);
+  });
+</script>
