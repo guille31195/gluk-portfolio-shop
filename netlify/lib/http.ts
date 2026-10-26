@@ -13,5 +13,6 @@ export function serverError(fn: string, err: unknown): Response {
   return json({ status: 500, body: { error: 'server' } });
 }
 
-// `||`, not `??`: an empty SITE_URL in the Netlify UI must fall back too.
-export const defaultSiteUrl = () => process.env.SITE_URL || 'https://glukart.com';
+// `||`, not `??`: an empty SITE_URL in the Netlify UI must fall back too. Links are
+// built as `${site}/path`, so trailing slashes are dropped.
+export const defaultSiteUrl = () => (process.env.SITE_URL || 'https://glukart.com').replace(/\/+$/, '');

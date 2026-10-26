@@ -37,16 +37,18 @@ const edition = (o: Order) => `${o.editionNumber} / ${o.editionSize}`;
 const total = (o: Order) => o.priceCents + o.shippingCents;
 const piece = (o: Order) => `${o.artworkTitle} · ${formatName(o)} · ${size(o)}`;
 
+// Countries whose labels read "City, State Postal"; elsewhere "Postal City", state below.
+const CITY_STATE_POSTAL = new Set(['US', 'CA', 'AU', 'MX']);
+
 function addressLines(o: Order): string[] {
   const a = o.customer.address;
-  return [
-    o.customer.name,
-    a.line1,
-    a.line2,
-    [a.postalCode, a.city].filter(Boolean).join(' '),
-    a.state,
-    countryName(a.country),
-  ].filter((line): line is string => Boolean(line));
+  const join = (parts: (string | null)[], sep: string) => parts.filter(Boolean).join(sep);
+  const locality = CITY_STATE_POSTAL.has(a.country)
+    ? [join([a.city, join([a.state, a.postalCode], ' ')], ', ')]
+    : [join([a.postalCode, a.city], ' '), a.state];
+  return [o.customer.name, a.line1, a.line2, ...locality, countryName(a.country)].filter(
+    (line): line is string => Boolean(line),
+  );
 }
 
 const contactLines = (o: Order) => [o.customer.name, o.customer.email, o.customer.phone].filter((l): l is string => Boolean(l));

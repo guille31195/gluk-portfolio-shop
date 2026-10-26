@@ -248,4 +248,32 @@ describe('site url', () => {
     vi.stubEnv('SITE_URL', 'https://preview.glukart.test');
     expect(orderUrl('t')).toBe('https://preview.glukart.test/collector?o=t');
   });
+
+  it('drops trailing slashes from SITE_URL', () => {
+    vi.stubEnv('SITE_URL', 'https://glukart.com/');
+    expect(defaultSiteUrl()).toBe('https://glukart.com');
+    expect(orderUrl('t')).toBe('https://glukart.com/collector?o=t');
+    vi.stubEnv('SITE_URL', 'https://glukart.com//');
+    expect(defaultSiteUrl()).toBe('https://glukart.com');
+  });
+});
+
+describe('ship-to address order', () => {
+  const shipTo = (text: string) => text.split('\n\n').find((block) => block.startsWith('Ship to:'))!.split('\n').slice(1);
+
+  it('writes City, State Postal for the United States', () => {
+    const us = { line1: '742 Evergreen Terrace', line2: 'Apt 3', city: 'Springfield', state: 'OR', postalCode: '97477', country: 'US' };
+    const mail = ownerNotification({ ...ORDER, customer: { ...ORDER.customer, address: us } }, CERT, SITE);
+    expect(shipTo(mail.text)).toEqual(['Ana Collector', '742 Evergreen Terrace', 'Apt 3', 'Springfield, OR 97477', 'United States']);
+  });
+
+  it('writes Postal City for Spain', () => {
+    expect(shipTo(ownerNotification(ORDER, CERT, SITE).text)).toEqual([
+      'Ana Collector',
+      'Calle Ejemplo 7',
+      'Piso 1A',
+      '28000 Madrid',
+      'Spain',
+    ]);
+  });
 });
