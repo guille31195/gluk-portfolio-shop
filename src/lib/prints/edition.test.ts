@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   EDITION_SIZE,
   counterId,
@@ -7,6 +7,7 @@ import {
   remaining,
   reserveEdition,
   type EditionCounter,
+  type EditionStore,
 } from './edition';
 import { createFakeStore } from './edition.fake';
 
@@ -14,6 +15,7 @@ const ID = counterId('la-espera', 'large');
 const NOW = new Date('2026-10-26T12:00:00Z');
 const minutes = (n: number) => new Date(NOW.getTime() + n * 60_000);
 const order = (id: string) => (editionNumber: number) => ({ _id: id, _type: 'printOrder', editionNumber });
+const RACE = { maxAttempts: 200, backoffMs: 0 };
 
 function counter(sold: number, reservations: EditionCounter['reservations'] = []): EditionCounter {
   return { id: ID, rev: 'r0', sold, reservations };
@@ -68,7 +70,7 @@ describe('reserveEdition', () => {
   it('never oversells under 60 concurrent reservations', async () => {
     const store = createFakeStore();
     const results = await Promise.all(
-      Array.from({ length: 60 }, (_, i) => reserveEdition(store, ID, `r${i}`, NOW)),
+      Array.from({ length: 60 }, (_, i) => reserveEdition(store, ID, `r${i}`, NOW, RACE)),
     );
     expect(results.filter((r) => r === 'reserved')).toHaveLength(EDITION_SIZE);
     expect(results.filter((r) => r === 'sold-out')).toHaveLength(10);
@@ -112,6 +114,16 @@ describe('finalizeEdition', () => {
     expect(store.created.size).toBe(1);
   });
 
+  it('treats a redelivered order as processed even after the edition sold out', async () => {
+    const store = createFakeStore([counter(49)]);
+    expect(await finalizeEdition(store, ID, 'a', NOW, order('order-a'))).toEqual({ status: 'issued', editionNumber: 50 });
+
+    expect(await finalizeEdition(store, ID, 'a', NOW, order('order-a'))).toEqual({ status: 'already-processed' });
+    expect((await store.load(ID)).sold).toBe(50);
+    expect(await finalizeEdition(store, ID, 'b', NOW, order('order-b'))).toEqual({ status: 'sold-out' });
+    expect(store.created.size).toBe(1);
+  });
+
   it('is sold out at 50 sold and creates no order', async () => {
     const store = createFakeStore([counter(50)]);
     expect(await finalizeEdition(store, ID, 'a', NOW, order('order-a'))).toEqual({ status: 'sold-out' });
@@ -141,9 +153,37 @@ describe('finalizeEdition', () => {
     const ids = Array.from({ length: 10 }, (_, i) => `r${i}`);
     for (const id of ids) await reserveEdition(store, ID, id, NOW);
 
-    const results = await Promise.all(ids.map((id) => finalizeEdition(store, ID, id, NOW, order(`order-${id}`))));
+    const results = await Promise.all(
+      ids.map((id) => finalizeEdition(store, ID, id, NOW, order(`order-${id}`), RACE)),
+    );
     const numbers = results.map((r) => (r.status === 'issued' ? r.editionNumber : 0)).sort((a, b) => a - b);
     expect(numbers).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     expect((await store.load(ID)).sold).toBe(10);
+  });
+});
+
+describe('conflict retries', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('gives up with a clear error after 8 conflicting writes by default', async () => {
+    vi.useFakeTimers();
+    let saves = 0;
+    const store: EditionStore = {
+      load: async (id) => ({ id, rev: 'r0', sold: 0, reservations: [] }),
+      save: async () => {
+        saves++;
+        return 'conflict';
+      },
+      exists: async () => false,
+    };
+
+    const result = expect(reserveEdition(store, ID, 'a', NOW)).rejects.toThrow(
+      'Edition edition-la-espera-large: gave up after 8 conflicting writes',
+    );
+    await vi.runAllTimersAsync();
+    await result;
+    expect(saves).toBe(8);
   });
 });

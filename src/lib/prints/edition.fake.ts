@@ -31,6 +31,11 @@ export function createFakeStore(initial: EditionCounter[] = []) {
       if (create) created.set(create._id, { ...create });
       return 'ok';
     },
+
+    async exists(id) {
+      await tick();
+      return created.has(id) || counters.has(id);
+    },
   };
   return store;
 }
