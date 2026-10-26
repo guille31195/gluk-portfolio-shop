@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type Stripe from 'stripe';
 import { ordersClient, readClient, stripe } from '../lib/clients';
 import { sanityArtworkReader, SLUG_PATTERN, type ArtworkReader } from '../lib/artworks';
-import { json, serverError, type Reply } from '../lib/http';
+import { defaultSiteUrl, json, serverError, type Reply } from '../lib/http';
 import { createSanityEditionStore } from '../lib/sanity-store';
 import {
   counterId,
@@ -151,7 +151,7 @@ export default async (req: Request): Promise<Response> => {
       stripe: stripe(),
       now: () => new Date(),
       newToken,
-      siteUrl: process.env.SITE_URL ?? 'https://glukart.com',
+      siteUrl: defaultSiteUrl(),
     };
     return json(await handleCheckout(body, deps));
   } catch (err) {

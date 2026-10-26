@@ -1,9 +1,9 @@
 import type Stripe from 'stripe';
 import { ordersClient, resend, stripe } from '../lib/clients';
 import {
+  brokenSessionAlert,
   certificateUrl,
   collectorConfirmation,
-  defaultSiteUrl,
   ownerNotification,
   refundApology,
   refundedNotice,
@@ -12,7 +12,7 @@ import {
   type Mail,
   type Mailer,
 } from '../lib/email';
-import { json, serverError, type Reply } from '../lib/http';
+import { defaultSiteUrl, json, serverError, type Reply } from '../lib/http';
 import { createSanityEditionStore } from '../lib/sanity-store';
 import {
   counterId,
@@ -29,6 +29,7 @@ import { REGION_NAMES, type RegionId } from '../../src/lib/prints/shipping';
 export type WebhookStripe = {
   webhooks: { constructEventAsync(payload: string, header: string, secret: string): Promise<Stripe.Event> };
   refunds: {
+    list(params: { payment_intent: string; limit: number }): Promise<{ data: { status: string | null }[] }>;
     create(params: { payment_intent: string }, options: { idempotencyKey: string }): Promise<{ id: string }>;
   };
 };
@@ -66,10 +67,26 @@ const RETRY: WebhookReply = { status: 500, body: { error: 'server' } };
 
 const FORMATS: readonly Format[] = ['large', 'small'];
 const isFormat = (v: unknown): v is Format => FORMATS.includes(v as Format);
-const isRegion = (v: unknown): v is RegionId => typeof v === 'string' && v in REGION_NAMES;
+const isRegion = (v: unknown): v is RegionId => typeof v === 'string' && Object.hasOwn(REGION_NAMES, v);
 
 const log = (msg: string) => console.error(`stripe-webhook: ${msg}`);
 const message = (err: unknown) => (err instanceof Error ? err.message : String(err));
+
+// Mail errors can echo a recipient address, so only the name and code are logged.
+function errorKind(err: unknown): string {
+  if (!(err instanceof Error)) return typeof err;
+  const code = (err as { code?: unknown }).code;
+  return typeof code === 'string' || typeof code === 'number' ? `${err.name} (${code})` : err.name;
+}
+
+const paymentIntentId = (s: CompletedSession) =>
+  typeof s.payment_intent === 'string' ? s.payment_intent : s.payment_intent?.id;
+
+// A positive number written by our checkout; '' or anything else is invalid.
+function positive(value: string | undefined): number | null {
+  const n = value ? Number(value) : NaN;
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
 
 type PrintMeta = { slug: string; format: Format; reservationId: string };
 
@@ -80,25 +97,30 @@ function printMeta(metadata: Stripe.Metadata | null): PrintMeta | null {
 }
 
 // The order as it would be stored, minus the edition number, which only finalize knows.
-function draftOrder(session: CompletedSession, createdAt: string): Order | null {
+// Null when the metadata our checkout writes is incomplete or malformed.
+function draftOrder(session: CompletedSession, createdAt: string): { order: Order; meta: PrintMeta } | null {
   const m = session.metadata ?? {};
   const meta = printMeta(m);
-  if (!meta || !m.token || !isRegion(m.region)) return null;
+  const widthCm = positive(m.widthCm);
+  const heightCm = positive(m.heightCm);
+  const year = m.year ? positive(m.year) : null;
+  if (!meta || !m.token || !isRegion(m.region) || widthCm === null || heightCm === null) return null;
+  if (m.year && year === null) return null;
   const shipping = session.collected_information?.shipping_details;
   const details = session.customer_details;
   const address = shipping?.address ?? details?.address;
-  return {
+  const order: Order = {
     _id: orderId(session.id),
     _type: 'order',
     token: m.token,
     status: 'paid',
     artworkSlug: meta.slug,
     artworkTitle: m.artworkTitle ?? '',
-    year: m.year ? Number(m.year) : null,
+    year,
     medium: m.medium ?? '',
     format: meta.format,
-    widthCm: Number(m.widthCm),
-    heightCm: Number(m.heightCm),
+    widthCm,
+    heightCm,
     editionNumber: 0,
     editionSize: EDITION_SIZE,
     priceCents: session.amount_subtotal ?? 0,
@@ -124,38 +146,47 @@ function draftOrder(session: CompletedSession, createdAt: string): Order | null 
     trackingNumber: null,
     trackingUrl: null,
   };
+  return { order, meta };
 }
 
-// Emails go out after the order is stored: a failure is logged, never retried, because
-// a retried event would find the order and send nothing.
-async function bestEffort(deps: WebhookDeps, which: string, id: string, mail: Mail) {
+// Emails are built and sent after the outcome is settled: any failure, including a
+// template that throws, is logged and never retried, because a retried event would
+// find the order and send nothing.
+async function bestEffort(deps: WebhookDeps, which: string, id: string, mail: () => Mail) {
   try {
-    await deps.sendMail(mail);
+    await deps.sendMail(mail());
   } catch (err) {
-    log(`${which} email failed for ${id}: ${message(err)}`);
+    log(`${which} email failed for ${id}: ${errorKind(err)}`);
   }
 }
+
+const LIVE_REFUND = (r: { status: string | null }) => r.status !== 'failed' && r.status !== 'canceled';
 
 async function refundSoldOut(order: Order, session: CompletedSession, deps: WebhookDeps): Promise<WebhookReply> {
-  const pi = session.payment_intent;
-  const paymentIntent = typeof pi === 'string' ? pi : pi?.id;
+  const paymentIntent = paymentIntentId(session);
   try {
     if (!paymentIntent) throw new Error('session has no payment intent');
-    await deps.stripe.refunds.create(
-      { payment_intent: paymentIntent },
-      { idempotencyKey: `refund-${session.id}` },
-    );
+    // A redelivery, or a refund Guillermo already made by hand, needs nothing more.
+    const existing = await deps.stripe.refunds.list({ payment_intent: paymentIntent, limit: 1 });
+    if (existing.data.some(LIVE_REFUND)) {
+      log(`refund already exists for ${session.id}`);
+      return OK;
+    }
+    await deps.stripe.refunds.create({ payment_intent: paymentIntent }, { idempotencyKey: `refund-${session.id}` });
   } catch (err) {
     log(`refund failed for ${session.id}: ${message(err)}`);
-    await bestEffort(deps, 'refund-failed alert', order._id, {
+    await bestEffort(deps, 'refund-failed alert', order._id, () => ({
       to: deps.ownerEmail,
       ...refundFailedAlert(order, paymentIntent ?? 'unknown', message(err)),
-    });
+    }));
     return RETRY;
   }
-  await bestEffort(deps, 'owner refund', order._id, { to: deps.ownerEmail, ...refundedNotice(order, paymentIntent) });
+  await bestEffort(deps, 'owner refund', order._id, () => ({
+    to: deps.ownerEmail,
+    ...refundedNotice(order, paymentIntent),
+  }));
   if (order.customer.email) {
-    await bestEffort(deps, 'collector apology', order._id, { to: order.customer.email, ...refundApology(order) });
+    await bestEffort(deps, 'collector apology', order._id, () => ({ to: order.customer.email, ...refundApology(order) }));
   }
   return OK;
 }
@@ -168,29 +199,38 @@ export async function handleCompleted(
   if (session.payment_status !== 'paid') return OK;
   const draft = draftOrder(session, createdAt);
   if (!draft) {
-    log(`session ${session.id} has no print metadata`);
+    const m = session.metadata ?? {};
+    if (!m.slug && !m.reservationId) return OK; // not a print checkout (e.g. a dashboard payment link)
+    log(`paid session ${session.id} has invalid print metadata`);
+    await bestEffort(deps, 'broken-session alert', session.id, () => ({
+      to: deps.ownerEmail,
+      ...brokenSessionAlert(session.id, paymentIntentId(session) ?? 'unknown'),
+    }));
     return OK;
   }
-  const meta = printMeta(session.metadata)!;
+  const { order: base, meta } = draft;
   const result = await finalizeEdition(
     deps.store,
     counterId(meta.slug, meta.format),
     meta.reservationId,
     deps.now(),
-    (editionNumber) => ({ ...draft, editionNumber }),
+    (editionNumber) => ({ ...base, editionNumber }),
     deps.retry,
   );
   if (result.status === 'already-processed') return OK;
-  if (result.status === 'sold-out') return refundSoldOut(draft, session, deps);
+  if (result.status === 'sold-out') return refundSoldOut(base, session, deps);
 
-  const order = { ...draft, editionNumber: result.editionNumber };
-  const cert = certificateUrl(order._id, deps.certSecret, deps.siteUrl);
-  await bestEffort(deps, 'owner', order._id, { to: deps.ownerEmail, ...ownerNotification(order, cert, deps.siteUrl) });
+  const order = { ...base, editionNumber: result.editionNumber };
+  console.log(`stripe-webhook: issued edition ${order.editionNumber} for ${order._id}`);
+  await bestEffort(deps, 'owner', order._id, () => ({
+    to: deps.ownerEmail,
+    ...ownerNotification(order, certificateUrl(order._id, deps.certSecret, deps.siteUrl), deps.siteUrl),
+  }));
   if (order.customer.email) {
-    await bestEffort(deps, 'collector', order._id, {
+    await bestEffort(deps, 'collector', order._id, () => ({
       to: order.customer.email,
       ...collectorConfirmation(order, deps.siteUrl),
-    });
+    }));
   }
   return OK;
 }
@@ -231,7 +271,7 @@ export default async (req: Request): Promise<Response> => {
     const deps: WebhookDeps = {
       store: createSanityEditionStore(ordersClient()),
       stripe: stripe(),
-      sendMail: resendMailer(resend()),
+      sendMail: resendMailer(resend),
       now: () => new Date(),
       webhookSecret,
       certSecret,

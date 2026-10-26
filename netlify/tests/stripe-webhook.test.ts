@@ -1,12 +1,18 @@
 import Stripe from 'stripe';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   handleWebhook,
   type CompletedSession,
   type WebhookDeps,
   type WebhookStripe,
 } from '../functions/stripe-webhook';
+import * as email from '../lib/email';
 import type { Mail } from '../lib/email';
+
+vi.mock('../lib/email', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../lib/email')>();
+  return { ...actual, ownerNotification: vi.fn(actual.ownerNotification) };
+});
 import { counterId, EDITION_SIZE, type EditionCounter } from '../../src/lib/prints/edition';
 import { createFakeStore } from '../../src/lib/prints/edition.fake';
 import { orderId, signKey, type Order } from '../../src/lib/prints/order';
@@ -86,13 +92,24 @@ function counter(sold: number, reservationIds: string[] = []): EditionCounter {
   return { id: LARGE, rev: 'r0', sold, reservations: reservationIds.map((reservationId) => ({ reservationId, expiresAt: HELD })) };
 }
 
-function setup({ initial = [] as EditionCounter[], failRefund = false, failMail = (_: Mail): boolean => false } = {}) {
+type RefundRow = { status: string | null };
+
+function setup({
+  initial = [] as EditionCounter[],
+  failRefund = false,
+  failMail = (_: Mail): boolean => false,
+  existingRefunds = [] as RefundRow[],
+} = {}) {
   const store = createFakeStore(initial);
   const mails: Mail[] = [];
   const refunds: { params: { payment_intent: string }; options: { idempotencyKey: string } }[] = [];
   const stripe: WebhookStripe = {
     webhooks: stripeLib.webhooks,
     refunds: {
+      async list() {
+        const made = refunds.filter(() => !failRefund).map((): RefundRow => ({ status: 'succeeded' }));
+        return { data: [...existingRefunds, ...made].slice(0, 1) };
+      },
       async create(params, options) {
         refunds.push({ params, options });
         if (failRefund) throw new Error('card_declined');
@@ -104,7 +121,7 @@ function setup({ initial = [] as EditionCounter[], failRefund = false, failMail 
     store,
     stripe,
     sendMail: async (mail) => {
-      if (failMail(mail)) throw new Error(`smtp down for ${mail.to}`);
+      if (failMail(mail)) throw Object.assign(new Error(`smtp down for ${mail.to}`), { code: 'ECONNRESET' });
       mails.push(mail);
     },
     now: () => NOW,
@@ -124,6 +141,10 @@ async function deliver(deps: WebhookDeps, type: string, object: unknown, id = 'e
 
 const orders = (store: ReturnType<typeof createFakeStore>) => [...store.created.values()] as Order[];
 
+let info: ReturnType<typeof vi.spyOn>;
+beforeEach(() => {
+  info = vi.spyOn(console, 'log').mockImplementation(() => {});
+});
 afterEach(() => vi.restoreAllMocks());
 
 describe('signature', () => {
@@ -276,9 +297,8 @@ describe('checkout.session.completed', () => {
     expect(res.status).toBe(200);
     expect(store.created.size).toBe(1);
     expect(mails.map((m) => m.to)).toEqual(['ana@example.com']);
-    expect(log).toHaveBeenCalledWith(
-      `stripe-webhook: owner email failed for ${orderId('cs_test_1')}: smtp down for ${OWNER}`,
-    );
+    expect(log).toHaveBeenCalledWith(`stripe-webhook: owner email failed for ${orderId('cs_test_1')}: Error (ECONNRESET)`);
+    expect(log.mock.calls.flat().join(' ')).not.toContain(OWNER);
   });
 
   it('answers 500 so Stripe retries when the edition ledger stays contended', async () => {
@@ -351,4 +371,106 @@ it('acknowledges unknown event types without acting', async () => {
   expect(res.status).toBe(200);
   expect(store.created.size).toBe(0);
   expect(mails).toHaveLength(0);
+});
+
+describe('review fixes', () => {
+  it('logs the issued edition without personal data', async () => {
+    const { deps } = setup({ initial: [counter(4)] });
+    await deliver(deps, 'checkout.session.completed', paidSession());
+    expect(info).toHaveBeenCalledWith(`stripe-webhook: issued edition 5 for ${orderId('cs_test_1')}`);
+  });
+
+  it('handles a sold-out event delivered twice as one refund and two emails', async () => {
+    const { mails, refunds, deps } = setup({ initial: [counter(EDITION_SIZE)] });
+    const body = eventBody('checkout.session.completed', paidSession(7));
+    const header = await signed(body);
+    expect((await handleWebhook(body, header, deps)).status).toBe(200);
+    expect((await handleWebhook(body, header, deps)).status).toBe(200);
+    expect(refunds).toHaveLength(1);
+    expect(mails).toHaveLength(2);
+  });
+
+  it('does nothing more when the payment already has a refund', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { store, mails, refunds, deps } = setup({
+      initial: [counter(EDITION_SIZE)],
+      existingRefunds: [{ status: 'succeeded' }],
+    });
+    const res = await deliver(deps, 'checkout.session.completed', paidSession(7));
+    expect(res.status).toBe(200);
+    expect(refunds).toHaveLength(0);
+    expect(mails).toHaveLength(0);
+    expect(store.created.size).toBe(0);
+    expect(log).toHaveBeenCalledWith('stripe-webhook: refund already exists for cs_test_7');
+  });
+
+  it('refunds again when the only earlier refund failed', async () => {
+    const { mails, refunds, deps } = setup({ initial: [counter(EDITION_SIZE)], existingRefunds: [{ status: 'failed' }] });
+    expect((await deliver(deps, 'checkout.session.completed', paidSession(7))).status).toBe(200);
+    expect(refunds).toHaveLength(1);
+    expect(mails).toHaveLength(2);
+  });
+
+  it.each([
+    ['a missing token', { token: '' }],
+    ['an unknown region', { region: 'toString' }],
+    ['an unknown format', { format: 'medium' }],
+    ['a non-numeric width', { widthCm: 'abc' }],
+    ['an empty height', { heightCm: '' }],
+    ['a non-numeric year', { year: 'MMXXIV' }],
+  ])('alerts Guillermo about a paid print session with %s', async (_, bad) => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { store, mails, deps } = setup();
+    const s = paidSession(3);
+    s.metadata = { ...s.metadata, ...bad };
+    const res = await deliver(deps, 'checkout.session.completed', s);
+
+    expect(res.status).toBe(200);
+    expect(store.created.size).toBe(0);
+    expect(mails).toHaveLength(1);
+    const [alert] = mails;
+    expect(alert.to).toBe(OWNER);
+    expect(alert.subject).toBe('ACTION NEEDED: paid session cs_test_3 could not become an order');
+    expect(alert.text).toContain('pi_test_3');
+    for (const pii of ['ana@example.com', 'Calle Ejemplo', 'Ana Collector', '+34 600']) {
+      expect(alert.text).not.toContain(pii);
+      expect(alert.html).not.toContain(pii);
+    }
+    expect(log).toHaveBeenCalledWith('stripe-webhook: paid session cs_test_3 has invalid print metadata');
+  });
+
+  it('stays silent for a paid session with no print metadata at all', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { store, mails, deps } = setup();
+    const res = await deliver(deps, 'checkout.session.completed', paidSession(1, { metadata: {} }));
+    expect(res.status).toBe(200);
+    expect(store.created.size).toBe(0);
+    expect(mails).toHaveLength(0);
+    expect(log).not.toHaveBeenCalled();
+  });
+
+  it('keeps the order and still emails the collector when a template throws', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(email.ownerNotification).mockImplementationOnce(() => {
+      throw new TypeError('template broke');
+    });
+    const { store, mails, deps } = setup();
+    const res = await deliver(deps, 'checkout.session.completed', paidSession());
+    expect(res.status).toBe(200);
+    expect(store.created.size).toBe(1);
+    expect(mails.map((m) => m.to)).toEqual(['ana@example.com']);
+    expect(log).toHaveBeenCalledWith(`stripe-webhook: owner email failed for ${orderId('cs_test_1')}: TypeError`);
+  });
+
+  it('keeps the order when the mail client cannot be created', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { store, deps } = setup();
+    const sendMail = email.resendMailer(() => {
+      throw new Error('Missing environment variable RESEND_API_KEY');
+    });
+    const res = await deliver({ ...deps, sendMail }, 'checkout.session.completed', paidSession());
+    expect(res.status).toBe(200);
+    expect(store.created.size).toBe(1);
+    expect(log).toHaveBeenCalledTimes(2);
+  });
 });

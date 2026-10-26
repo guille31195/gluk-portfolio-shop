@@ -1,14 +1,13 @@
 import { signKey, type Order } from '../../src/lib/prints/order';
 import { sizeLabel } from '../../src/lib/prints/print-sizes';
 import { REGION_NAMES } from '../../src/lib/prints/shipping';
+import { defaultSiteUrl } from './http';
 
 export const FROM = 'Gluk <orders@glukart.com>';
 
 export type Message = { subject: string; html: string; text: string };
 export type Mail = Message & { to: string };
 export type Mailer = (mail: Mail) => Promise<void>;
-
-export const defaultSiteUrl = () => process.env.SITE_URL ?? 'https://glukart.com';
 
 export function orderUrl(token: string, site = defaultSiteUrl()): string {
   return `${site}/collector?o=${encodeURIComponent(token)}`;
@@ -203,14 +202,34 @@ export function refundFailedAlert(order: Order, paymentIntent: string, error: st
 type ResendLike = {
   emails: {
     send(payload: { from: string; to: string; subject: string; html: string; text: string }): Promise<{
-      error: { message: string } | null;
+      error: { message: string; name?: string } | null;
     }>;
   };
 };
 
-export function resendMailer(resend: ResendLike): Mailer {
+// The client is created on first send, so a missing API key fails that email, not the order.
+export function resendMailer(client: () => ResendLike): Mailer {
+  let resend: ResendLike | undefined;
   return async ({ to, subject, html, text }) => {
+    resend ??= client();
     const { error } = await resend.emails.send({ from: FROM, to, subject, html, text });
-    if (error) throw new Error(error.message);
+    if (error) throw Object.assign(new Error(error.message), { name: error.name || 'ResendError' });
+  };
+}
+
+export function brokenSessionAlert(sessionId: string, paymentIntent: string): Message {
+  const heading = 'ACTION NEEDED: a paid checkout could not become an order.';
+  const intro = [
+    'Stripe reported a paid checkout from the site whose order details were incomplete, so no order or edition number was created and no email went to the collector.',
+    'Open the payment in the Stripe dashboard, then either create the order by hand or refund it.',
+  ];
+  const rows: Row[] = [
+    ['Stripe session', sessionId],
+    ['Payment', paymentIntent],
+  ];
+  return {
+    subject: `ACTION NEEDED: paid session ${sessionId} could not become an order`,
+    html: plainHtml(heading, intro, rows),
+    text: plainText(heading, intro, rows),
   };
 }

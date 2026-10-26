@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  brokenSessionAlert,
   certificateUrl,
   collectorConfirmation,
   FROM,
@@ -10,6 +11,7 @@ import {
   refundedNotice,
   resendMailer,
 } from '../lib/email';
+import { defaultSiteUrl } from '../lib/http';
 import { signKey, type Order } from '../../src/lib/prints/order';
 
 const SITE = 'https://glukart.test';
@@ -158,6 +160,12 @@ describe('html escaping', () => {
     expect(mail.html).toContain('Rojo &amp; &lt;b&gt;Negro&lt;/b&gt;');
   });
 
+  it('escapes the session id in the broken-session alert', () => {
+    const { html } = brokenSessionAlert('<i>cs</i>', 'pi_1');
+    expect(html).not.toContain('<i>cs');
+    expect(html).toContain('&lt;i&gt;cs&lt;/i&gt;');
+  });
+
   it('keeps the plain text readable', () => {
     expect(ownerNotification(hostile, CERT, SITE).text).toContain('<script>alert(1)</script>');
   });
@@ -196,16 +204,47 @@ describe('resendMailer', () => {
 
   it('sends from orders@glukart.com', async () => {
     const sent: unknown[] = [];
-    const send = resendMailer({ emails: { send: async (p) => (sent.push(p), { data: { id: 'e1' }, error: null }) } });
+    const send = resendMailer(() => ({ emails: { send: async (p) => (sent.push(p), { data: { id: 'e1' }, error: null }) } }));
     await send(mail);
     expect(FROM).toContain('orders@glukart.com');
     expect(sent).toEqual([{ from: FROM, ...mail }]);
   });
 
   it('throws when Resend reports an error', async () => {
-    const send = resendMailer({
+    const send = resendMailer(() => ({
       emails: { send: async () => ({ data: null, error: { message: 'domain not verified', name: 'validation_error' } }) },
+    }));
+    await expect(send(mail)).rejects.toMatchObject({ name: 'validation_error', message: 'domain not verified' });
+  });
+});
+
+describe('resendMailer client', () => {
+  const mail = { to: 'a@example.com', subject: 'S', html: '<p>H</p>', text: 'H' };
+
+  it('creates the client on first send, once, so a missing key fails the send only', async () => {
+    const factory = vi.fn(() => {
+      throw new Error('Missing environment variable RESEND_API_KEY');
     });
-    await expect(send(mail)).rejects.toThrow('domain not verified');
+    const send = resendMailer(factory);
+    expect(factory).not.toHaveBeenCalled();
+    await expect(send(mail)).rejects.toThrow('RESEND_API_KEY');
+
+    let made = 0;
+    const ok = resendMailer(() => (made++, { emails: { send: async () => ({ error: null }) } }));
+    await ok(mail);
+    await ok(mail);
+    expect(made).toBe(1);
+  });
+});
+
+describe('site url', () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it('falls back to glukart.com when SITE_URL is unset or empty', () => {
+    vi.stubEnv('SITE_URL', '');
+    expect(defaultSiteUrl()).toBe('https://glukart.com');
+    expect(orderUrl('t')).toBe('https://glukart.com/collector?o=t');
+    vi.stubEnv('SITE_URL', 'https://preview.glukart.test');
+    expect(orderUrl('t')).toBe('https://preview.glukart.test/collector?o=t');
   });
 });
