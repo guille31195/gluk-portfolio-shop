@@ -184,6 +184,18 @@ describe('initPrintBlock', () => {
     expect($('[data-collect]').hasAttribute('disabled')).toBe(false);
   });
 
+  it('leaves unchanged stock lines untouched so live regions do not re-announce', async () => {
+    await setup({ large: 3, small: 4 });
+    const observer = new MutationObserver(() => {});
+    for (const left of document.querySelectorAll('[data-left]')) {
+      observer.observe(left, { childList: true, characterData: true, subtree: true });
+    }
+    chooseCountry('ES');
+    expect(observer.takeRecords()).toHaveLength(0);
+    observer.disconnect();
+    expect($('[data-format="large"] [data-left]').textContent).toBe('3 of 50 remaining');
+  });
+
   it('falls back to Inquire when stock cannot be read', async () => {
     document.body.innerHTML = BLOCK;
     const fetch = vi.fn(() => Promise.reject(new Error('offline')));

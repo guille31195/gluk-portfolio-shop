@@ -130,7 +130,10 @@ export function initPrintBlock(root: HTMLElement, deps: PrintBlockDeps): () => v
       const out = (count ?? 0) <= 0;
       li.classList.toggle('out', out);
       radios.get(format)!.disabled = out;
-      li.querySelector('[data-left]')!.textContent = count === 0 ? MESSAGES.unavailable : formatRemaining(count);
+      // Rewriting identical text inside a live region makes screen readers announce it again.
+      const left = li.querySelector('[data-left]')!;
+      const text = count === 0 ? MESSAGES.unavailable : formatRemaining(count);
+      if (left.textContent !== text) left.textContent = text;
     }
     const current = selected();
     if (!current || (state[current] ?? 0) <= 0) {
