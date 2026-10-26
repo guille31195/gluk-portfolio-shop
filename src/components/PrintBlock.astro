@@ -24,23 +24,24 @@ const inquire = inquiryHref('print', title);
           <span class="name">{names[offer.format]}</span>
           <span class="price">{formatPrice(offer.priceCents)}</span>
           <span class="size">{offer.sizeLabel}</span>
-          <span class="left mono" data-left>Checking availability</span>
+          <span class="left mono" data-left aria-live="polite">Checking availability</span>
         </label>
       </li>
     ))}
   </ul>
   <div class="ship" data-ship hidden>
     <label class="label dim" for={`print-country-${slug}`}>Ship to</label>
-    <span class="label dim carrier">DHL Express<span data-region></span></span>
+    <span class="label dim carrier">DHL Express<span data-region aria-live="polite"></span></span>
     <select id={`print-country-${slug}`} data-country></select>
-    <span class="cost" data-cost></span>
+    <span class="cost" data-cost aria-live="polite"></span>
   </div>
   <div data-actions hidden>
     <p class="duty dim">Import duties and taxes are paid by the collector on arrival.</p>
-    <p class="act"><button type="button" class="button" data-collect disabled>Collect</button></p>
+    <p class="act"><button type="button" class="button" data-collect disabled>Collect</button>
+    <span id={`print-hint-${slug}`} class="visually-hidden" data-hint>Choose a format and a country</span></p>
     <p class="message" data-message role="status"></p>
   </div>
-  <p class="label soldout" data-soldout hidden>Sold out</p>
+  <p class="label soldout" data-soldout hidden>Currently unavailable</p>
   <a class="button inquire" data-inquire href={inquire} hidden>Inquire</a>
   <noscript><a class="button inquire" href={inquire}>Inquire</a></noscript>
 </div>

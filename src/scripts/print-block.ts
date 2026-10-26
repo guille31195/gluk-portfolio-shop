@@ -90,7 +90,8 @@ export type PrintBlockDeps = {
 
 const MESSAGES = {
   busy: 'Please try again in a moment.',
-  soldOut: 'That format has just sold out.',
+  soldOut: 'That format is currently unavailable.',
+  unavailable: 'Currently unavailable',
   country: 'We cannot ship to that country online yet. Please inquire.',
   other: 'Something went wrong. Please inquire instead.',
 };
@@ -112,11 +113,13 @@ export function initPrintBlock(root: HTMLElement, deps: PrintBlockDeps): () => v
   const inquire = q('[data-inquire]');
   const formats = q('[data-formats]');
   const heading = q('[data-heading]');
+  const hint = q('[data-hint]');
   if (!ship || !actions || !select || !cost || !button || !message || !soldOut || !inquire) return () => {};
 
   const lifetime = new AbortController();
   let state: StockState = { large: null, small: null };
   let busy = false;
+  let stockLoad: AbortController | null = null;
 
   const selected = () => FORMATS.find((f) => radios.get(f)?.checked) ?? null;
 
@@ -127,7 +130,7 @@ export function initPrintBlock(root: HTMLElement, deps: PrintBlockDeps): () => v
       const out = (count ?? 0) <= 0;
       li.classList.toggle('out', out);
       radios.get(format)!.disabled = out;
-      li.querySelector('[data-left]')!.textContent = formatRemaining(count);
+      li.querySelector('[data-left]')!.textContent = count === 0 ? MESSAGES.unavailable : formatRemaining(count);
     }
     const current = selected();
     if (!current || (state[current] ?? 0) <= 0) {
@@ -140,6 +143,10 @@ export function initPrintBlock(root: HTMLElement, deps: PrintBlockDeps): () => v
     soldOut.hidden = !gone;
     inquire.hidden = !gone && message.dataset.failed !== 'true';
     button.disabled = busy || gone || !shippingForCountry(select.value) || !selected();
+    if (hint) {
+      if (button.disabled && !busy) button.setAttribute('aria-describedby', hint.id);
+      else button.removeAttribute('aria-describedby');
+    }
   };
 
   // Stock unreadable: the whole block becomes the plain Inquire button.
@@ -157,7 +164,7 @@ export function initPrintBlock(root: HTMLElement, deps: PrintBlockDeps): () => v
     message.dataset.failed = 'true';
   };
 
-  select.append(new Option('Ship to', ''));
+  select.append(new Option('Select country', ''));
   for (const { code, name } of countryOptions()) select.append(new Option(name, code));
 
   root.addEventListener('change', (event) => {
@@ -172,15 +179,19 @@ export function initPrintBlock(root: HTMLElement, deps: PrintBlockDeps): () => v
 
   button.addEventListener('click', async () => {
     const format = selected();
-    if (busy || !format || !shippingForCountry(select.value)) return;
+    if (busy || !format || (state[format] ?? 0) <= 0 || !shippingForCountry(select.value)) return;
     busy = true;
     button.setAttribute('aria-busy', 'true');
     message.textContent = '';
     render();
     try {
-      const res = await deps.fetch('/api/checkout', checkoutRequest(slug, format, select.value));
+      const res = await deps.fetch('/api/checkout', {
+        ...checkoutRequest(slug, format, select.value),
+        signal: lifetime.signal,
+      });
       const body = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
-      if (res.ok && typeof body.url === 'string') {
+      if (lifetime.signal.aborted) return;
+      if (res.ok && typeof body.url === 'string' && body.url.startsWith('https://')) {
         deps.assign(body.url);
         return;
       }
@@ -188,11 +199,12 @@ export function initPrintBlock(root: HTMLElement, deps: PrintBlockDeps): () => v
         state = markSoldOut(state, format);
         message.textContent = MESSAGES.soldOut;
       } else if (body.error === 'busy') {
-        message.textContent = MESSAGES.busy;
+        fail(MESSAGES.busy);
       } else {
         fail(body.error === 'country' ? MESSAGES.country : MESSAGES.other);
       }
     } catch {
+      if (lifetime.signal.aborted) return;
       fail(MESSAGES.other);
     }
     busy = false;
@@ -200,20 +212,43 @@ export function initPrintBlock(root: HTMLElement, deps: PrintBlockDeps): () => v
     render();
   });
 
-  const timer = setTimeout(() => lifetime.abort(), deps.timeoutMs);
-  deps
-    .fetch(`/api/stock?slug=${encodeURIComponent(slug)}`, { signal: lifetime.signal })
-    .then(async (res) => (res.ok ? applyStock(await res.json(), offered) : null))
-    .then((next) => {
-      if (!next) return fallback();
-      state = next;
-      render();
-    })
-    .catch(fallback)
-    .finally(() => clearTimeout(timer));
+  // Stock read with its own 8 s limit; every failure leaves the Inquire fallback.
+  const loadStock = () => {
+    stockLoad?.abort();
+    const load = new AbortController();
+    stockLoad = load;
+    const timer = setTimeout(() => load.abort(), deps.timeoutMs);
+    deps
+      .fetch(`/api/stock?slug=${encodeURIComponent(slug)}`, { signal: load.signal })
+      .then(async (res) => (res.ok ? applyStock(await res.json(), offered) : null))
+      .then((next) => {
+        if (lifetime.signal.aborted || stockLoad !== load) return;
+        if (!next || offered.every((format) => next[format] === null)) return fallback();
+        state = next;
+        render();
+      })
+      .catch(() => {
+        if (!lifetime.signal.aborted && stockLoad === load) fallback();
+      })
+      .finally(() => clearTimeout(timer));
+  };
+
+  // Back from Stripe can restore the page from the bfcache with no page-load event.
+  const onPageShow = (event: PageTransitionEvent) => {
+    if (!event.persisted || lifetime.signal.aborted) return;
+    busy = false;
+    button.removeAttribute('aria-busy');
+    message.textContent = '';
+    render();
+    loadStock();
+  };
+  window.addEventListener('pageshow', onPageShow);
+
+  loadStock();
 
   return () => {
-    clearTimeout(timer);
+    window.removeEventListener('pageshow', onPageShow);
+    stockLoad?.abort();
     lifetime.abort();
   };
 }
@@ -223,6 +258,7 @@ let dispose: (() => void) | null = null;
 document.addEventListener('astro:page-load', () => {
   const root = document.querySelector<HTMLElement>('[data-print-block]');
   if (!root) return;
+  dispose?.();
   dispose = initPrintBlock(root, {
     fetch: (...args) => window.fetch(...args),
     assign: (url) => window.location.assign(url),

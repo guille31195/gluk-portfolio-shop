@@ -89,7 +89,7 @@ const BLOCK = `
         <span data-left>Checking availability</span></label></li>
     </ul>
     <div data-ship hidden><select data-country></select><span data-cost></span></div>
-    <div data-actions hidden><button type="button" data-collect disabled>Collect</button><p data-message role="status"></p></div>
+    <div data-actions hidden><button type="button" data-collect disabled>Collect</button><span id="hint" data-hint>Choose a format and a country</span><p data-message role="status"></p></div>
     <p data-soldout hidden>Sold out</p>
     <a data-inquire href="/contact?interest=print" hidden>Inquire</a>
   </div>`;
@@ -148,18 +148,22 @@ describe('initPrintBlock', () => {
     chooseCountry('ES');
     $<HTMLButtonElement>('[data-collect]').click();
     await flush();
-    expect($('[data-format="large"] [data-left]').textContent).toBe('Sold out');
+    expect($('[data-format="large"] [data-left]').textContent).toBe('Currently unavailable');
     expect($<HTMLInputElement>('input[value="large"]').disabled).toBe(true);
     expect($<HTMLInputElement>('input[value="small"]').checked).toBe(true);
   });
 
-  it('shows a retry message when busy', async () => {
+  it('shows a retry message and the Inquire link when busy, keeping Collect usable', async () => {
     await setup({ large: 3, small: 4 }, () => reply(503, { error: 'busy' }));
     chooseCountry('ES');
     $<HTMLButtonElement>('[data-collect]').click();
+    expect($('[data-collect]').hasAttribute('disabled')).toBe(true);
+    expect($('[data-collect]').getAttribute('aria-busy')).toBe('true');
     await flush();
     expect($('[data-message]').textContent).toBe('Please try again in a moment.');
+    expect($('[data-inquire]').hasAttribute('hidden')).toBe(false);
     expect($('[data-collect]').hasAttribute('disabled')).toBe(false);
+    expect($('[data-collect]').hasAttribute('aria-busy')).toBe(false);
   });
 
   it('adds the Inquire link after an unexpected error', async () => {
@@ -182,7 +186,84 @@ describe('initPrintBlock', () => {
     expect($('[data-heading]').textContent).toBe('Prints');
   });
 
-  it('reads Sold out and offers Inquire when every format is gone', async () => {
+  it('falls back to Inquire when no offered format has a stock figure', async () => {
+    await setup({ large: null, small: null });
+    expect($('[data-soldout]').hasAttribute('hidden')).toBe(true);
+    expect($('[data-inquire]').hasAttribute('hidden')).toBe(false);
+  });
+
+  it('falls back to Inquire when the stock request hangs past the timeout', async () => {
+    document.body.innerHTML = BLOCK;
+    const fetch = vi.fn((_u: string, init?: RequestInit) => new Promise<Response>((_res, rej) => {
+      init?.signal?.addEventListener('abort', () => rej(new Error('aborted')));
+    }));
+    initPrintBlock($('[data-print-block]'), { fetch: fetch as unknown as typeof globalThis.fetch, assign: vi.fn(), timeoutMs: 20 });
+    await new Promise((r) => setTimeout(r, 60));
+    expect($('[data-inquire]').hasAttribute('hidden')).toBe(false);
+    expect($('[data-formats]').hasAttribute('hidden')).toBe(true);
+  });
+
+  it('describes the disabled Collect button and drops the hint once enabled', async () => {
+    await setup({ large: 3, small: 4 });
+    expect($('[data-collect]').getAttribute('aria-describedby')).toBe('hint');
+    chooseCountry('ES');
+    expect($('[data-collect]').hasAttribute('aria-describedby')).toBe(false);
+  });
+
+  it('ignores Collect when the selected format has become unavailable', async () => {
+    const { fetch } = await setup({ large: 3, small: 4 }, () => reply(409, { error: 'sold-out' }));
+    chooseCountry('ES');
+    $<HTMLButtonElement>('[data-collect]').click();
+    await flush();
+    $('[data-collect]').removeAttribute('disabled');
+    $<HTMLInputElement>('input[value="large"]').checked = true;
+    $<HTMLButtonElement>('[data-collect]').click();
+    await flush();
+    expect(fetch.mock.calls.filter(([u]) => u === '/api/checkout')).toHaveLength(1);
+  });
+
+  it('refuses a checkout url that is not https', async () => {
+    const { assign } = await setup({ large: 3, small: 4 }, () => reply(200, { url: 'javascript:alert(1)' }));
+    chooseCountry('ES');
+    $<HTMLButtonElement>('[data-collect]').click();
+    await flush();
+    expect(assign).not.toHaveBeenCalled();
+    expect($('[data-message]').textContent).not.toBe('');
+  });
+
+  it('does not navigate after the block is disposed mid-checkout', async () => {
+    document.body.innerHTML = BLOCK;
+    let release: (r: Response) => void = () => {};
+    const assign = vi.fn();
+    const fetch = vi.fn((url: string) =>
+      url.startsWith('/api/stock') ? reply(200, { large: 3, small: 4 }) : new Promise<Response>((res) => (release = res)),
+    );
+    const dispose = initPrintBlock($('[data-print-block]'), { fetch: fetch as unknown as typeof globalThis.fetch, assign, timeoutMs: 50 });
+    await flush();
+    chooseCountry('ES');
+    $<HTMLButtonElement>('[data-collect]').click();
+    dispose();
+    release(new Response(JSON.stringify({ url: 'https://pay.example/x' }), { status: 200 }));
+    await flush();
+    expect(assign).not.toHaveBeenCalled();
+  });
+
+  it('resets and re-reads stock when restored from the back-forward cache', async () => {
+    const { fetch } = await setup({ large: 3, small: 4 }, () => reply(200, { url: 'https://pay.example/x' }));
+    chooseCountry('ES');
+    $<HTMLButtonElement>('[data-collect]').click();
+    await flush();
+    expect($('[data-collect]').hasAttribute('disabled')).toBe(true);
+    const stockCalls = () => fetch.mock.calls.filter(([u]) => String(u).startsWith('/api/stock')).length;
+    expect(stockCalls()).toBe(1);
+    window.dispatchEvent(Object.assign(new Event('pageshow'), { persisted: true }));
+    await flush();
+    expect($('[data-collect]').hasAttribute('disabled')).toBe(false);
+    expect($('[data-collect]').hasAttribute('aria-busy')).toBe(false);
+    expect(stockCalls()).toBe(2);
+  });
+
+  it('reads Currently unavailable and offers Inquire when every format is gone', async () => {
     await setup({ large: 0, small: 0 });
     expect($('[data-soldout]').hasAttribute('hidden')).toBe(false);
     expect($('[data-inquire]').hasAttribute('hidden')).toBe(false);
