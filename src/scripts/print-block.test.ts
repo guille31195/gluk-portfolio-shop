@@ -174,6 +174,16 @@ describe('initPrintBlock', () => {
     expect($('[data-inquire]').hasAttribute('hidden')).toBe(false);
   });
 
+  it('shows the inline message and Inquire when checkout is not available', async () => {
+    await setup({ large: 3, small: 4 }, () => reply(503, { error: 'unavailable' }));
+    chooseCountry('ES');
+    $<HTMLButtonElement>('[data-collect]').click();
+    await flush();
+    expect($('[data-message]').textContent).toBe('Something went wrong. Please inquire instead.');
+    expect($('[data-inquire]').hasAttribute('hidden')).toBe(false);
+    expect($('[data-collect]').hasAttribute('disabled')).toBe(false);
+  });
+
   it('falls back to Inquire when stock cannot be read', async () => {
     document.body.innerHTML = BLOCK;
     const fetch = vi.fn(() => Promise.reject(new Error('offline')));

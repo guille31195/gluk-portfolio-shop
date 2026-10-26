@@ -76,6 +76,7 @@ function setup() {
     now: () => T0,
     newToken,
     siteUrl: SITE,
+    missingConfig: () => [],
     retry: RACE,
   };
   let webhookNow = new Date(T0.getTime() + 5 * 60_000);

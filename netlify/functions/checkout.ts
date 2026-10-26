@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import type { Config } from '@netlify/functions';
 import type Stripe from 'stripe';
 import { ordersClient, readClient, stripe } from '../lib/clients';
 import { sanityArtworkReader, SLUG_PATTERN, type ArtworkReader } from '../lib/artworks';
@@ -32,6 +33,8 @@ export type CheckoutDeps = {
   now: () => Date;
   newToken: () => string;
   siteUrl: string;
+  // Names of the variables the webhook needs to issue an order that are not set.
+  missingConfig: () => string[];
   retry?: RetryOptions;
 };
 
@@ -62,7 +65,20 @@ function parseInput(body: unknown): Input | null {
 
 const fail = (status: number, error: CheckoutError): CheckoutReply => ({ status, body: { error } });
 
+// Without these the webhook cannot issue the order or tell anyone, so nobody may pay.
+const WEBHOOK_ENV = ['CERT_SECRET', 'STRIPE_WEBHOOK_SECRET', 'RESEND_API_KEY'] as const;
+
+export function missingWebhookConfig(env: Record<string, string | undefined> = process.env): string[] {
+  return WEBHOOK_ENV.filter((name) => !env[name]);
+}
+
 export async function handleCheckout(body: unknown, deps: CheckoutDeps): Promise<CheckoutReply> {
+  const missing = deps.missingConfig();
+  if (missing.length) {
+    console.error(`checkout: not configured, missing ${missing.join(', ')}`);
+    return fail(503, 'unavailable');
+  }
+
   const input = parseInput(body);
   if (!input) return fail(400, 'invalid');
 
@@ -152,6 +168,7 @@ export default async (req: Request): Promise<Response> => {
       now: () => new Date(),
       newToken,
       siteUrl: defaultSiteUrl(),
+      missingConfig: () => missingWebhookConfig(),
     };
     return json(await handleCheckout(body, deps));
   } catch (err) {
@@ -159,4 +176,8 @@ export default async (req: Request): Promise<Response> => {
   }
 };
 
-export const config = { path: '/api/checkout' };
+// Netlify's per-function rate limit; confirm it is active on the site's plan.
+export const config: Config = {
+  path: '/api/checkout',
+  rateLimit: { windowLimit: 10, windowSize: 60, aggregateBy: ['ip', 'domain'] },
+};

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { handleCheckout, type CheckoutDeps, type CheckoutStripe } from '../functions/checkout';
+import { config, handleCheckout, missingWebhookConfig, type CheckoutDeps, type CheckoutStripe } from '../functions/checkout';
 import type { PrintableArtwork } from '../lib/artworks';
 import { counterId, EDITION_SIZE, remaining, type EditionCounter } from '../../src/lib/prints/edition';
 import { createFakeStore } from '../../src/lib/prints/edition.fake';
@@ -45,6 +45,7 @@ function setup({ initial = [] as EditionCounter[], failStripe = false } = {}) {
     now: () => NOW,
     newToken: () => `token-${++tokens}`,
     siteUrl: SITE,
+    missingConfig: () => [],
     retry: RACE,
   };
   return { store, sessions, deps };
@@ -197,5 +198,30 @@ describe('handleCheckout', () => {
     const { sessions, deps } = setup();
     expect(await handleCheckout(body, deps)).toEqual({ status: 400, body: { error: 'invalid' } });
     expect(sessions).toHaveLength(0);
+  });
+});
+
+describe('configuration gate', () => {
+  it('refuses with 503 unavailable and reserves nothing while the webhook cannot issue orders', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { store, sessions, deps } = setup();
+    const res = await handleCheckout(valid, { ...deps, missingConfig: () => ['CERT_SECRET', 'RESEND_API_KEY'] });
+    expect(res).toEqual({ status: 503, body: { error: 'unavailable' } });
+    expect(sessions).toHaveLength(0);
+    expect((await store.load(LARGE)).reservations).toHaveLength(0);
+    expect(log).toHaveBeenCalledWith('checkout: not configured, missing CERT_SECRET, RESEND_API_KEY');
+    log.mockRestore();
+  });
+
+  it('lists the names of missing or empty webhook variables only', () => {
+    expect(missingWebhookConfig({ CERT_SECRET: 'x', STRIPE_WEBHOOK_SECRET: 'whsec_x', RESEND_API_KEY: 're_x' })).toEqual([]);
+    expect(missingWebhookConfig({ CERT_SECRET: '', RESEND_API_KEY: 're_x' })).toEqual(['CERT_SECRET', 'STRIPE_WEBHOOK_SECRET']);
+  });
+
+  it('rate-limits the endpoint per IP and domain', () => {
+    expect(config).toEqual({
+      path: '/api/checkout',
+      rateLimit: { windowLimit: 10, windowSize: 60, aggregateBy: ['ip', 'domain'] },
+    });
   });
 });
