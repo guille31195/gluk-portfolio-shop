@@ -15,3 +15,18 @@ export const structure: StructureResolver = (S) =>
       S.documentTypeListItem('series').title('Series'),
       singleton(S, 'Tattoo Info', 'tattooInfo'),
     ]);
+
+export const ordersStructure: StructureResolver = (S) =>
+  S.list()
+    .title('Orders')
+    .items([
+      S.listItem()
+        .title('Orders')
+        .schemaType('order')
+        .child(
+          S.documentTypeList('order')
+            .title('Orders')
+            .defaultOrdering([{ field: 'createdAt', direction: 'desc' }]),
+        ),
+      S.documentTypeListItem('printEdition').title('Print editions'),
+    ]);

@@ -22,3 +22,18 @@
   for = "/p/*"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
+
+# Print checkout API (Stripe, Sanity orders dataset, Resend).
+[functions]
+  directory = "netlify/functions"
+
+# Collector order pages are reached by an unguessable token link only.
+[[headers]]
+  for = "/collector"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/collector/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
