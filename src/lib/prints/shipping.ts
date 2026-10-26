@@ -9,6 +9,14 @@ export const SHIPPING_RATES_USD: Record<RegionId, number> = {
   ROW: 80,
 };
 
+export const REGION_NAMES: Record<RegionId, string> = {
+  MX: 'Mexico',
+  US_CA: 'United States & Canada',
+  LATAM: 'Latin America',
+  EU_UK: 'Europe & UK',
+  ROW: 'Rest of the world',
+};
+
 export const EXCLUDED_COUNTRIES: readonly string[] = ['CU', 'IR', 'KP', 'SY', 'RU', 'BY'];
 
 const words = (s: string) => s.split(/\s+/).filter(Boolean);

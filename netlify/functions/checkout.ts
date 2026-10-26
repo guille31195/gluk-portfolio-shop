@@ -15,7 +15,7 @@ import {
 import { printOffers } from '../../src/lib/prints/offer';
 import { newToken } from '../../src/lib/prints/order';
 import type { Format } from '../../src/lib/prints/print-sizes';
-import { countriesInRegion, regionForCountry, shippingCents, type RegionId } from '../../src/lib/prints/shipping';
+import { countriesInRegion, REGION_NAMES, regionForCountry, shippingCents } from '../../src/lib/prints/shipping';
 
 export type CheckoutStripe = {
   checkout: {
@@ -37,14 +37,6 @@ export type CheckoutDeps = {
 
 export type CheckoutError = 'invalid' | 'country' | 'unavailable' | 'sold-out' | 'busy' | 'payment-provider';
 export type CheckoutReply = Reply<{ url: string } | { error: CheckoutError }>;
-
-const REGION_NAMES: Record<RegionId, string> = {
-  MX: 'Mexico',
-  US_CA: 'United States & Canada',
-  LATAM: 'Latin America',
-  EU_UK: 'Europe & UK',
-  ROW: 'Rest of the world',
-};
 
 const DUTIES_NOTE =
   'Import duties and taxes are not included. They are charged by the destination country on arrival and paid by the collector.';
