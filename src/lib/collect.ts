@@ -4,7 +4,7 @@
 import type { Artwork } from './artwork-map';
 
 export function collectable(artworks: Artwork[]): Artwork[] {
-  return artworks.filter((a) => a.originalStatus !== 'notForSale' || a.printOptions.length > 0);
+  return artworks.filter((a) => a.originalStatus !== 'notForSale' || a.printOffers.length > 0);
 }
 
 // Artwork pages opened from Collect carry ?from=collect, so "back" returns there.

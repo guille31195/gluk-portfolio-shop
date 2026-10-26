@@ -112,10 +112,18 @@ export const artwork = defineType({
         ),
     }),
     defineField({
-      name: 'printOptions',
-      title: 'Print Options',
-      type: 'array',
-      of: [{ type: 'printOption' }],
+      name: 'printPriceLarge',
+      title: 'Large print price (USD)',
+      description: 'Whole dollars. Leave empty if no large print is for sale. Size is derived from the dimensions.',
+      type: 'number',
+      validation: (Rule) => Rule.integer().min(1),
+    }),
+    defineField({
+      name: 'printPriceSmall',
+      title: 'Small print price (USD)',
+      description: 'Whole dollars. Leave empty if no small print is for sale. Size is derived from the dimensions.',
+      type: 'number',
+      validation: (Rule) => Rule.integer().min(1),
     }),
   ],
 });

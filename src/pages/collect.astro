@@ -10,7 +10,7 @@ import { CARD_WIDTH, CARD_WIDTHS } from '../lib/image-url';
 
 const works = collectable(await getAllArtworks());
 const available = works.filter((w) => w.originalStatus === 'available').length;
-// Lowest price among print sizes still in stock; null until prices exist in Sanity.
+// Lowest offered print price; null when the piece has no offers.
 const printsFrom = (prices: number[]) => (prices.length ? formatPrice(Math.min(...prices)) : null);
 ---
 <BaseLayout title="Collect">
@@ -23,7 +23,7 @@ const printsFrom = (prices: number[]) => (prices.length ? formatPrice(Math.min(.
 
     <ul class="collect-list">
       {works.map((artwork) => {
-        const from = printsFrom(artwork.printOptions.filter((o) => !o.soldOut).map((o) => o.price));
+        const from = printsFrom(artwork.printOffers.map((o) => o.priceCents));
         return (
           <li class="collect-item" data-reveal>
             <a class="collect-link" href={`/artwork/${artwork.slug}?from=collect`} data-cursor="view">

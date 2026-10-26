@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { backLink, collectable, inquiryHref } from './collect';
-import type { Artwork, OriginalStatus, PrintOption } from './artwork-map';
+import type { PrintOffer } from './prints/offer';
+import type { Artwork, OriginalStatus } from './artwork-map';
 
-function art(slug: string, originalStatus: OriginalStatus, printOptions: PrintOption[] = []): Artwork {
+function art(slug: string, originalStatus: OriginalStatus, printOffers: PrintOffer[] = []): Artwork {
   return {
     slug,
     title: slug,
@@ -14,7 +15,7 @@ function art(slug: string, originalStatus: OriginalStatus, printOptions: PrintOp
     images: [],
     originalStatus,
     auctionUrl: null,
-    printOptions,
+    printOffers,
     series: null,
     seriesPosition: null,
     haloSetting: 'auto',
@@ -22,7 +23,7 @@ function art(slug: string, originalStatus: OriginalStatus, printOptions: PrintOp
   };
 }
 
-const print: PrintOption = { size: 'A3', price: 100, stripePriceId: 'price_x', soldOut: false };
+const print: PrintOffer = { format: 'large', size: { widthCm: 80, heightCm: 100 }, sizeLabel: '80 × 100 cm', priceCents: 10000 };
 
 describe('collectable', () => {
   it('keeps available and sold originals, in order, so sold pieces stay listed for prints', () => {
@@ -30,7 +31,7 @@ describe('collectable', () => {
     expect(collectable(works).map((w) => w.slug)).toEqual(['a', 'b']);
   });
 
-  it('keeps a not-for-sale original that has print options', () => {
+  it('keeps a not-for-sale original that has print offers', () => {
     expect(collectable([art('c', 'notForSale', [print])]).map((w) => w.slug)).toEqual(['c']);
   });
 });

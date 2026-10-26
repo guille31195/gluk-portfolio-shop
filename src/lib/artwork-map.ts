@@ -1,3 +1,6 @@
+import { printOffers } from './prints/offer';
+import type { PrintOffer } from './prints/offer';
+
 // Artwork types and the pure raw→view mapping. Free of `sanity:client` so it can
 // be unit-tested; src/lib/sanity.ts supplies the image URL builder.
 
@@ -21,20 +24,6 @@ export interface SeriesInfo {
   halo: HaloSetting;
 }
 
-export interface PrintOption {
-  size: string;
-  price: number;
-  stripePriceId: string;
-  soldOut: boolean;
-}
-
-export interface RawPrintOption {
-  size: string;
-  price: number;
-  stripePriceId: string;
-  soldOut: boolean | null;
-}
-
 export interface Artwork {
   slug: string;
   title: string;
@@ -47,7 +36,7 @@ export interface Artwork {
   originalStatus: OriginalStatus;
   // Set only while originalStatus is 'auction'.
   auctionUrl: string | null;
-  printOptions: PrintOption[];
+  printOffers: PrintOffer[];
   series: SeriesInfo | null;
   seriesPosition: number | null;
   haloSetting: HaloSetting;
@@ -91,7 +80,8 @@ export interface RawArtwork {
   auctionUrl: string | null;
   // Legacy checkbox, read only as a fallback for documents edited before originalStatus.
   availableAsOriginal: boolean | null;
-  printOptions: RawPrintOption[] | null;
+  printPriceLarge: number | null;
+  printPriceSmall: number | null;
   series: RawSeries | null;
   seriesPosition: number | null;
   haloSetting: string | null;
@@ -110,7 +100,8 @@ export const ARTWORK_PROJECTION = `{
   originalStatus,
   auctionUrl,
   availableAsOriginal,
-  printOptions[]{size, price, stripePriceId, soldOut},
+  printPriceLarge,
+  printPriceSmall,
   "series": series->{ "slug": slug.current, name, order, kind, halo },
   seriesPosition,
   "haloSetting": halo
@@ -151,7 +142,11 @@ export function mapArtwork(raw: RawArtwork, urlFor: (image: RawImage) => string)
     images: (raw.images ?? []).filter(hasAsset).map(urlFor),
     originalStatus: originalStatus(raw),
     auctionUrl: raw.originalStatus === 'auction' ? (raw.auctionUrl ?? null) : null,
-    printOptions: (raw.printOptions ?? []).map((option) => ({ ...option, soldOut: option.soldOut ?? false })),
+    printOffers: printOffers({
+      dimensions: raw.dimensions ?? null,
+      printPriceLarge: raw.printPriceLarge ?? null,
+      printPriceSmall: raw.printPriceSmall ?? null,
+    }),
     series,
     seriesPosition: series ? (raw.seriesPosition ?? null) : null,
     haloSetting: haloSetting(raw.haloSetting),

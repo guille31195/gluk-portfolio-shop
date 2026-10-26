@@ -16,7 +16,8 @@ function raw(overrides: Partial<RawArtwork> = {}): RawArtwork {
     originalStatus: null,
     auctionUrl: null,
     availableAsOriginal: null,
-    printOptions: null,
+    printPriceLarge: null,
+    printPriceSmall: null,
     series: null,
     seriesPosition: null,
     haloSetting: null,
@@ -37,7 +38,7 @@ describe('mapArtwork', () => {
       images: ['https://cdn.sanity.io/images/p/d/a1.jpg'],
       originalStatus: 'notForSale',
       auctionUrl: null,
-      printOptions: [],
+      printOffers: [],
       series: null,
       seriesPosition: null,
       haloSetting: 'auto',
@@ -72,17 +73,9 @@ describe('mapArtwork', () => {
     expect(mapArtwork(raw({ originalStatus: 'auction' }), urlFor).originalStatus).toBe('notForSale');
   });
 
-  it('marks print sizes sold out only when flagged', () => {
-    const result = mapArtwork(
-      raw({
-        printOptions: [
-          { size: 'A3', price: 9000, stripePriceId: 'p1', soldOut: null },
-          { size: 'A2', price: 14000, stripePriceId: 'p2', soldOut: true },
-        ],
-      }),
-      urlFor
-    );
-    expect(result.printOptions.map((p) => p.soldOut)).toEqual([false, true]);
+  it('derives print offers from dimensions and prices', () => {
+    const result = mapArtwork(raw({ dimensions: '120 × 150 cm', printPriceLarge: 180, printPriceSmall: null }), urlFor);
+    expect(result.printOffers.map((o) => [o.format, o.sizeLabel, o.priceCents])).toEqual([['large', '80 × 100 cm', 18000]]);
   });
 
   it('maps a series with defaults for missing series fields', () => {

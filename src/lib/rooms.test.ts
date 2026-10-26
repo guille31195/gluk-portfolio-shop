@@ -17,7 +17,7 @@ function art(slug: string, overrides: Partial<Artwork> = {}): Artwork {
     images: [],
     originalStatus: 'notForSale',
     auctionUrl: null,
-    printOptions: [],
+    printOffers: [],
     series: null,
     seriesPosition: null,
     haloSetting: 'auto',

@@ -9,6 +9,7 @@
     "preview": "astro preview",
     "check": "astro check",
     "test": "vitest run",
+    "check:prints": "node --env-file=.env --experimental-strip-types scripts/check-prints.mjs",
     "seed:artworks": "node --env-file=.env scripts/seed-artworks.mjs",
     "seed:design": "node --env-file=.env scripts/seed-design-content.mjs",
     "seed:details": "node --env-file=.env scripts/seed-artwork-details.mjs",
