@@ -104,7 +104,8 @@ export function signKey(id: string, secret: string): string {
   return createHmac('sha256', secret).update(id).digest('base64url');
 }
 
-export function verifyKey(id: string, key: string, secret: string): boolean {
+export function verifyKey(id: string, key: string | null | undefined, secret: string): boolean {
+  if (typeof key !== 'string') return false;
   const expected = Buffer.from(signKey(id, secret));
   const given = Buffer.from(key);
   return given.length === expected.length && timingSafeEqual(given, expected);

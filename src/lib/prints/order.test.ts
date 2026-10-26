@@ -68,6 +68,31 @@ describe('toCollectorView', () => {
     }
   });
 
+  it('leaves out the token, Stripe session id and document id', () => {
+    const json = JSON.stringify(toCollectorView(ORDER));
+    for (const secret of [ORDER.token, ORDER.stripeSessionId, ORDER._id]) {
+      expect(json).not.toContain(secret);
+    }
+  });
+
+  it('passes shipping details through once shipped', () => {
+    const shipped: Order = {
+      ...ORDER,
+      status: 'shipped',
+      shippedAt: '2026-11-02T09:00:00.000Z',
+      carrier: 'DHL Express',
+      trackingNumber: '1234567890',
+      trackingUrl: 'https://www.dhl.com/track?id=1234567890',
+    };
+    expect(toCollectorView(shipped)).toMatchObject({
+      status: 'shipped',
+      shippedAt: '2026-11-02T09:00:00.000Z',
+      carrier: 'DHL Express',
+      trackingNumber: '1234567890',
+      trackingUrl: 'https://www.dhl.com/track?id=1234567890',
+    });
+  });
+
   it('keeps city and country and the order facts', () => {
     const view = toCollectorView(ORDER);
     expect(view).toMatchObject({ city: 'Madrid', country: 'ES', editionNumber: 12, editionSize: 50, status: 'paid' });
@@ -90,6 +115,12 @@ describe('signKey / verifyKey', () => {
     expect(verifyKey(ORDER._id, flipped, SECRET)).toBe(false);
     expect(verifyKey(ORDER._id, key.slice(0, -1), SECRET)).toBe(false);
     expect(verifyKey(ORDER._id, '', SECRET)).toBe(false);
+  });
+
+  it('rejects a missing or non-string key without throwing', () => {
+    for (const bad of [null, undefined, 42, ['a'], { key }]) {
+      expect(verifyKey(ORDER._id, bad as unknown as string, SECRET)).toBe(false);
+    }
   });
 
   it('rejects a key signed with another secret', () => {
