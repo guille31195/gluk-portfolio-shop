@@ -115,4 +115,24 @@ cannot be bought online. `npm run check:prints` lists what is still missing.
 - Live Stripe keys: swap `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` to the live
   values (and create the live webhook endpoint the same way as step 3) only after this.
 
+## 8. When something goes wrong
+
+Labels in the Stripe dashboard change: where this says "check the label", look for the
+closest match.
+
+- **An email titled "ACTION NEEDED" arrives.** It means a collector paid but the site could
+  not turn the payment into an order (no shipping street, or damaged order details), or an
+  automatic refund failed. The email gives the Stripe session id and the payment id
+  (`pi_...`). In Stripe, search Payments for that `pi_...` id (check the label), then either
+  refund it or contact the collector and create the order by hand. No edition number was
+  used for it.
+- **A Stripe payment has no "New print sale" email.** The order exists in Studio under
+  `/orders` but the email failed (Resend problem, domain not verified). Stripe does not
+  resend by itself in this case. In Stripe, open the webhook endpoint, find the
+  `checkout.session.completed` event for that payment and use its resend option (check the
+  label). The site then sends the owner email again and records it on the order. Turning on
+  Stripe's own "successful payment" email notifications is a useful backstop.
+- **A collector's page says "not found".** Check Studio `/orders` for the order. The private
+  link is in the collector's confirmation email.
+
 Nothing else is removed or changed by going live.
