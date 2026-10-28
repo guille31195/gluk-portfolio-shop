@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import PrintBlock from '../../components/PrintBlock.astro';
-import RuptureRule from '../../components/RuptureRule.astro';
+import WallLabel from '../../components/WallLabel.astro';
+import type { Artwork } from '../../lib/artwork-map';
 import type { PrintOffer } from '../../lib/prints/offer';
 
 // Dev-only visual check: never emitted by a build.
@@ -14,16 +14,29 @@ const offers: PrintOffer[] = [
   { format: 'large', size: { widthCm: 80, heightCm: 100 }, sizeLabel: '80 × 100 cm', priceCents: 90000 },
   { format: 'small', size: { widthCm: 40, heightCm: 50 }, sizeLabel: '40 × 50 cm', priceCents: 40000 },
 ];
+// ?original=sold|auction switches the Original block.
+const status = Astro.url.searchParams.get('original');
+const artwork: Artwork = {
+  slug: 'motopirueta-fixture',
+  title: 'Motopirueta fixture',
+  medium: 'oil-painting',
+  materials: null,
+  year: null,
+  dimensions: '120 × 150 cm',
+  description: null,
+  images: [],
+  originalStatus: status === 'sold' ? 'sold' : status === 'auction' ? 'auction' : 'available',
+  auctionUrl: 'https://example.test/lot',
+  printOffers: offers,
+  series: null,
+  seriesPosition: null,
+  haloSetting: 'auto',
+  halo: false,
+};
 ---
 <BaseLayout title="Print block fixture">
   <section class="page demo">
-    <aside class="wall-label">
-      <p class="mono dim">Fixture · 120 × 150 cm · test prices, not real</p>
-      <h1 class="title">Motopirueta fixture</h1>
-      <RuptureRule weight="thin" class="demo-rule" />
-      <hr class="hairline" />
-      <PrintBlock slug="motopirueta-fixture" title="Motopirueta fixture" offers={offers} />
-    </aside>
+    <WallLabel artwork={artwork} heading="Fixture · test prices, not real" siblings={[]} />
   </section>
 </BaseLayout>
 

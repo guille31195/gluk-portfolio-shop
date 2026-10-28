@@ -1,4 +1,6 @@
+import type { SanityClient } from '@sanity/client';
 import { PDFDocument } from 'pdf-lib';
+import sharp from 'sharp';
 import { describe, expect, it, vi } from 'vitest';
 import {
   canPrintCollectorName,
@@ -7,7 +9,7 @@ import {
   renderCertificate,
   renderCertificateDetailed,
 } from '../lib/certificate-pdf';
-import { handleCertificate, ID_PATTERN, CERTIFICATE_QUERY, sanityCertificateReader, toResponse } from '../functions/certificate';
+import { handleCertificate, ID_PATTERN, CERTIFICATE_QUERY, PHOTO_QUERY, sanityCertificateReader, sanityPhotoLoader, toResponse } from '../functions/certificate';
 import { signKey, type Order } from '../../src/lib/prints/order';
 
 const SECRET = 'test-cert-secret';
@@ -120,10 +122,44 @@ describe('renderCertificate', () => {
     expect(all.join(' ')).not.toMatch(/山|田|太|郎/);
   });
 
-  it('switches wording by variant', async () => {
-    const b = (await renderCertificateDetailed(ORDER, 'B')).texts.map((t) => t.text);
-    expect(b).toContain(CERTIFICATE_COPY.B.kicker);
-    expect(Object.keys(CERTIFICATE_COPY)).toEqual(['A', 'B', 'C']);
+  it('places the photograph of the work when given a JPEG, and still renders without one', async () => {
+    const jpeg = new Uint8Array(await sharp({ create: { width: 400, height: 500, channels: 3, background: '#e8b800' } }).jpeg().toBuffer());
+    const withPhoto = await renderCertificateDetailed(ORDER, jpeg);
+    expect(withPhoto.photoPlaced).toBe(true);
+    const wide = new Uint8Array(await sharp({ create: { width: 940, height: 360, channels: 3, background: '#2a6' } }).jpeg().toBuffer());
+    expect((await renderCertificateDetailed(ORDER, wide)).photoPlaced).toBe(true);
+    expect((await renderCertificateDetailed(ORDER)).photoPlaced).toBe(false);
+    expect((await renderCertificateDetailed(ORDER, new Uint8Array([1, 2, 3]))).photoPlaced).toBe(false);
+    expect(withPhoto.pdf.length).toBeGreaterThan((await renderCertificate(ORDER)).length);
+  });
+
+  it('has no wording variants: one kicker', () => {
+    expect(CERTIFICATE_COPY.kicker).toBe('Limited edition print · Certificate of authenticity');
+  });
+});
+
+describe('sanityPhotoLoader', () => {
+  const url = 'https://cdn.sanity.io/images/p/production/abc-1000x800.jpg';
+  const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2]);
+  const client = (value: unknown) => ({ fetch: vi.fn(async () => value) }) as unknown as SanityClient;
+  const ok = (bytes: Uint8Array) => vi.fn(async () => new Response(bytes as BodyInit)) as unknown as typeof fetch;
+
+  it('fetches the first image as a JPEG', async () => {
+    const f = ok(jpeg);
+    expect(await sanityPhotoLoader(client(url), f)('perdi-el-coco')).toEqual(jpeg);
+    expect(f).toHaveBeenCalledWith(`${url}?w=1800&fm=jpg&q=85`, expect.anything());
+  });
+  it.each([
+    ['no image', null, ok(jpeg)],
+    ['a non-Sanity url', 'https://evil.test/x.jpg', ok(jpeg)],
+    ['a non-JPEG body', url, ok(new Uint8Array([1, 2, 3]))],
+    ['a failed download', url, vi.fn(async () => new Response('no', { status: 500 })) as unknown as typeof fetch],
+    ['a thrown fetch', url, vi.fn(async () => { throw new Error('net'); }) as unknown as typeof fetch],
+  ])('returns undefined for %s', async (_n, value, f) => {
+    expect(await sanityPhotoLoader(client(value), f)('x')).toBeUndefined();
+  });
+  it('asks for the first image that has an asset, by slug', () => {
+    expect(PHOTO_QUERY).toContain('images[defined(asset)][0]');
   });
 });
 

@@ -109,8 +109,8 @@ cannot be bought online. `npm run check:prints` lists what is still missing.
 
 ## 7. Sign-off
 
-- Certificate wording: pick A, B or C (`CERTIFICATE_COPY` in
-  `netlify/lib/certificate-pdf.ts`).
+- Certificate: signed off 2026-10-28 as one photo design (photograph of the work bought, edition
+  number leading). Wording lives in `CERTIFICATE_COPY` in `netlify/lib/certificate-pdf.ts`.
 - Mockups: print block, collector order page, certificate, owner email.
 - Live Stripe keys: swap `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` to the live
   values (and create the live webhook endpoint the same way as step 3) only after this.

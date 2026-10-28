@@ -12,46 +12,31 @@ export const PAGE_MM = { width: 297, height: 210 } as const; // A4 landscape
 const PT_PER_MM = 72 / 25.4;
 const PAGE = { w: PAGE_MM.width * PT_PER_MM, h: PAGE_MM.height * PT_PER_MM };
 const CQW = PAGE.w / 100;
-const MARGIN = { x: 7, top: 6 };
-const CONTENT_W = 100 - 2 * MARGIN.x;
-const TITLE = { size: 7.6, line: 0.92, baseline: 34.6, maxLines: 2 };
-const KICKER_GAP = 3.4;
+const PAGE_H_CQW = PAGE.h / CQW;
+const MARGIN = { x: 6, y: 5 };
+// Left column: the photograph of the work bought. Right column: everything else.
+const PHOTO_COL = { x: MARGIN.x, w: 42 };
+const RIGHT = { x: MARGIN.x + PHOTO_COL.w + 6, w: 100 - 2 * MARGIN.x - PHOTO_COL.w - 6 };
+const RIGHT_END = RIGHT.x + RIGHT.w;
+const TITLE = { size: 3, line: 0.92, baseline: 31.3, maxLines: 2 };
+const FACT = { label: 10, row: 4 };
 
 const INK = rgb(30 / 255, 22 / 255, 25 / 255); // --color-black #1E1619
 
-// Wording beyond the facts is placeholder until Guillermo picks (repo copy rule).
-// Only option A's layout is built; B and C change the wording only.
-export type CertificateVariant = 'A' | 'B' | 'C';
 export type CertificateCopy = {
   kicker: string;
   signature: string;
-  labels: { year: string; original: string; size: string; edition: string; date: string; collector: string };
+  labels: { year: string; original: string; size: string; date: string; collector: string };
 };
-export const CERTIFICATE_COPY: Record<CertificateVariant, CertificateCopy> = {
-  A: {
-    kicker: 'Certificate of authenticity',
-    signature: 'Gluk',
-    labels: { year: 'Year', original: 'Original', size: 'Print size', edition: 'Edition', date: 'Date', collector: 'Collector' },
-  },
-  B: {
-    kicker: 'Limited edition',
-    signature: 'Gluk',
-    labels: { year: 'Year', original: 'Original', size: 'Print size', edition: 'Edition', date: 'Date', collector: 'Collector' },
-  },
-  C: {
-    kicker: 'Certificate of authenticity · Certificado de autenticidad',
-    signature: 'Gluk',
-    labels: {
-      year: 'Year · Año',
-      original: 'Original · Técnica',
-      size: 'Print size · Tamaño',
-      edition: 'Edition · Edición',
-      date: 'Date · Fecha',
-      collector: 'Collector · Coleccionista',
-    },
-  },
+export const CERTIFICATE_COPY: CertificateCopy = {
+  kicker: 'Limited edition print · Certificate of authenticity',
+  signature: 'Gluk',
+  labels: { year: 'Year', original: 'Original', size: 'Print size', date: 'Date', collector: 'Collector' },
 };
-export const DEFAULT_VARIANT: CertificateVariant = 'A';
+
+// JPEG bytes of the purchased work, as fetched for this order. Optional: without it the
+// left column stays empty rather than failing the certificate.
+export type CertificatePhoto = Uint8Array;
 
 export type PlacedText = { text: string; size: number; width: number; x: number; y: number };
 
@@ -110,9 +95,9 @@ function fitTitle(text: string, font: PDFFont, maxW: number) {
 
 export async function renderCertificateDetailed(
   order: Order,
-  variant: CertificateVariant = DEFAULT_VARIANT,
-): Promise<{ pdf: Uint8Array; texts: PlacedText[]; collectorNamePrinted: boolean }> {
-  const copy = CERTIFICATE_COPY[variant];
+  photo?: CertificatePhoto,
+): Promise<{ pdf: Uint8Array; texts: PlacedText[]; collectorNamePrinted: boolean; photoPlaced: boolean }> {
+  const copy = CERTIFICATE_COPY;
   const dir = assetDir();
   const [titleFont, lightFont, bodyFont, wordmarkBytes, ruleBytes] = await Promise.all([
     readFile(join(dir, 'fonts/ArchivoExpanded-ExtraBold.ttf')),
@@ -164,27 +149,44 @@ export async function renderCertificateDetailed(
     }
   }
 
+  // Photograph of the work bought, never cropped, as large as the left column allows.
+  let photoPlaced = false;
+  if (photo) {
+    try {
+      const image = await doc.embedJpg(photo);
+      const boxW = PHOTO_COL.w;
+      const boxH = PAGE_H_CQW - 2 * MARGIN.y;
+      const scale = Math.min(boxW / image.width, boxH / image.height);
+      const w = image.width * scale;
+      const h = image.height * scale;
+      page.drawImage(image, { x: X(PHOTO_COL.x + (boxW - w) / 2), y: Y(MARGIN.y + (boxH - h) / 2 + h), width: w * CQW, height: h * CQW });
+      photoPlaced = true;
+    } catch {
+      // Unreadable image: the certificate is still valid without it.
+    }
+  }
+
   // Header: wordmark, glukart.com, rupture rule.
-  const wmH = 5.2;
+  const wmH = 4.4;
   page.drawImage(wordmark, {
-    x: X(MARGIN.x),
-    y: Y(MARGIN.top + wmH),
+    x: X(RIGHT.x),
+    y: Y(MARGIN.y + wmH),
     width: wmH * (wordmark.width / wordmark.height) * CQW,
     height: wmH * CQW,
     opacity: 0.92,
   });
-  text('GLUKART.COM', body, 1.15, 100 - MARGIN.x, MARGIN.top + 1.15 * 1.1, { spacing: 0.22, align: 'right' });
-  const ruleTop = MARGIN.top + wmH + 2.2;
-  page.drawImage(rule, { x: X(MARGIN.x), y: Y(ruleTop + 0.5), width: CONTENT_W * CQW, height: 0.5 * CQW });
+  text('GLUKART.COM', body, 1.1, RIGHT_END, MARGIN.y + 1.7, { spacing: 0.22, align: 'right' });
+  const ruleTop = MARGIN.y + wmH + 2;
+  page.drawImage(rule, { x: X(RIGHT.x), y: Y(ruleTop + 0.5), width: RIGHT.w * CQW, height: 0.5 * CQW });
 
-  // Title (wraps, then shrinks) with the kicker above it.
-  const title = fitTitle(clean(order.artworkTitle), display, CONTENT_W * CQW);
+  // Kicker, edition number (the biggest thing on the sheet), then the title.
+  text(copy.kicker.toUpperCase(), body, 0.95, RIGHT.x, 17.6, { spacing: 0.2, opacity: 0.6 });
+  text(`${order.editionNumber} / ${order.editionSize}`, display, 9, RIGHT.x, 26.2, { spacing: -0.025 });
+  const title = fitTitle(clean(order.artworkTitle), display, RIGHT.w * CQW);
   const step = title.size * TITLE.line;
-  const firstBase = TITLE.baseline - step * (title.lines.length - 1);
-  title.lines.forEach((l, i) => text(l, display, title.size, MARGIN.x, firstBase + step * i, { spacing: -0.025 }));
-  text(copy.kicker, light, 1.9, MARGIN.x, firstBase - title.size * 0.7 - KICKER_GAP, { spacing: -0.01 });
+  title.lines.forEach((l, i) => text(l, display, title.size, RIGHT.x, TITLE.baseline + step * i, { spacing: -0.025 }));
 
-  // Facts: two columns, hairline above each row. Missing facts are left out, except a
+  // Facts: one column, hairline above each row. Missing facts are left out, except a
   // collector name the font cannot draw (null): that row keeps a blank line to write on.
   const collectorNamePrinted = canPrintCollectorName(order.customer.name);
   const facts = (
@@ -192,39 +194,38 @@ export async function renderCertificateDetailed(
       [copy.labels.year, order.year == null ? '' : String(order.year)],
       [copy.labels.original, clean(order.medium)],
       [copy.labels.size, sizeLabel(order)],
-      [copy.labels.edition, `${order.editionNumber} / ${order.editionSize}`],
       [copy.labels.date, formatDate(order.createdAt)],
       [copy.labels.collector, collectorNamePrinted ? clean(order.customer.name) : null],
     ] as [string, string | null][]
   ).filter(([, value]) => value !== '');
-  const COL_W = (CONTENT_W - 5) / 2;
+  const factsTop = TITLE.baseline + step * (title.lines.length - 1) + 2.8;
+  const ddW = RIGHT.w - FACT.label;
   facts.forEach(([label, value], i) => {
-    const colX = MARGIN.x + (i % 2) * (COL_W + 5);
-    const top = 38.4 + Math.floor(i / 2) * 4.3;
-    page.drawLine({ start: { x: X(colX), y: Y(top) }, end: { x: X(colX + COL_W), y: Y(top) }, thickness: 0.5, color: INK, opacity: 0.25 });
-    text(label.toUpperCase(), body, 1.05, colX, top + 2.7, { spacing: 0.2, opacity: 0.6 });
-    const ddW = COL_W - 11;
+    const top = factsTop + i * FACT.row;
+    page.drawLine({ start: { x: X(RIGHT.x), y: Y(top) }, end: { x: X(RIGHT_END), y: Y(top) }, thickness: 0.5, color: INK, opacity: 0.25 });
+    text(label.toUpperCase(), body, 1, RIGHT.x, top + 2.6, { spacing: 0.2, opacity: 0.6 });
     if (value === null) {
-      const y = Y(top + 3.1);
-      page.drawLine({ start: { x: X(colX + 11), y }, end: { x: X(colX + COL_W), y }, thickness: 0.5, color: INK, opacity: 0.5 });
+      const y = Y(top + 3);
+      page.drawLine({ start: { x: X(RIGHT.x + FACT.label), y }, end: { x: X(RIGHT_END), y }, thickness: 0.5, color: INK, opacity: 0.5 });
       return;
     }
-    const size = Math.min(1.5, (1.5 * ddW * CQW) / body.widthOfTextAtSize(value, 1.5 * CQW));
-    text(value, body, size, colX + 11, top + 2.7);
+    const size = Math.min(1.45, (1.45 * ddW * CQW) / body.widthOfTextAtSize(value, 1.45 * CQW));
+    text(value, body, size, RIGHT.x + FACT.label, top + 2.6);
   });
 
-  // Signature line for Gluk, in the right column.
-  const sigX = MARGIN.x + (CONTENT_W - 6) / 2 + 6;
-  page.drawLine({ start: { x: X(sigX), y: Y(56.5) }, end: { x: X(100 - MARGIN.x), y: Y(56.5) }, thickness: 0.7, color: INK });
-  text(copy.signature.toUpperCase(), body, 1.05, sigX, 64.3, { spacing: 0.2 });
+  // Signature: space to sign above the line, name below it, bottom right.
+  const sigY = PAGE_H_CQW - MARGIN.y - 2.3;
+  const sigX = RIGHT_END - 20;
+  page.drawLine({ start: { x: X(sigX), y: Y(sigY) }, end: { x: X(RIGHT_END), y: Y(sigY) }, thickness: 0.7, color: INK });
+  text(copy.signature.toUpperCase(), body, 1, sigX, sigY + 1.8, { spacing: 0.2 });
 
   // No object streams: keeps the file simple to inspect; text is checked via `texts`.
   const pdf = await doc.save({ useObjectStreams: false });
-  return { pdf, texts, collectorNamePrinted };
+  return { pdf, texts, collectorNamePrinted, photoPlaced };
 }
 
-export async function renderCertificate(order: Order, variant: CertificateVariant = DEFAULT_VARIANT): Promise<Uint8Array> {
-  return (await renderCertificateDetailed(order, variant)).pdf;
+export async function renderCertificate(order: Order, photo?: CertificatePhoto): Promise<Uint8Array> {
+  return (await renderCertificateDetailed(order, photo)).pdf;
 }
 
-export const CERTIFICATE_LIMITS = { contentWidthCqw: CONTENT_W, marginXCqw: MARGIN.x, pageWidthCqw: 100 };
+export const CERTIFICATE_LIMITS = { contentWidthCqw: RIGHT.w, marginXCqw: MARGIN.x, pageWidthCqw: 100 };

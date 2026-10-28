@@ -1,5 +1,5 @@
 import type { SanityClient } from '@sanity/client';
-import { ordersClient } from '../lib/clients';
+import { ordersClient, readClient } from '../lib/clients';
 import { renderCertificate } from '../lib/certificate-pdf';
 import { json, serverError } from '../lib/http';
 import { verifyKey, type Order } from '../../src/lib/prints/order';
@@ -17,6 +17,30 @@ export const CERTIFICATE_QUERY: string = '*[_type=="order" && _id==$id][0]';
 
 export function sanityCertificateReader(client: SanityClient): CertificateOrderReader {
   return (id) => client.fetch<Order | null>(CERTIFICATE_QUERY, { id });
+}
+
+// The photograph printed on the certificate: the work's first image from the public
+// dataset, fetched as a JPEG (pdf-lib embeds JPEG/PNG only). Any failure returns
+// undefined so the certificate still renders without it.
+export const PHOTO_QUERY: string = '*[_type=="artwork" && slug.current==$slug][0].images[defined(asset)][0].asset->url';
+const CDN_PREFIX = 'https://cdn.sanity.io/images/';
+const PHOTO_MAX_BYTES = 12 * 1024 * 1024;
+export type PhotoLoader = (slug: string) => Promise<Uint8Array | undefined>;
+
+export function sanityPhotoLoader(client: SanityClient, fetchImpl: typeof fetch = fetch): PhotoLoader {
+  return async (slug) => {
+    try {
+      const url = await client.fetch<string | null>(PHOTO_QUERY, { slug });
+      if (!url || !url.startsWith(CDN_PREFIX)) return undefined;
+      const res = await fetchImpl(`${url}?w=1800&fm=jpg&q=85`, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) return undefined;
+      const bytes = new Uint8Array(await res.arrayBuffer());
+      const isJpeg = bytes[0] === 0xff && bytes[1] === 0xd8;
+      return isJpeg && bytes.length <= PHOTO_MAX_BYTES ? bytes : undefined;
+    } catch {
+      return undefined;
+    }
+  };
 }
 
 const slugify = (s: string) =>
@@ -64,7 +88,7 @@ export default async (req: Request): Promise<Response> => {
       await handleCertificate(params.get('id'), params.get('key'), {
         secret: process.env.CERT_SECRET,
         read: (id) => sanityCertificateReader(ordersClient())(id),
-        render: (order) => renderCertificate(order),
+        render: async (order) => renderCertificate(order, await sanityPhotoLoader(readClient())(order.artworkSlug)),
       }),
     );
   } catch (err) {

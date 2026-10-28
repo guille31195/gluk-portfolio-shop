@@ -15,7 +15,7 @@ const names = { large: 'Large', small: 'Small' };
 const inquire = inquiryHref('print', title);
 ---
 <div class="wall-block print-block" data-print-block data-slug={slug} data-intro>
-  <p class="label dim print-heading" data-heading>Limited edition prints · {EDITION_SIZE} per format</p>
+  <p class="label dim print-heading" data-heading>Also available as a limited edition print · {EDITION_SIZE} per format</p>
   <ul class="fmt" data-formats>
     {offers.map((offer) => (
       <li data-format={offer.format}>
@@ -37,7 +37,7 @@ const inquire = inquiryHref('print', title);
   </div>
   <div data-actions hidden>
     <p class="duty dim">Import duties and taxes are paid by the collector on arrival.</p>
-    <p class="act"><button type="button" class="button" data-collect disabled>Collect</button>
+    <p class="act"><button type="button" class="button" data-collect disabled>Collect a print</button>
     <span id={`print-hint-${slug}`} class="visually-hidden" data-hint>Choose a format and a country</span></p>
     <p class="message" data-message role="status"></p>
   </div>
@@ -92,9 +92,10 @@ const inquire = inquiryHref('print', title);
     font-family: var(--font-display);
     font-weight: 800;
     font-stretch: 125%;
-    font-size: var(--text-statement);
+    font-size: 1.05rem;
     line-height: 1;
-    letter-spacing: -0.01em;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
   }
   .fmt .size {
     grid-column: 2;
@@ -154,8 +155,8 @@ const inquire = inquiryHref('print', title);
   .cost {
     text-align: right;
     font-family: var(--font-display);
-    font-weight: 800;
-    font-size: var(--text-statement);
+    font-weight: 700;
+    font-size: 1.05rem;
     line-height: 1;
     font-variant-numeric: tabular-nums;
   }

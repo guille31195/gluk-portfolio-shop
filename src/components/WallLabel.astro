@@ -32,14 +32,22 @@ const showOriginal = artwork.originalStatus !== 'notForSale';
     <div class="wall-block" data-intro>
       <p class="label dim">Original</p>
       {artwork.originalStatus === 'available' ? (
-        <a class="button" href={inquire}>Inquire</a>
+        <>
+          <p class="original-status">Available</p>
+          <p class="original-meta dim">Price on request</p>
+          <a class="button" href={inquire}>Inquire about the original</a>
+        </>
       ) : artwork.originalStatus === 'auction' && artwork.auctionUrl ? (
-        <a class="button" href={artwork.auctionUrl} rel="noopener">At auction · View lot</a>
+        <>
+          <p class="original-status">At auction</p>
+          <a class="button" href={artwork.auctionUrl} rel="noopener">View lot</a>
+        </>
       ) : (
-        <p class="label wall-sold">Sold</p>
+        <p class="original-status">Sold</p>
       )}
     </div>
   )}
+  {showOriginal && artwork.printOffers.length > 0 && <hr class="hairline" />}
   {artwork.printOffers.length > 0 && (
     <PrintBlock slug={artwork.slug} title={artwork.title} offers={artwork.printOffers} />
   )}
@@ -77,7 +85,16 @@ const showOriginal = artwork.originalStatus !== 'notForSale';
   .wall-block .label {
     margin: 0 0 0.8rem;
   }
-  .wall-sold {
-    margin: 0;
+  .original-status {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-stretch: 125%;
+    font-size: var(--text-title);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.6rem;
+  }
+  .original-meta {
+    margin: 0 0 1.2rem;
   }
 </style>
