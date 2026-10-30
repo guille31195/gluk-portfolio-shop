@@ -173,7 +173,7 @@ describe('print purchase flow (offline)', () => {
 
     expect((await t.deliver(t.completedEvent('cs_test_1'))).status).toBe(200);
     const [order] = t.orders();
-    expect(order).toMatchObject({ priceCents: 45000, shippingCents: 5000, editionNumber: 1, editionSize: 50, status: 'paid' });
+    expect(order).toMatchObject({ priceCents: 45000, shippingCents: 7000, editionNumber: 1, editionSize: 50, status: 'paid' });
 
     const owner = ownerMails(t.mails);
     const collector = collectorMails(t.mails);
@@ -190,7 +190,7 @@ describe('print purchase flow (offline)', () => {
 
     const view = await handleOrder(token, t.byToken);
     expect(view.status).toBe(200);
-    expect(view.body).toMatchObject({ editionNumber: 1, editionSize: 50, priceCents: 45000, shippingCents: 5000, city: 'Springfield', country: 'US' });
+    expect(view.body).toMatchObject({ editionNumber: 1, editionSize: 50, priceCents: 45000, shippingCents: 7000, city: 'Springfield', country: 'US' });
     const exposed = JSON.stringify(view.body);
     for (const hidden of [STREET, '97477', BUYER, '+1 555 0100', 'Apt 3']) expect(exposed).not.toContain(hidden);
 

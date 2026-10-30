@@ -51,12 +51,12 @@ describe('regionForCountry', () => {
 
 describe('shipping rates', () => {
   it('converts USD to cents', () => {
-    expect(shippingCents('US_CA')).toBe(5000);
-    expect(shippingCents('MX')).toBe(2000);
+    expect(shippingCents('US_CA')).toBe(7000);
+    expect(shippingCents('MX')).toBe(2500);
   });
 
   it('defines a rate for every region', () => {
-    expect(SHIPPING_RATES_USD).toEqual({ MX: 20, US_CA: 50, LATAM: 60, EU_UK: 60, ROW: 80 });
+    expect(SHIPPING_RATES_USD).toEqual({ MX: 25, US_CA: 70, LATAM: 85, EU_UK: 95, ROW: 120 });
   });
 });
 

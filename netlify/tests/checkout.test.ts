@@ -78,7 +78,7 @@ describe('handleCheckout', () => {
         shipping_rate_data: {
           type: 'fixed_amount',
           display_name: 'DHL Express — United States & Canada',
-          fixed_amount: { amount: 5000, currency: 'usd' },
+          fixed_amount: { amount: 7000, currency: 'usd' },
         },
       },
     ]);
@@ -134,7 +134,7 @@ describe('handleCheckout', () => {
     expect(allowed).not.toContain('CU');
     expect(allowed).not.toContain('US');
     expect(s.shipping_options?.[0].shipping_rate_data?.display_name).toBe('DHL Express — Rest of the world');
-    expect(s.shipping_options?.[0].shipping_rate_data?.fixed_amount?.amount).toBe(8000);
+    expect(s.shipping_options?.[0].shipping_rate_data?.fixed_amount?.amount).toBe(12000);
     expect(s.metadata?.region).toBe('ROW');
   });
 

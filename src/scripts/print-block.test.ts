@@ -56,8 +56,8 @@ describe('stock state', () => {
 
 describe('shippingForCountry', () => {
   it('returns region, name and flat price', () => {
-    expect(shippingForCountry('ES')).toEqual({ region: 'EU_UK', regionName: 'Europe & UK', priceUsd: 60 });
-    expect(shippingForCountry('mx')).toEqual({ region: 'MX', regionName: 'Mexico', priceUsd: 20 });
+    expect(shippingForCountry('ES')).toEqual({ region: 'EU_UK', regionName: 'Europe & UK', priceUsd: 95 });
+    expect(shippingForCountry('mx')).toEqual({ region: 'MX', regionName: 'Mexico', priceUsd: 25 });
   });
   it('returns null for excluded or unknown countries', () => {
     expect(shippingForCountry('RU')).toBeNull();
@@ -124,7 +124,7 @@ describe('initPrintBlock', () => {
     expect($<HTMLInputElement>('input[value="large"]').disabled).toBe(true);
     chooseCountry('ES');
     expect($('[data-collect]').hasAttribute('disabled')).toBe(false);
-    expect($('[data-cost]').textContent).toBe('$60');
+    expect($('[data-cost]').textContent).toBe('$95');
   });
 
   it('goes to the checkout url on success and posts no price', async () => {

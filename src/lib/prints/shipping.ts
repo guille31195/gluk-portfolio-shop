@@ -1,12 +1,14 @@
 export type RegionId = 'MX' | 'US_CA' | 'LATAM' | 'EU_UK' | 'ROW';
 
-// Flat USD rates. TODO before launch: verify against a real DHL quote.
+// Flat USD rates for a rolled print in a tube (about 100 x 12 x 12 cm, 2-3 kg billable) shipped
+// from Mexico by DHL Express. Estimates from published retail-rate ranges (2026-10-30), not a
+// quote: check against DHL's online calculator before going live.
 export const SHIPPING_RATES_USD: Record<RegionId, number> = {
-  MX: 20,
-  US_CA: 50,
-  LATAM: 60,
-  EU_UK: 60,
-  ROW: 80,
+  MX: 25,
+  US_CA: 70,
+  LATAM: 85,
+  EU_UK: 95,
+  ROW: 120,
 };
 
 export const REGION_NAMES: Record<RegionId, string> = {
