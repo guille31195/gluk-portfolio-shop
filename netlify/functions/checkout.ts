@@ -153,7 +153,7 @@ export async function handleCheckout(body: unknown, deps: CheckoutDeps): Promise
   } catch (err) {
     console.error(`checkout: Stripe session failed: ${err instanceof Error ? err.message : String(err)}`);
     await releaseReservation(deps.store, edition, reservationId).catch(() => {});
-    return { status: 502, body: { error: 'payment-provider', diag: err instanceof Error ? err.message : String(err) } as never };
+    return fail(502, 'payment-provider');
   }
 }
 
