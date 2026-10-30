@@ -57,12 +57,6 @@ const printsFrom = (prices: number[]) => (prices.length ? formatPrice(Math.min(.
                   </dd>
                 </div>
               )}
-              {artwork.printOffers.length > 0 && (
-                <div data-edition-row data-slug={artwork.slug} data-formats={artwork.printOffers.map((o) => o.format).join(',')} hidden>
-                  <dt class="label dim">Edition</dt>
-                  <dd></dd>
-                </div>
-              )}
             </dl>
           </li>
         );
@@ -70,10 +64,6 @@ const printsFrom = (prices: number[]) => (prices.length ? formatPrice(Math.min(.
     </ul>
   </section>
 </BaseLayout>
-
-<script>
-  import '../scripts/collect-editions';
-</script>
 
 <style>
   .collect-head {
@@ -125,13 +115,6 @@ const printsFrom = (prices: number[]) => (prices.length ? formatPrice(Math.min(.
   }
   .collect-offer dd {
     margin: 0;
-  }
-  .collect-offer div[hidden] {
-    display: none;
-  }
-  .collect-offer dd span {
-    display: block;
-    font-variant-numeric: tabular-nums;
   }
   .collect-offer a {
     text-underline-offset: 0.25em;
