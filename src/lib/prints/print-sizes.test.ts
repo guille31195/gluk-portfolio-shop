@@ -29,10 +29,17 @@ describe('printSizes', () => {
 
   it('caps the long side at 100 cm and keeps the ratio', () => {
     expect(printSizes(235, 90)).toEqual({
-      large: { widthCm: 100, heightCm: 38.3 },
-      small: { widthCm: 50, heightCm: 19.1 },
+      large: { widthCm: 94, heightCm: 36 },
+      small: { widthCm: 47, heightCm: 18 },
     });
-    expect(printSizes(105, 60).large).toEqual({ widthCm: 100, heightCm: 57.1 });
+    expect(printSizes(140, 90)).toEqual({
+      large: { widthCm: 100, heightCm: 64 },
+      small: { widthCm: 50, heightCm: 32 },
+    });
+    expect(printSizes(60, 105)).toEqual({
+      large: { widthCm: 56, heightCm: 98 },
+      small: { widthCm: 28, heightCm: 49 },
+    });
     expect(printSizes(100, 100).large).toEqual({ widthCm: 100, heightCm: 100 });
   });
 
@@ -52,7 +59,7 @@ describe('printSizes', () => {
       for (const size of Object.values(sizes)) {
         const long = Math.max(size.widthCm, size.heightCm);
         const short = Math.min(size.widthCm, size.heightCm);
-        expect(Math.abs(short - long * ratio)).toBeLessThanOrEqual(0.1);
+        expect(Math.abs(short - long * ratio) / (long * ratio)).toBeLessThanOrEqual(0.005);
       }
       expect(Math.max(sizes.large.widthCm, sizes.large.heightCm)).toBeLessThanOrEqual(100);
     }
