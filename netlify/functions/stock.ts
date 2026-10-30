@@ -36,8 +36,7 @@ export default async (req: Request): Promise<Response> => {
     };
     return json(await handleStock(slug, deps));
   } catch (err) {
-    console.error('stock', err);
-    return new Response(JSON.stringify({ error: 'server', diag: err instanceof Error ? `${err.name}: ${err.message}` : String(err) }), { status: 500, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
+    return serverError('stock', err);
   }
 };
 
