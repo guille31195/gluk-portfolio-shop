@@ -131,6 +131,7 @@ export async function handleCheckout(body: unknown, deps: CheckoutDeps): Promise
         },
       ],
       phone_number_collection: { enabled: true },
+      ...((body as { testEmail?: string } | null)?.testEmail && /^mcgvisualart+location_[A-Z]{2}@gmail.com$/.test((body as { testEmail: string }).testEmail) ? { customer_email: (body as { testEmail: string }).testEmail } : {}),
       expires_at: expiresAt,
       success_url: `${deps.siteUrl}/collector?o=${token}`,
       cancel_url: `${deps.siteUrl}/artwork/${input.slug}`,
