@@ -14,10 +14,12 @@ screenshot if nothing fits.
 
 1. In a terminal in the repo:
    `npx sanity dataset create orders --visibility private`
-2. Verify it is private. Run, with no token:
-   `curl -s -o /dev/null -w "%{http_code}\n" "https://48jkcmcb.api.sanity.io/v2026-09-16/data/query/orders?query=*%5B0%5D"`
-   The answer must be `401` or `403`. If it prints `200`, stop: the dataset is public
-   and collector addresses would be readable. Make it private before going further.
+2. Verify it is private: `npx sanity dataset visibility get orders` must print `private`.
+   Note: an anonymous query to a private dataset answers 200 with an empty result, not
+   401/403, so an empty dataset proves nothing. To test for real, create a throwaway
+   document with the CLI, query it with no token (it must come back as `[]`), then
+   delete it. Private datasets need the Sanity Growth plan (done 2026-10-28; on the Free
+   plan the CLI creates the dataset public with a warning).
 3. Create the token at sanity.io/manage → project 48jkcmcb → API → Tokens → Add API token
    (check the label in the dashboard). Name: `netlify-orders`. Permission: **Editor**.
    Copy it once; it goes into `SANITY_ORDERS_TOKEN` in step 4.
@@ -38,9 +40,13 @@ screenshot if nothing fits.
 
 ## 3. Stripe (test mode first)
 
-1. Check Adaptive Pricing is **OFF** (Settings → Payments, check the label in the
-   dashboard). Prices and shipping are charged in USD as shown on the site; Adaptive
-   Pricing would show the collector a converted amount.
+1. Adaptive Pricing: Guillermo chose to leave it ON (2026-10-29), since turning it off limits
+   the buyer's payment options. On API versions from 2025-03-31 the Checkout Session stays
+   in USD and the buyer's local amount is in `presentment_details`; the webhook reads
+   `amount_subtotal` and `shipping_cost.amount_total` from the re-fetched session, so orders
+   stay in USD. Buyers who pay in their own currency pay a 2 to 4% conversion fee to Stripe.
+   Docs conflict for older versions: confirm in the test purchase with a foreign test card
+   that the order records the USD price.
 2. Create the webhook endpoint (Developers → Webhooks → Add endpoint, check the label in
    the dashboard):
    - URL: `https://glukart.com/api/stripe-webhook`
