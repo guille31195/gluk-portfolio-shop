@@ -3,7 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Painting from '../components/Painting.astro';
 import RuptureRule from '../components/RuptureRule.astro';
 import { getAllArtworks } from '../lib/sanity';
-import { collectable, inquiryHref } from '../lib/collect';
+import { collectable, inquiryHref, offersPrints } from '../lib/collect';
 import { formatPrice } from '../data/format-price';
 import { pad2 } from '../lib/numerals';
 import { CARD_WIDTH, CARD_WIDTHS } from '../lib/image-url';
@@ -45,16 +45,18 @@ const printsFrom = (prices: number[]) => (prices.length ? formatPrice(Math.min(.
                   </dd>
                 </div>
               )}
-              <div>
-                <dt class="label dim">Prints</dt>
-                <dd>
-                  {from ? (
-                    <a href={`/artwork/${artwork.slug}?from=collect`}>From {from}</a>
-                  ) : (
-                    <a href={inquiryHref('print', artwork.title)}>Inquire</a>
-                  )}
-                </dd>
-              </div>
+              {offersPrints(artwork) && (
+                <div>
+                  <dt class="label dim">Prints</dt>
+                  <dd>
+                    {from ? (
+                      <a href={`/artwork/${artwork.slug}?from=collect`}>From {from}</a>
+                    ) : (
+                      <a href={inquiryHref('print', artwork.title)}>Inquire</a>
+                    )}
+                  </dd>
+                </div>
+              )}
             </dl>
           </li>
         );

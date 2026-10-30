@@ -3,7 +3,7 @@ import NumberedIndex, { type IndexItem } from './NumberedIndex.astro';
 import PrintBlock from './PrintBlock.astro';
 import RuptureRule from './RuptureRule.astro';
 import { mediumLabel, type Artwork } from '../lib/sanity';
-import { inquiryHref } from '../lib/collect';
+import { inquiryHref, offersPrints } from '../lib/collect';
 
 interface Props {
   artwork: Artwork;
@@ -52,7 +52,7 @@ const showOriginal = artwork.originalStatus !== 'notForSale';
     <PrintBlock slug={artwork.slug} title={artwork.title} offers={artwork.printOffers} />
   )}
   {/* No print sizes priced yet: prints of a collectable piece are by inquiry, matching /collect. */}
-  {artwork.printOffers.length === 0 && showOriginal && (
+  {artwork.printOffers.length === 0 && showOriginal && offersPrints(artwork) && (
     <div class="wall-block" data-intro>
       <p class="label dim">Prints</p>
       <a class="button" href={inquiryHref('print', artwork.title)}>Inquire</a>

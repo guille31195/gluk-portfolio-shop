@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { backLink, collectable, inquiryHref } from './collect';
+import { backLink, collectable, inquiryHref, offersPrints } from './collect';
 import type { PrintOffer } from './prints/offer';
 import type { Artwork, OriginalStatus } from './artwork-map';
 
@@ -33,6 +33,15 @@ describe('collectable', () => {
 
   it('keeps a not-for-sale original that has print offers', () => {
     expect(collectable([art('c', 'notForSale', [print])]).map((w) => w.slug)).toEqual(['c']);
+  });
+});
+
+describe('offersPrints', () => {
+  it('offers prints of oil paintings only', () => {
+    expect(offersPrints({ medium: 'oil-painting' })).toBe(true);
+    for (const medium of ['mixed-media', 'sculpture', 'installation', 'tattoo'] as const) {
+      expect(offersPrints({ medium })).toBe(false);
+    }
   });
 });
 
