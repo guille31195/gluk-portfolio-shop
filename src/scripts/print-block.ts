@@ -1,6 +1,5 @@
 // Print buying block on artwork pages: live stock, ship-to price and the
 // hand-off to Stripe Checkout. Binds on every page load and aborts on swap.
-import { EDITION_SIZE } from '../lib/prints/edition';
 import type { Format } from '../lib/prints/print-sizes';
 import {
   EXCLUDED_COUNTRIES,
@@ -17,10 +16,11 @@ export type Shipping = { region: RegionId; regionName: string; priceUsd: number 
 const FORMATS: readonly Format[] = ['large', 'small'];
 const REGIONS = Object.keys(REGION_NAMES) as RegionId[];
 
-export function formatRemaining(n: number | null): string {
+// The edition size and the count left are never shown while a format is available.
+export function formatAvailability(n: number | null): string {
   if (n === null) return 'Unavailable';
   if (n <= 0) return 'Sold out';
-  return `${n} of ${EDITION_SIZE} remaining`;
+  return '';
 }
 
 export function checkoutRequest(slug: string, format: Format, country: string): RequestInit {
@@ -132,7 +132,7 @@ export function initPrintBlock(root: HTMLElement, deps: PrintBlockDeps): () => v
       radios.get(format)!.disabled = out;
       // Rewriting identical text inside a live region makes screen readers announce it again.
       const left = li.querySelector('[data-left]')!;
-      const text = count === 0 ? MESSAGES.unavailable : formatRemaining(count);
+      const text = count === 0 ? MESSAGES.unavailable : formatAvailability(count);
       if (left.textContent !== text) left.textContent = text;
     }
     const current = selected();

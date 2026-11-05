@@ -5,20 +5,21 @@ import {
   checkoutRequest,
   countryOptions,
   firstSelectable,
-  formatRemaining,
+  formatAvailability,
   initPrintBlock,
   markSoldOut,
   selectableFormats,
   shippingForCountry,
 } from './print-block';
 
-describe('formatRemaining', () => {
-  it('reads the remaining count against the edition', () => {
-    expect(formatRemaining(23)).toBe('23 of 50 remaining');
+describe('formatAvailability', () => {
+  it('shows no count while the format is available', () => {
+    expect(formatAvailability(23)).toBe('');
+    expect(formatAvailability(1)).toBe('');
   });
   it('says Sold out at zero and Unavailable without a count', () => {
-    expect(formatRemaining(0)).toBe('Sold out');
-    expect(formatRemaining(null)).toBe('Unavailable');
+    expect(formatAvailability(0)).toBe('Sold out');
+    expect(formatAvailability(null)).toBe('Unavailable');
   });
 });
 
@@ -193,7 +194,7 @@ describe('initPrintBlock', () => {
     chooseCountry('ES');
     expect(observer.takeRecords()).toHaveLength(0);
     observer.disconnect();
-    expect($('[data-format="large"] [data-left]').textContent).toBe('3 of 50 remaining');
+    expect($('[data-format="large"] [data-left]').textContent).toBe('');
   });
 
   it('falls back to Inquire when stock cannot be read', async () => {

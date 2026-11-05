@@ -1,21 +1,24 @@
 ---
 import { formatPrice } from '../data/format-price';
 import { inquiryHref } from '../lib/collect';
-import { EDITION_SIZE } from '../lib/prints/edition';
 import type { PrintOffer } from '../lib/prints/offer';
+
+import FloatingPrint from './FloatingPrint.astro';
 
 interface Props {
   slug: string;
   title: string;
   offers: PrintOffer[];
+  image?: string;
 }
 
-const { slug, title, offers } = Astro.props;
+const { slug, title, offers, image } = Astro.props;
 const names = { large: 'Large', small: 'Small' };
 const inquire = inquiryHref('print', title);
 ---
 <div class="wall-block print-block" data-print-block data-slug={slug} data-intro>
-  <p class="label dim print-heading" data-heading>Also available as a limited edition print · {EDITION_SIZE} per format</p>
+  {image && <FloatingPrint src={image} title={title} />}
+  <p class="label dim print-heading" data-heading>Also available as a limited edition print</p>
   <ul class="fmt" data-formats>
     {offers.map((offer) => (
       <li data-format={offer.format}>

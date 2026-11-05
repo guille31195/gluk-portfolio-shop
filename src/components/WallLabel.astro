@@ -49,7 +49,7 @@ const showOriginal = artwork.originalStatus !== 'notForSale';
   )}
   {showOriginal && artwork.printOffers.length > 0 && <hr class="hairline" />}
   {artwork.printOffers.length > 0 && (
-    <PrintBlock slug={artwork.slug} title={artwork.title} offers={artwork.printOffers} />
+    <PrintBlock slug={artwork.slug} title={artwork.title} offers={artwork.printOffers} image={artwork.images[0]} />
   )}
   {/* No print sizes priced yet: prints of a collectable piece are by inquiry, matching /collect. */}
   {artwork.printOffers.length === 0 && showOriginal && offersPrints(artwork) && (
