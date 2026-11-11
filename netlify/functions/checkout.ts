@@ -114,7 +114,7 @@ export async function handleCheckout(body: unknown, deps: CheckoutDeps): Promise
           price_data: {
             currency: 'usd',
             unit_amount: offer.priceCents,
-            product_data: { name: `${artwork.title} — limited edition print ${offer.sizeLabel}` },
+            product_data: { name: `${artwork.title} — limited edition print ${offer.sizeLabel}, Hahnemühle 100% cotton rag paper` },
           },
         },
       ],
