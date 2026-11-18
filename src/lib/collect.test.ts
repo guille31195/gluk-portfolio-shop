@@ -50,9 +50,9 @@ describe('backLink', () => {
     expect(backLink('?from=collect')).toEqual({ href: '/collect', label: 'Collect' });
   });
 
-  it('returns to Portfolio otherwise', () => {
-    expect(backLink('')).toEqual({ href: '/portfolio', label: 'Portfolio' });
-    expect(backLink('?from=elsewhere')).toEqual({ href: '/portfolio', label: 'Portfolio' });
+  it('returns to Work otherwise', () => {
+    expect(backLink('')).toEqual({ href: '/work', label: 'Work' });
+    expect(backLink('?from=elsewhere')).toEqual({ href: '/work', label: 'Work' });
   });
 });
 

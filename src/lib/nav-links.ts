@@ -1,6 +1,6 @@
 // The site's main pages, in menu order: desktop nav, phone menu and 404 page.
 export const NAV_LINKS = [
-  { href: '/portfolio', label: 'Portfolio' },
+  { href: '/work', label: 'Work' },
   { href: '/collect', label: 'Collect' },
   { href: '/tattoo', label: 'Tattoo' },
   { href: '/journal', label: 'Journal' },

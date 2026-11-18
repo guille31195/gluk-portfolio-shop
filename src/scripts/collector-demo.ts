@@ -11,7 +11,7 @@ const PAID: CollectorView = {
   widthCm: 80,
   heightCm: 100,
   editionNumber: 12,
-  editionSize: 50,
+  editionSize: 25,
   priceCents: 45000,
   shippingCents: 6000,
   region: 'EU_UK',

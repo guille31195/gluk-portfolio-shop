@@ -1,6 +1,6 @@
 import type { Format } from './print-sizes';
 
-export const EDITION_SIZE = 50;
+export const EDITION_SIZE = 25;
 export const RESERVATION_MINUTES = 30;
 const MAX_ATTEMPTS = 8;
 const BACKOFF_BASE_MS = 20;

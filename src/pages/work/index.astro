@@ -9,7 +9,7 @@ const artworks = await getAllArtworks();
 const counts = mediumCounts(artworks);
 const rooms = groupIntoRooms(artworks);
 ---
-<BaseLayout title="Portfolio">
+<BaseLayout title="Work">
   <section class="page">
     <PortfolioHead counts={counts} active={null} />
     {rooms.map((room) => <Room room={room} />)}

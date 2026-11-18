@@ -69,7 +69,7 @@ describe('handleCheckout', () => {
         price_data: {
           currency: 'usd',
           unit_amount: 45000,
-          product_data: { name: 'La Espera — limited edition print 80 × 100 cm' },
+          product_data: { name: 'La Espera — limited edition print 80 × 100 cm, Hahnemühle 100% cotton rag paper' },
         },
       },
     ]);
@@ -153,7 +153,7 @@ describe('handleCheckout', () => {
     expect(sessions).toHaveLength(0);
   });
 
-  it('answers sold-out once 50 are reserved', async () => {
+  it('answers sold-out once 25 are reserved', async () => {
     const expiresAt = new Date(NOW.getTime() + 10 * 60_000).toISOString();
     const reservations = Array.from({ length: EDITION_SIZE }, (_, i) => ({ reservationId: `r${i}`, expiresAt }));
     const { sessions, deps } = setup({ initial: [{ id: LARGE, rev: 'r0', sold: 0, reservations }] });
@@ -178,9 +178,9 @@ describe('handleCheckout', () => {
     expect(sessions).toHaveLength(0);
   });
 
-  it('creates exactly 50 sessions from 60 parallel requests', async () => {
+  it('creates exactly 25 sessions from 35 parallel requests', async () => {
     const { store, sessions, deps } = setup();
-    const results = await Promise.all(Array.from({ length: 60 }, () => handleCheckout(valid, deps)));
+    const results = await Promise.all(Array.from({ length: 35 }, () => handleCheckout(valid, deps)));
     expect(results.filter((r) => r.status === 200)).toHaveLength(EDITION_SIZE);
     expect(results.filter((r) => r.status === 409)).toHaveLength(10);
     expect(sessions).toHaveLength(EDITION_SIZE);

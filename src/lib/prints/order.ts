@@ -1,5 +1,4 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
-import type { EDITION_SIZE } from './edition';
 import type { Format } from './print-sizes';
 import type { RegionId } from './shipping';
 
@@ -18,7 +17,7 @@ export type Order = {
   widthCm: number;
   heightCm: number;
   editionNumber: number;
-  editionSize: typeof EDITION_SIZE;
+  editionSize: number; // the edition size when this print was sold (50 before 2026-11-18, 25 after)
   priceCents: number;
   shippingCents: number;
   region: RegionId;

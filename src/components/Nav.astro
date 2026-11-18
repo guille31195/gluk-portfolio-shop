@@ -13,7 +13,7 @@ interface Props {
 const { settings } = Astro.props;
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const isActive = (href: string) =>
-  path === href || path.startsWith(`${href}/`) || (href === '/portfolio' && path.startsWith('/artwork/'));
+  path === href || path.startsWith(`${href}/`) || (href === '/work' && path.startsWith('/artwork/'));
 ---
 <header class="site-nav">
   <a class="brand" href="/" aria-label="GLUK — home">

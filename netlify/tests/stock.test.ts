@@ -35,7 +35,7 @@ function deps() {
 
 describe('handleStock', () => {
   it('counts sold and live reservations, null for a format with no offer', async () => {
-    expect(await handleStock('la-espera', deps())).toEqual({ status: 200, body: { large: 46, small: null } });
+    expect(await handleStock('la-espera', deps())).toEqual({ status: 200, body: { large: 21, small: null } });
   });
 
   it('answers null for both formats of an unknown piece', async () => {

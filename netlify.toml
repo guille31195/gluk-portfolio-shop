@@ -39,3 +39,14 @@
   for = "/collector/*"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
+
+# The Portfolio section was renamed Work (2026-11-18); keep old links alive.
+[[redirects]]
+  from = "/portfolio"
+  to = "/work"
+  status = 301
+
+[[redirects]]
+  from = "/portfolio/*"
+  to = "/work/:splat"
+  status = 301

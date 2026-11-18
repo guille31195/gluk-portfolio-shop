@@ -212,7 +212,7 @@ describe('checkout.session.completed', () => {
         widthCm: 80,
         heightCm: 100,
         editionNumber: 1,
-        editionSize: 50,
+        editionSize: 25,
         priceCents: 45000,
         shippingCents: 6000,
         region: 'EU_UK',
@@ -258,10 +258,10 @@ describe('checkout.session.completed', () => {
     expect(mails.map((m) => m.to)).toEqual([OWNER, 'ana@example.com']);
     const [owner, collector] = mails;
     expect(owner.text).toContain('Calle Ejemplo 7');
-    expect(owner.text).toContain('12 / 50');
+    expect(owner.text).toContain('12 / 25');
     const id = orderId('cs_test_1');
     expect(owner.text).toContain(`${SITE}/api/certificate?id=${id}&key=${signKey(id, CERT_SECRET)}`);
-    expect(collector.text).toContain('12 / 50');
+    expect(collector.text).toContain('12 / 25');
     expect(collector.text).toContain(`${SITE}/collector?o=tok-1`);
     expect(collector.text).not.toContain('Calle Ejemplo');
     expect(collector.html).not.toContain('Calle Ejemplo');
@@ -574,7 +574,7 @@ describe('owner notification retry', () => {
     ownerDown = false;
     expect((await handleWebhook(body, header, deps)).status).toBe(200);
     expect(mails.map((m) => m.to)).toEqual(['ana@example.com', OWNER, 'ana@example.com']);
-    expect(mails[1].text).toContain('1 / 50');
+    expect(mails[1].text).toContain('1 / 25');
     expect(orders(store)[0].ownerNotifiedAt).toBe(NOW.toISOString());
     expect(store.created.size).toBe(1);
     expect((await store.load(LARGE)).sold).toBe(1);

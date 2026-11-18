@@ -30,7 +30,7 @@ describe('counterId', () => {
 describe('remaining', () => {
   it('subtracts sold and live reservations', () => {
     const c = counter(10, [{ reservationId: 'a', expiresAt: minutes(5).toISOString() }]);
-    expect(remaining(c, NOW)).toBe(39);
+    expect(remaining(c, NOW)).toBe(14);
   });
 
   it('ignores expired reservations', () => {
@@ -38,11 +38,11 @@ describe('remaining', () => {
       { reservationId: 'a', expiresAt: minutes(-1).toISOString() },
       { reservationId: 'b', expiresAt: NOW.toISOString() },
     ]);
-    expect(remaining(c, NOW)).toBe(40);
+    expect(remaining(c, NOW)).toBe(15);
   });
 
   it('never goes below zero', () => {
-    const c = counter(50, [{ reservationId: 'a', expiresAt: minutes(5).toISOString() }]);
+    const c = counter(25, [{ reservationId: 'a', expiresAt: minutes(5).toISOString() }]);
     expect(remaining(c, NOW)).toBe(0);
   });
 });
@@ -56,21 +56,21 @@ describe('reserveEdition', () => {
   });
 
   it('is sold out when sold plus live reservations reach the edition size', async () => {
-    const store = createFakeStore([counter(49, [{ reservationId: 'a', expiresAt: minutes(10).toISOString() }])]);
+    const store = createFakeStore([counter(24, [{ reservationId: 'a', expiresAt: minutes(10).toISOString() }])]);
     expect(await reserveEdition(store, ID, 'b', NOW)).toBe('sold-out');
   });
 
   it('lets an expired reservation free capacity and drops it', async () => {
-    const store = createFakeStore([counter(49, [{ reservationId: 'a', expiresAt: minutes(-1).toISOString() }])]);
+    const store = createFakeStore([counter(24, [{ reservationId: 'a', expiresAt: minutes(-1).toISOString() }])]);
     expect(await reserveEdition(store, ID, 'b', NOW)).toBe('reserved');
     const c = await store.load(ID);
     expect(c.reservations.map((r) => r.reservationId)).toEqual(['b']);
   });
 
-  it('never oversells under 60 concurrent reservations', async () => {
+  it('never oversells under 35 concurrent reservations', async () => {
     const store = createFakeStore();
     const results = await Promise.all(
-      Array.from({ length: 60 }, (_, i) => reserveEdition(store, ID, `r${i}`, NOW, RACE)),
+      Array.from({ length: 35 }, (_, i) => reserveEdition(store, ID, `r${i}`, NOW, RACE)),
     );
     expect(results.filter((r) => r === 'reserved')).toHaveLength(EDITION_SIZE);
     expect(results.filter((r) => r === 'sold-out')).toHaveLength(10);
@@ -115,19 +115,19 @@ describe('finalizeEdition', () => {
   });
 
   it('treats a redelivered order as processed even after the edition sold out', async () => {
-    const store = createFakeStore([counter(49)]);
-    expect(await finalizeEdition(store, ID, 'a', NOW, order('order-a'))).toEqual({ status: 'issued', editionNumber: 50 });
+    const store = createFakeStore([counter(24)]);
+    expect(await finalizeEdition(store, ID, 'a', NOW, order('order-a'))).toEqual({ status: 'issued', editionNumber: 25 });
 
     expect(await finalizeEdition(store, ID, 'a', NOW, order('order-a'))).toEqual({ status: 'already-processed' });
-    expect((await store.load(ID)).sold).toBe(50);
+    expect((await store.load(ID)).sold).toBe(25);
     expect(await finalizeEdition(store, ID, 'b', NOW, order('order-b'))).toEqual({ status: 'sold-out' });
     expect(store.created.size).toBe(1);
   });
 
-  it('is sold out at 50 sold and creates no order', async () => {
-    const store = createFakeStore([counter(50)]);
+  it('is sold out at 25 sold and creates no order', async () => {
+    const store = createFakeStore([counter(25)]);
     expect(await finalizeEdition(store, ID, 'a', NOW, order('order-a'))).toEqual({ status: 'sold-out' });
-    expect((await store.load(ID)).sold).toBe(50);
+    expect((await store.load(ID)).sold).toBe(25);
     expect(store.created.size).toBe(0);
   });
 
@@ -162,14 +162,14 @@ describe('finalizeEdition', () => {
   });
 
   it.each([2, 3])('settles %i concurrent redeliveries of the last unit as one issue', async (copies) => {
-    const store = createFakeStore([counter(49)]);
+    const store = createFakeStore([counter(24)]);
     const results = await Promise.all(
       Array.from({ length: copies }, () => finalizeEdition(store, ID, 'a', NOW, order('order-a'), RACE)),
     );
 
-    expect(results.filter((r) => r.status === 'issued')).toEqual([{ status: 'issued', editionNumber: 50 }]);
+    expect(results.filter((r) => r.status === 'issued')).toEqual([{ status: 'issued', editionNumber: 25 }]);
     expect(results.filter((r) => r.status === 'already-processed')).toHaveLength(copies - 1);
-    expect((await store.load(ID)).sold).toBe(50);
+    expect((await store.load(ID)).sold).toBe(25);
     expect(store.created.size).toBe(1);
   });
 });

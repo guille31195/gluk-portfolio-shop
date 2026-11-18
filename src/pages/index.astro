@@ -11,7 +11,7 @@ const middle = Math.floor(heroList.length / 2);
 // The two roads under the hero: see everything, or buy a piece.
 const artworks = await getAllArtworks();
 const roads = [
-  { href: '/portfolio', word: 'PORTFOLIO', count: artworks.length, note: 'Works' },
+  { href: '/work', word: 'WORK', count: artworks.length, note: 'Works' },
   {
     href: '/collect',
     word: 'COLLECT',
@@ -47,7 +47,7 @@ const roads = [
       <div class="hero-egg"><DataEgg /></div>
     </section>
 
-    <section class="roads" aria-label="Portfolio and collect">
+    <section class="roads" aria-label="Work and collect">
       <BrandField kind="veil" class="roads-field" />
       <RuptureRule weight="base" class="roads-rule" />
       <ul class="roads-list">

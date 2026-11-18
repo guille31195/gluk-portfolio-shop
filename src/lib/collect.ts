@@ -17,7 +17,7 @@ export function offersPrints(artwork: Pick<Artwork, 'medium'>): boolean {
 export function backLink(search: string): { href: string; label: string } {
   return new URLSearchParams(search).get('from') === 'collect'
     ? { href: '/collect', label: 'Collect' }
-    : { href: '/portfolio', label: 'Portfolio' };
+    : { href: '/work', label: 'Work' };
 }
 
 export function inquiryHref(interest: 'original' | 'print', title: string): string {

@@ -162,7 +162,7 @@ const ownerMails = (mails: Mail[]) => mails.filter((m) => m.to === OWNER);
 const collectorMails = (mails: Mail[]) => mails.filter((m) => m.to !== OWNER);
 
 describe('print purchase flow (offline)', () => {
-  it('(a) sells edition 1 / 50 and keeps the street address out of the collector side', async () => {
+  it('(a) sells edition 1 / 25 and keeps the street address out of the collector side', async () => {
     const t = setup();
     expect((await t.checkout('US', 'large')).status).toBe(200);
     const params = t.sessions.get('cs_test_1')!;
@@ -173,7 +173,7 @@ describe('print purchase flow (offline)', () => {
 
     expect((await t.deliver(t.completedEvent('cs_test_1'))).status).toBe(200);
     const [order] = t.orders();
-    expect(order).toMatchObject({ priceCents: 45000, shippingCents: 7000, editionNumber: 1, editionSize: 50, status: 'paid' });
+    expect(order).toMatchObject({ priceCents: 45000, shippingCents: 7000, editionNumber: 1, editionSize: 25, status: 'paid' });
 
     const owner = ownerMails(t.mails);
     const collector = collectorMails(t.mails);
@@ -182,7 +182,7 @@ describe('print purchase flow (offline)', () => {
     const certUrl = `${SITE}/api/certificate?id=${order._id}&key=${signKey(order._id, CERT_SECRET)}`;
     expect(owner[0].html).toContain(STREET);
     expect(owner[0].text).toContain(STREET);
-    expect(owner[0].text).toContain('1 / 50');
+    expect(owner[0].text).toContain('1 / 25');
     expect(owner[0].text).toContain(certUrl);
     expect(collector[0].to).toBe(BUYER);
     expect(collector[0].html + collector[0].text).not.toContain(STREET);
@@ -190,7 +190,7 @@ describe('print purchase flow (offline)', () => {
 
     const view = await handleOrder(token, t.byToken);
     expect(view.status).toBe(200);
-    expect(view.body).toMatchObject({ editionNumber: 1, editionSize: 50, priceCents: 45000, shippingCents: 7000, city: 'Springfield', country: 'US' });
+    expect(view.body).toMatchObject({ editionNumber: 1, editionSize: 25, priceCents: 45000, shippingCents: 7000, city: 'Springfield', country: 'US' });
     const exposed = JSON.stringify(view.body);
     for (const hidden of [STREET, '97477', BUYER, '+1 555 0100', 'Apt 3']) expect(exposed).not.toContain(hidden);
 
@@ -215,14 +215,14 @@ describe('print purchase flow (offline)', () => {
     expect(shipped.body).toMatchObject({ status: 'shipped', carrier: 'DHL Express', trackingNumber: '1234567890' });
   });
 
-  it('(b) 60 parallel checkouts and 60 payments yield exactly editions 1..50', async () => {
+  it('(b) 35 parallel checkouts and 35 payments yield exactly editions 1..25', async () => {
     const t = setup();
-    const replies = await Promise.all(Array.from({ length: 60 }, () => t.checkout('US', 'large')));
-    expect(replies.filter((r) => r.status === 200)).toHaveLength(50);
+    const replies = await Promise.all(Array.from({ length: 35 }, () => t.checkout('US', 'large')));
+    expect(replies.filter((r) => r.status === 200)).toHaveLength(25);
     const refused = replies.filter((r) => r.status !== 200);
     expect(refused).toHaveLength(10);
     for (const r of refused) expect(r).toEqual({ status: 409, body: { error: 'sold-out' } });
-    expect(t.sessions.size).toBe(50);
+    expect(t.sessions.size).toBe(25);
 
     // Ten extra payments carry holds the ledger does not know, as if paid after the hold was lost.
     const events = [
