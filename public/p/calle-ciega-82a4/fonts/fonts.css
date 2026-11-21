@@ -1,0 +1,21 @@
+@font-face {
+  font-family: 'DM Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(DMMono-normal-0.woff2) format('woff2');
+  }
+@font-face {
+  font-family: 'Fraunces';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(Fraunces-italic-1.woff2) format('woff2');
+  }
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(Fraunces-normal-2.woff2) format('woff2');
+  }

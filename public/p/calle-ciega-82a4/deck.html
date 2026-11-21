@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.png">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Calle Ciega · presentación para socios</title>
+<link rel="stylesheet" href="style.css">
+<style>
+html,body{height:100%;overflow:hidden;background:var(--noche)}
+#stage{position:fixed;inset:0;display:grid;place-items:center}
+#deck{width:1280px;height:720px;position:relative;transform-origin:center;flex:none}
+.s{position:absolute;inset:0;padding:60px 76px;display:none;overflow:hidden;background:var(--crema);color:var(--cobalto);font-family:var(--mono);font-size:17px;line-height:1.6}
+.s.on{display:block}
+.s.cobalto{background:var(--cobalto);color:var(--crema)}
+.s.noche{background:var(--noche);color:var(--crema)}
+.s.limon{background:var(--limon)}
+.eb{font-size:12.5px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:26px}
+.cobalto .eb,.noche .eb{color:var(--limon)}
+.s h2{font-family:var(--serif);font-weight:400;font-size:56px;line-height:1.02;letter-spacing:-.015em;max-width:20ch}
+.s h2 em{font-style:italic}
+.s h3{font-family:var(--serif);font-weight:400;font-size:27px;line-height:1.1;margin-bottom:8px}
+.s p{margin-top:14px}
+.n{position:absolute;right:76px;bottom:30px;font-size:11.5px;letter-spacing:.16em;opacity:.7}
+.cols{display:grid;gap:34px}
+.c2{grid-template-columns:1fr 1fr}.c3{grid-template-columns:repeat(3,1fr)}.c4{grid-template-columns:repeat(4,1fr)}
+.cell{border-top:1.5px solid currentColor;padding-top:16px}
+.cell p{font-size:15px;margin-top:6px;opacity:.9}
+.box{border:1.5px solid currentColor;border-radius:18px;padding:22px 24px}
+.ph{border:1.5px dashed currentColor;border-radius:14px;display:grid;place-items:center;text-align:center;font-size:13px;opacity:.65;padding:16px}
+.pic{border:1.5px solid currentColor;border-radius:18px;overflow:hidden;background:var(--crema);color:var(--cobalto)}
+.pic img{width:100%;height:100%;object-fit:cover}
+.mid{display:grid;align-items:center;height:100%;gap:48px}
+ul.b{padding-left:20px;margin-top:14px}ul.b li{margin:7px 0}
+.hl{font-family:var(--serif);font-style:italic;font-size:28px;line-height:1.1}
+.tb{width:100%;border-collapse:collapse;margin-top:22px;font-size:15px}
+.tb th,.tb td{border:1.5px solid currentColor;padding:7px 12px;text-align:left}
+.tb th{font-weight:500;background:color-mix(in srgb,var(--cobalto) 8%,transparent)}
+.tb td.r,.tb th.r{text-align:right}
+.sw{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:20px}
+.sw i{display:block;height:120px;border-radius:12px;border:1.5px solid currentColor}
+.sw span{display:block;font-size:12.5px;margin-top:8px}
+.tile{border:1.5px solid var(--cobalto);border-radius:14px;display:grid;place-items:center;position:relative;overflow:hidden;height:180px;background:var(--papel)}
+.tile .ink{width:46%;aspect-ratio:1}
+.tile span{position:absolute;left:12px;bottom:8px;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase}
+.coaster{width:210px;aspect-ratio:1;border-radius:50%;background:var(--crema);border:1.5px solid var(--cobalto);display:grid;place-items:center;box-shadow:8px 8px 0 var(--cobalto)}
+.label{width:200px;aspect-ratio:3/4.3;background:var(--crema);border:1.5px solid var(--cobalto);border-radius:6px 6px 100px 100px;padding:16px 14px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;box-shadow:8px 8px 0 var(--noche);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.menu{width:250px;background:var(--crema);border:1.5px solid var(--cobalto);padding:18px 18px 12px;transform:rotate(-2deg);box-shadow:8px 8px 0 var(--noche)}
+.menu h4{font-family:var(--serif);font-weight:400;font-style:italic;font-size:27px;line-height:1;margin-bottom:8px}
+.menu li{list-style:none;display:flex;gap:9px;font-size:13.5px;padding:5px 0;border-bottom:1px dashed var(--cobalto);line-height:1.3}
+.menu li::before{content:"";width:10px;height:10px;border:1.5px solid var(--cobalto);border-radius:50%;flex:none;margin-top:3px}
+.s::after{content:"";position:absolute;left:76px;bottom:26px;width:34px;height:40px;background:url(assets/simon.png) center/contain no-repeat}
+.s.cobalto::after,.s.noche::after{background-image:url(assets/simon-crema.png)}
+.s.nomark::after{display:none}
+.sq{position:absolute;left:124px;bottom:34px;font-family:var(--serif);font-style:italic;font-size:19px;line-height:1.2;max-width:760px}
+.s.nomark .sq{left:76px}
+.mb{display:grid;gap:12px;height:415px;margin-top:20px}
+.mb.five{grid-template-columns:1.1fr 1fr 1fr;grid-template-rows:1fr 1fr}
+.mb.five>:first-child{grid-row:span 2}
+.mb.six{grid-template-columns:1.1fr 1fr 1fr 1fr;grid-template-rows:1fr 1fr}
+.mb.six>:first-child{grid-row:span 2}.mb.six>:nth-child(6){grid-column:span 2}
+.mb img{width:100%;height:100%;object-fit:cover;border-radius:14px;border:1.5px solid currentColor;display:block;min-height:0}
+.mbn{font-size:13px;margin-top:10px;opacity:.85}
+.refs{display:flex;gap:26px;justify-content:center;align-items:flex-start;margin-top:20px}
+.refs figure{margin:0}
+.refs img{height:455px;width:auto;display:block;border-radius:14px;border:1.5px solid currentColor}
+.refs figcaption{font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-top:10px}
+.rend{display:grid;grid-template-columns:auto 1fr;gap:56px;align-items:center;height:100%}
+.rend img{height:548px;width:auto;display:block;border-radius:16px;border:1.5px solid currentColor}
+#hint{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--crema);opacity:.5;text-transform:uppercase}
+@page{size:1280px 720px;margin:0}
+@media print{
+  html,body{overflow:visible;height:auto;background:none}
+  #stage{position:static;display:block}
+  #deck{transform:none!important;width:auto;height:auto}
+  .s{display:block!important;position:relative;width:1280px;height:720px;break-after:page}
+  #hint{display:none}
+}
+</style>
+</head>
+<body>
+<div id="stage"><div id="deck">
+
+<!-- 1 PORTADA -->
+<div class="s cobalto nomark"><div class="mid" style="justify-items:center;text-align:center;align-content:center;gap:30px">
+  <div class="eb" style="margin:0">Wine bar · Charcutería · Juegos</div>
+  <i class="ink" style="--src:url(assets/lockup-crema.png);width:640px;aspect-ratio:2000/1054" role="img" aria-label="Calle Ciega"></i>
+  <div style="opacity:.8">Ciudad de México · 2026</div>
+</div></div>
+
+<!-- 2 SIGNIFICADO -->
+<div class="s">
+  <div class="eb">Significado</div>
+  <h2 style="max-width:16ch">“Una calle sin salida. <em>Una sobremesa sin fin.</em>”</h2>
+  <div class="cols c2" style="margin-top:40px;align-items:start">
+    <div><p style="margin-top:0">Calle Ciega es la calle sin salida a la que se llega por error y de la que nadie quiere irse. Y es la cata a ciegas: sin etiquetas, sin pena.</p>
+    <p>Igual que Lagniappe significa “un poquito extra”, el nombre cuenta la experiencia en una frase: entras por una copa y te quedas la noche.</p></div>
+    <div style="display:flex;gap:14px;justify-content:flex-end;align-items:center;padding-top:8px">
+      <i class="ink" style="--src:url(assets/wordmark.png);width:250px;aspect-ratio:1245/1050"></i>
+    </div>
+  </div>
+  <div class="sq">“Entré por error. Me quedé por el queso.” <span class="mono" style="font-style:normal;font-size:11px;letter-spacing:.16em;opacity:.7">— SIMÓN</span></div><div class="n"></div>
+</div>
+
+<!-- 3 ESPACIO PARA QUEDARSE -->
+<div class="s cobalto"><div class="mid" style="grid-template-columns:1.1fr 1fr">
+  <div><div class="eb">Calle Ciega es un espacio para quedarse</div>
+    <p style="font-family:var(--serif);font-size:27px;line-height:1.25;margin:0 0 20px">Nace de la idea de que una copa de vino no tiene por qué ser solemne.</p>
+    <p>Un lugar relajado y sin pretensiones, donde eliges tu botella de la pared, pides una tabla para compartir y retas a tus amigos a una partida de billar. Vino, charcutería, juegos y música en vivo: un espacio que todos sientan suyo.</p></div>
+  <div class="pic" style="height:470px"><img src="assets/patio.png" alt="Perros alrededor de una mesa en el patio"></div>
+</div><div class="n"></div></div>
+
+<!-- 4 SI FUERA PERSONA -->
+<div class="s">
+  <div class="eb">Si Calle Ciega fuera una persona</div>
+  <h2>Sería la más <em>astuta</em> de la mesa.<br>Y la más acogedora.</h2>
+  <div class="cols c2" style="margin-top:44px;row-gap:34px">
+    <div class="cell"><h3>Juega para ganar</h3><p>Te gana en backgammon y en ajedrez, y luego te ofrece la revancha.</p></div>
+    <div class="cell"><h3>Sabe, pero no presume</h3><p>Sabe de vino y de muchas otras cosas, pero nunca te lo restriega.</p></div>
+    <div class="cell"><h3>Conquista por el oído</h3><p>Su mejor arma es la plática: se sienta contigo, abre una botella y no te quieres ir.</p></div>
+    <div class="cell"><h3>Inteligencia juguetona</h3><p>Ingenio y humor antes que solemnidad. Cero pretensión.</p></div>
+  </div>
+  <div class="sq">“Y yo les gano en backgammon.” <span class="mono" style="font-style:normal;font-size:11px;letter-spacing:.16em;opacity:.7">— SIMÓN</span></div><div class="n"></div>
+</div>
+
+<!-- 5 SIMON -->
+<div class="s limon nomark"><div class="mid" style="grid-template-columns:.7fr 1.3fr">
+  <i class="ink" style="--src:url(assets/simon.png);height:560px;aspect-ratio:1058/1245;margin:auto"></i>
+  <div><div class="eb">Pero en realidad es un perro</div><h2>Simón.</h2>
+    <p style="font-size:19px;max-width:44ch">Perro de la colonia, de los de toda la vida. Ingenioso e inteligente, pero con los pies en la tierra, y siempre curioso: huele todo y pregunta todo. Es la cara de la casa, en la puerta, la etiqueta y la carta.</p>
+    <ul class="b"><li>Listo sin presumir: el humor viene con ceja, no con sermón</li><li>Cercano: te saluda como a un vecino</li><li>Curioso: no se pierde una conversación</li></ul></div>
+</div><div class="n"></div></div>
+
+<!-- 6 LOGO -->
+<div class="s">
+  <div class="eb">Identidad · logo</div>
+  <h2>Simón y el nombre, <em>siempre juntos.</em></h2>
+  <div class="cols" style="grid-template-columns:1.5fr 1fr 1fr;margin-top:34px;height:270px">
+    <div class="box" style="display:grid;place-items:center;background:var(--papel)"><i class="ink" style="--src:url(assets/lockup.png);width:100%;aspect-ratio:2000/1054"></i></div>
+    <div class="box" style="display:grid;place-items:center;background:var(--cobalto)"><i class="ink" style="--src:url(assets/lockup-crema.png);width:100%;aspect-ratio:2000/1054"></i></div>
+    <div class="box" style="display:grid;place-items:center;background:var(--limon)"><i class="ink" style="--src:url(assets/simon.png);width:62%;aspect-ratio:1058/1245"></i></div>
+  </div>
+  <div style="display:flex;gap:22px;margin-top:26px;align-items:center">
+    <i class="ink" style="--src:url(assets/roundel-1.png);width:58px;aspect-ratio:1"></i><i class="ink" style="--src:url(assets/roundel-2.png);width:58px;aspect-ratio:1"></i><i class="ink" style="--src:url(assets/roundel-3.png);width:58px;aspect-ratio:1"></i><i class="ink" style="--src:url(assets/roundel-4.png);width:58px;aspect-ratio:1"></i><i class="ink" style="--src:url(assets/roundel-5.png);width:58px;aspect-ratio:1"></i><i class="ink" style="--src:url(assets/roundel-6.png);width:58px;aspect-ratio:1"></i>
+    <span style="font-size:13px;margin-left:12px">Seis sellos de azulejo: sello, posavasos, mural y mesa.</span>
+  </div>
+  <div class="n"></div>
+</div>
+
+<!-- 7 INSPIRACION -->
+<div class="s">
+  <div class="eb">Inspiración</div>
+  <h2 style="font-size:46px">Lagniappe + Cellar Dog</h2>
+  <div class="cols c2" style="margin-top:30px">
+    <div class="box" style="background:var(--papel)"><div style="display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:130px;gap:6px;height:130px;margin-bottom:2px"><img src="assets/ref/lag-patio.jpg" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;border:1.5px solid var(--cobalto)"><img src="assets/ref/lag-neveras.jpg" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;border:1.5px solid var(--cobalto)"><img src="assets/ref/lag-musica.jpg" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;border:1.5px solid var(--cobalto)"></div><h3 style="margin-top:14px">Lagniappe · Miami</h3><p style="font-size:14px;margin-top:0">Casa vieja con patio de foquitos y árboles. Eliges tu botella de las neveras, armas tu tabla de quesos y charcutería y te sientas afuera. Música en vivo cada noche; sin reservaciones.</p><p style="font-size:13.5px;margin-top:8px"><b>Tomamos:</b> elegir y armar, y el patio. <b>No tiene:</b> juegos.</p></div>
+    <div class="box" style="background:var(--papel)"><div style="display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:130px;gap:6px;height:130px;margin-bottom:2px"><img src="assets/ref/cd-espacio.jpg" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;border:1.5px solid var(--cobalto)"><img src="assets/ref/cd-billar.jpg" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;border:1.5px solid var(--cobalto)"><img src="assets/ref/cd-shuffle.jpg" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;border:1.5px solid var(--cobalto)"></div><h3 style="margin-top:14px">Cellar Dog · Nueva York</h3><p style="font-size:14px;margin-top:0">Sótano de unos 9,000 pies² (≈ 835 m²) en el West Village. Billar, ping pong y shuffleboard por orden de llegada, juegos de mesa y jazz en vivo desde las 7 pm. Bar de barrio, social y accesible.</p><p style="font-size:13.5px;margin-top:8px"><b>Tomamos:</b> los juegos y la música. <b>No es:</b> bar de vino ni de mesa larga.</p></div>
+  </div>
+  <p class="mono" style="font-size:11px;opacity:.7;margin-top:12px">Fotos de lagniappehouse.com, novacircle.com y cellardog.net. Solo para uso interno del proyecto.</p><div class="sq">“Fui a visitar a mis primos de Miami y Nueva York.” <span class="mono" style="font-style:normal;font-size:11px;letter-spacing:.16em;opacity:.7">— SIMÓN</span></div><div class="n"></div>
+</div>
+
+<!-- 8 EXPERIENCIA -->
+<div class="s cobalto">
+  <div class="eb">La experiencia</div>
+  <h2>Vino, tabla, partida. <em>Y otra copa.</em></h2>
+  <div class="cols c3" style="margin-top:56px">
+    <div class="cell"><h3>Vino</h3><p>Pared de botellas para elegir y abrir en mesa, más una selección corta por copa.</p></div>
+    <div class="cell"><h3>Charcutería</h3><p>Tablas de quesos y carnes curadas para compartir. Cocina simple, producto bueno.</p></div>
+    <div class="cell"><h3>Juegos y música</h3><p>Billar, shuffleboard y backgammon, con música en vivo varias noches por semana.</p></div>
+  </div>
+  <div class="sq">“Una copa, una tabla, una partida. Lo demás es sobremesa.” <span class="mono" style="font-style:normal;font-size:11px;letter-spacing:.16em;opacity:.7">— SIMÓN</span></div><div class="n"></div>
+</div>
+
+<!-- 9 INSPIRACION ESPACIOS A -->
+<div class="s">
+  <div class="eb">Inspiración de espacios · mesas, plantas y sillas</div>
+  <div class="refs"><figure><img src="assets/pins/pin14.jpg" alt=""><figcaption>Mesas de mosaico</figcaption></figure><figure><img src="assets/pins/pin22.jpg" alt=""><figcaption>Plantas, mucha densidad</figcaption></figure><figure><img src="assets/pins/pin19.jpg" alt=""><figcaption>Sillas mixtas</figcaption></figure></div>
+  <p style="font-size:12.5px;margin-top:16px;opacity:.8">Referencias de nuestro tablero de Pinterest, completas y sin recorte. Solo para uso interno.</p>
+  <div class="n"></div>
+</div>
+
+<!-- 9 INSPIRACION ESPACIOS B -->
+<div class="s">
+  <div class="eb">Inspiración de espacios · botellas, color y piso</div>
+  <div class="refs"><figure><img src="assets/pins/pin20.jpg" alt=""><figcaption>Vitrina de botellas</figcaption></figure><figure><img src="assets/pins/pin23.jpg" alt=""><figcaption>Pared de botellas con luz</figcaption></figure><figure><img src="assets/pins/pin17.jpg" alt=""><figcaption>Color en mesas y pisos</figcaption></figure></div>
+  <p style="font-size:12.5px;margin-top:16px;opacity:.8">Paredes blancas con color: ver el render del patio de día. Referencias de Pinterest, solo para uso interno.</p>
+  <div class="n"></div>
+</div>
+
+<!-- MOODBOARD de día -->
+<div class="s">
+  <div class="eb">Moodboard · de día</div>
+  <h2 style="font-size:42px;max-width:none">Mosaico, sol y <em>terracota.</em></h2>
+  <div class="mb five"><img src="assets/pins/pin08.jpg" alt=""><img src="assets/pins/pin13.jpg" alt=""><img src="assets/pins/pin14.jpg" alt=""><img src="assets/pins/pin17.jpg" alt=""><img src="assets/pins/pin22.jpg" alt=""></div>
+  <p class="mbn mono">Mosaico, azul y blanco, terracota: el patio al sol, con el mismo idioma que nuestros sellos.</p>
+  <div class="n"></div>
+</div>
+
+<!-- MOODBOARD la tabla -->
+<div class="s">
+  <div class="eb">Moodboard · la tabla</div>
+  <h2 style="font-size:42px;max-width:none">Generosa, <em>sin orden.</em></h2>
+  <div class="mb five"><img src="assets/pins/pin03.jpg" alt=""><img src="assets/pins/pin01.jpg" alt=""><img src="assets/pins/pin02.jpg" alt=""><img src="assets/pins/pin06.jpg" alt=""><img src="assets/pins/pin11.jpg" alt=""></div>
+  <p class="mbn mono">Quesos, jamón, higos, burrata, aceitunas y pan. Mucha mesa y poca ceremonia: así debe verse una tabla de la casa.</p>
+  <div class="n"></div>
+</div>
+
+<!-- MOODBOARD refris y vitrina -->
+<div class="s">
+  <div class="eb">Moodboard · refris y vitrina</div>
+  <h2 style="font-size:42px;max-width:none">Autoservicio, <em>verde menta.</em></h2>
+  <div class="mb six"><img src="assets/pins/pin10.jpg" alt=""><img src="assets/pins/pin15.jpg" alt=""><img src="assets/pins/pin16.jpg" alt=""><img src="assets/pins/pin12.jpg" alt=""><img src="assets/pins/pin20.jpg" alt=""><img src="assets/pins/pin23.jpg" alt=""></div>
+  <p class="mbn mono">Refris de autoservicio, latas con stickers y paredes de botellas: aquí viven la cerveza y el vino.</p>
+  <div class="n"></div>
+</div>
+
+<!-- MOODBOARD de noche -->
+<div class="s">
+  <div class="eb">Moodboard · de noche</div>
+  <h2 style="font-size:42px;max-width:none">Luz ámbar, música <em>y una partida.</em></h2>
+  <div class="mb six"><img src="assets/pins/pin04.jpg" alt=""><img src="assets/pins/pin09.jpg" alt=""><img src="assets/pins/pin18.jpg" alt=""><img src="assets/pins/pin07.jpg" alt=""><img src="assets/pins/pin19.jpg" alt=""><img src="assets/pins/pin24.jpg" alt=""></div>
+  <p class="mbn mono">Jazz en vivo, lámparas de pantalla, shuffleboard y backgammon. Es el lado del bar: bajar la luz y quedarse.</p>
+  <div class="n"></div>
+</div>
+
+<!-- 10 COLOR Y ESPACIO -->
+<div class="s cobalto">
+  <div class="eb">Color y espacio</div>
+  <h2 style="font-size:50px">Verano europeo en plena ciudad.</h2>
+  <div class="sw">
+    <div><i style="background:var(--crema)"></i><span>Blanco cal<br>#F8EAD0</span></div>
+    <div><i style="background:#2441b8;border-color:var(--crema)"></i><span>Azul cobalto<br>#183397 (tinta)</span></div>
+    <div><i style="background:var(--terracota)"></i><span>Naranja terracota<br>#D87146</span></div>
+    <div><i style="background:var(--limon)"></i><span>Limón<br>#F8DF8F</span></div>
+    <div><i style="border-style:dashed;display:grid;place-items:center;font-size:12.5px;padding:10px;text-align:center">lo ponen las plantas</i><span>Verde planta</span></div>
+  </div>
+  <div class="cols c3" style="margin-top:34px;font-size:14.5px">
+    <p style="margin:0"><b>Paredes blancas</b> para que exploten los colores de los muebles.</p>
+    <p style="margin:0"><b>Paredes y pisos intervenidos</b>, con murales pintados por nosotros.</p>
+    <p style="margin:0"><b>Plantas por todos lados:</b> denso, casi selva.</p>
+  </div>
+  <div class="n"></div>
+</div>
+
+<!-- 11 MOBILIARIO -->
+<div class="s">
+  <div class="eb">Mobiliario</div>
+  <h2>Los muebles son el protagonista.</h2>
+  <div class="cols c3" style="margin-top:34px">
+    <div class="box" style="background:var(--papel);min-height:250px"><h3>Sillas</h3><p style="font-size:15px">Baratas, cómodas y chiquitas. De todos tipos, ninguna igual. Si llegan 12 amigos, que quepan.</p></div>
+    <div class="box" style="background:var(--papel);min-height:250px"><h3>Mesas</h3><p style="font-size:15px">Aquí sí invertimos: mesas de jardín de mosaico de piedritas, con epoxi y mucho color.</p></div>
+    <div class="box" style="background:var(--papel);min-height:250px"><h3>El mueble estrella</h3><p style="font-size:15px">Una vitrina con las botellas vacías más chingonas que nos hemos tomado.</p></div>
+  </div>
+  <p style="margin-top:26px">Vibe: picnic casual, pero muy cool.</p>
+  <div class="sq">“Ninguna silla es mía. Todas son mías.” <span class="mono" style="font-style:normal;font-size:11px;letter-spacing:.16em;opacity:.7">— SIMÓN</span></div><div class="n"></div>
+</div>
+
+<!-- 12 VINO Y CHELAS -->
+<div class="s limon">
+  <div class="eb">Vino y chelas</div>
+  <h2>Buen vino, a buen precio.</h2>
+  <div class="cols c2" style="margin-top:36px;row-gap:30px">
+    <div class="cell"><h3>De todo tipo</h3><p>Naturales, clásicos y de todo un poco: [___] etiquetas, por copa y por botella.</p></div>
+    <div class="cell"><h3>El punto dulce: ~$300–$800 MXN</h3><p>Ahí está la curaduría: vinos buenos con precio de origen razonable. Equivale a €15–40 a ≈ $20 MXN por euro; falta confirmar el tipo de cambio del día.</p></div>
+    <div class="cell"><h3>Refris de chelas</h3><p>Cervezas artesanales para quien no es de vino.</p></div>
+    <div class="cell"><h3>El reto: importar</h3><p>Traerlos, guardarlos y venderlos con buen margen. Buscamos un aliado experto: [___].</p></div>
+  </div>
+  <div class="sq">“El vino bueno no necesita sumiller. Necesita sobremesa.” <span class="mono" style="font-style:normal;font-size:11px;letter-spacing:.16em;opacity:.7">— SIMÓN</span></div><div class="n"></div>
+</div>
+
+<!-- 13 COCINA FRIA -->
+<div class="s"><div class="mid" style="grid-template-columns:1.1fr 1fr">
+  <div><div class="eb">Cocina fría</div><h2 style="font-size:50px">Arma tu tabla.</h2>
+    <ul class="b" style="font-size:16px"><li>Quesos y jamones de varios tipos</li><li>Uvas, higos y almendras</li><li>Pan, patés y untables</li><li>Mermeladas y mostazas dulces para personalizar</li><li>Lo más elaborado: ensalada de jitomate, queso y aceite de oliva</li></ul>
+    <p>Sin chef: cualquiera del staff la arma y te la lleva.</p></div>
+  <div class="pic" style="height:470px;padding:14px"><img src="assets/tabla.png" style="object-fit:contain" alt="Tabla de quesos con la pata de Simón"></div>
+</div><div class="sq">“El queso se comparte. Lo que se cae es mío.” <span class="mono" style="font-style:normal;font-size:11px;letter-spacing:.16em;opacity:.7">— SIMÓN</span></div><div class="n"></div></div>
+
+<!-- 14 CARTEL -->
+<div class="s cobalto"><div class="mid" style="grid-template-columns:1.5fr 1fr">
+  <div class="pic" style="border-radius:18px"><img src="assets/carteles.jpg" style="height:auto" alt="Carteles de la sobremesa"></div>
+  <div><div class="eb">Los amigos de Simón</div><h2 style="font-size:46px">Una mesa, vino, queso y dados.</h2><p style="font-size:15.5px">El cartel de la casa puede cambiar de reparto cada temporada y vivir en la calle, la carta y las bolsas.</p></div>
+</div><div class="n"></div></div>
+
+<!-- 15 JUEGOS -->
+<div class="s cobalto">
+  <div class="eb">Juegos</div>
+  <h2 style="font-size:46px;max-width:none">Una copa sabe mejor con una revancha.</h2>
+  <div class="cols c3" style="margin-top:26px;align-items:start">
+    <div class="box" style="background:color-mix(in srgb,var(--noche) 70%,transparent)"><i class="ink" style="--src:url(assets/roundel-6-crema.png);width:46px;aspect-ratio:1"></i><h3 style="margin-top:14px">Billar</h3><p style="font-size:14.5px;margin-top:6px">Mesa de 8 pies: pide un cuarto de unos 14 × 18 pies (≈ 4.3 × 5.5 m) para mover el taco. Es el juego que más espacio cuesta.</p><p style="font-size:12.5px;margin-top:8px;opacity:.85">En Cellar Dog se juega por orden de llegada y llegó a haber filas de 2 horas: pensar en lista de espera.</p></div>
+    <div class="box" style="background:color-mix(in srgb,var(--noche) 70%,transparent)"><i class="ink" style="--src:url(assets/roundel-2-crema.png);width:46px;aspect-ratio:1"></i><h3 style="margin-top:14px">Shuffleboard</h3><p style="font-size:14.5px;margin-top:6px">Larga y angosta: una mesa de 12 pies pide unos 18 pies (≈ 5.5 m) de largo contando los extremos. Va bien pegada a un muro.</p><p style="font-size:12.5px;margin-top:8px;opacity:.85">Referencia de tienda: $34,392–$42,990 MXN, mesa de madera de uso doméstico. Para bar hay que cotizar.</p></div>
+    <div class="box" style="background:color-mix(in srgb,var(--noche) 70%,transparent)"><i class="ink" style="--src:url(assets/roundel-5-crema.png);width:46px;aspect-ratio:1"></i><h3 style="margin-top:14px">Backgammon</h3><p style="font-size:14.5px;margin-top:6px">Casi no ocupa espacio: un tablero en cada mesa de mosaico y ya hay juego. Es el que ya aparece en nuestras ilustraciones.</p><p style="font-size:12.5px;margin-top:8px;opacity:.85">Va con ajedrez, dominó y cartas. [___] m² destinados a juegos.</p></div>
+  </div>
+  <p style="font-size:12.5px;margin-top:20px;opacity:.8">Medidas de fabricantes de mesas (recomendación de sala); falta confirmarlas contra el espacio real.</p>
+  <div class="sq">“Hago trampa, pero con elegancia.” <span class="mono" style="font-style:normal;font-size:11px;letter-spacing:.16em;opacity:.7">— SIMÓN</span></div><div class="n"></div>
+</div>
+
+<!-- 15b COMPARATIVO -->
+<div class="s">
+  <div class="eb">Lo que aprendimos de dos lugares reales</div>
+  <h2 style="font-size:40px;max-width:none">Lagniappe pone el vino. <em>Cellar Dog, los juegos.</em></h2>
+  <table class="tb" style="font-size:12.5px;margin-top:16px;line-height:1.35">
+    <tr><th style="width:12%"></th><th style="width:27%">Lagniappe · Miami</th><th style="width:30%">Cellar Dog · Nueva York</th><th>Calle Ciega</th></tr>
+    <tr><td><b>Modelo</b></td><td>Casa vieja con patio. Eliges botella de las neveras y armas tu tabla.</td><td>Sótano de jazz y juegos (≈ 9,000 pies² / 835 m²), bar de barrio.</td><td>Tienda al frente y patio: eliges vino, armas tu tabla, juegas.</td></tr>
+    <tr><td><b>Música</b></td><td>En vivo cada noche, 9 pm a medianoche: jazz, soul, blues.</td><td>Jazz en vivo desde las 7 pm todos los días.</td><td>En vivo, [___] noches por semana.</td></tr>
+    <tr><td><b>Juegos</b></td><td>Ninguno mencionado en las fuentes.</td><td>Billar, ping pong, shuffleboard y juegos de mesa; por orden de llegada.</td><td>Billar, shuffleboard y backgammon.</td></tr>
+    <tr><td><b>Comida</b></td><td>Tablas y parrilla sencilla: churrasco, pescado, choripán.</td><td>Botanas sencillas; las fuentes no coinciden.</td><td>Cocina fría, sin chef.</td></tr>
+    <tr><td><b>Entrada</b></td><td>Sin reservaciones. Cover no indicado.</td><td>Cover de $5 (dom–jue) y $10 (vie–sáb) según un solo medio; reservaciones sin confirmar.</td><td>[A definir]</td></tr>
+  </table>
+  <p style="font-size:11.5px;margin-top:12px;opacity:.8">Fuentes: lagniappehouse.com, likealocalguide.com, askthecity.com, cellardog.net, helpnewyork.com, p2bars.com. Datos de terceros sin verificar; confirmar antes de citar.</p>
+  <div class="n"></div>
+</div>
+
+<!-- JUEGOS EN CELLAR DOG -->
+<div class="s">
+  <div class="eb">Así se ven los juegos</div>
+  <h2 style="font-size:42px;max-width:none">Billar y shuffleboard <em>en un sótano con jazz.</em></h2>
+  <div class="mb six">
+    <img src="assets/ref/cd-billar.jpg" alt="">
+    <img src="assets/ref/cd-shuffle.jpg" alt="">
+    <img src="assets/ref/cd-shuffle2.jpg" alt="">
+    <img src="assets/ref/cd-jazz.jpg" alt="">
+    <img src="assets/ref/cd-espacio.jpg" alt="">
+    <img src="assets/pins/pin07.jpg" alt="" style="object-position:center 40%">
+  </div>
+  <p class="mbn mono">Cellar Dog, NYC: billar, shuffleboard y jazz. Backgammon: nuestro tablero de Pinterest. Solo uso interno.</p>
+  <div class="n"></div>
+</div>
+
+<!-- 16 MUSICA -->
+<div class="s">
+  <div class="eb">Música / programación</div>
+  <h2>Música en vivo, [___] noches por semana.</h2>
+  <table class="tb"><tr><th style="width:36%">Día</th><th>Programa</th></tr>
+  <tr><td>Martes</td><td>[Jazz trío]</td></tr><tr><td>Jueves</td><td>[Bossa / trova]</td></tr><tr><td>Viernes y sábado</td><td>[Banda en vivo + DJ de vinilos]</td></tr><tr><td>Domingo</td><td>[Torneo de billar / tarde de juegos]</td></tr></table>
+  <div class="sq">“Aullar está permitido los jueves.” <span class="mono" style="font-style:normal;font-size:11px;letter-spacing:.16em;opacity:.7">— SIMÓN</span></div><div class="n"></div>
+</div>
+
+<!-- 17 LOCACION -->
+<div class="s cobalto"><div class="mid" style="grid-template-columns:1.5fr 1fr">
+  <div style="display:grid;grid-template-columns:1.4fr 1fr;grid-template-rows:1fr 1fr;gap:14px;height:500px">
+    <div class="pic" style="grid-row:span 2"><img src="assets/sitio-2.jpg" alt="Entrada cubierta con la celosía iluminada"></div>
+    <div class="pic"><img src="assets/sitio-1.jpg" alt="Patio con la celosía al atardecer"></div>
+    <div class="pic"><img src="assets/sitio-3.jpg" alt="Muro de tabique y techumbre blanca"></div>
+  </div>
+  <div><div class="eb">Locación</div><h2 style="font-size:40px">[Calle y número]</h2>
+    <p>Colonia Juárez, CDMX<br>[___] m² · planta baja + patio<br>Renta: [$___ MXN] / mes</p>
+    <p style="font-size:14.5px;opacity:.85">Hoy es un estacionamiento con celosía de barro, muro de tabique y árboles al fondo. [Por qué esta zona: flujo, vecinos, vida nocturna]</p></div>
+</div><div class="sq">“Yo llegué primero. Pregunten a los vecinos.” <span class="mono" style="font-style:normal;font-size:11px;letter-spacing:.16em;opacity:.7">— SIMÓN</span></div><div class="n"></div></div>
+
+<!-- RENDER la tienda -->
+<div class="s noche"><div class="rend">
+  <img src="assets/renders/tienda.jpg" alt="Render de la tienda y el pasillo al atardecer con neveras de vino, mostrador y mesa larga">
+  <div><div class="eb">Renders · la tienda</div><h2 style="font-size:46px">La tienda, <em>con el patio al fondo.</em></h2>
+    <ul class="b" style="font-size:16px"><li>Mostrador de mármol y neveras de vidrio con vino.</li><li>Celosía de barro cubierta de jazmín.</li><li>Lámparas colgantes, foquitos y macetas con olivos.</li><li>Mesa larga con velas al fondo del pasillo.</li><li>Tapete sobre el piso pintado.</li></ul>
+    <p style="font-size:12.5px;opacity:.8;margin-top:18px">Render de concepto hecho con IA a partir de las fotos del sitio. No es proyecto ejecutivo ni tiene medidas.</p></div>
+</div><div class="n"></div></div>
+
+<!-- RENDER el patio de noche -->
+<div class="s noche"><div class="rend">
+  <img src="assets/renders/patio-noche.jpg" alt="Render del patio de noche con techo de vidrio, lámparas cálidas, billar y neveras encendidas">
+  <div><div class="eb">Renders · el patio de noche</div><h2 style="font-size:46px">El mismo patio, <em>con luz de sobremesa.</em></h2>
+    <ul class="b" style="font-size:16px"><li>Lámparas cálidas y foquitos; el vidrio se vuelve cielo.</li><li>La celosía y el tabique brillan en ámbar.</li><li>Neveras de cerveza encendidas junto al billar.</li><li>Mesas de mosaico con velas, sillones y plantas grandes.</li><li>Un vitral de neón al fondo.</li></ul>
+    <p style="font-size:12.5px;opacity:.8;margin-top:18px">Render de concepto hecho con IA a partir de las fotos del sitio. No es proyecto ejecutivo ni tiene medidas.</p></div>
+</div><div class="n"></div></div>
+
+<!-- RENDER el patio de día -->
+<div class="s noche"><div class="rend">
+  <img src="assets/renders/patio-dia.jpg" alt="Render del patio de día con techo de vidrio, mesas de mosaico, billar y shuffleboard">
+  <div><div class="eb">Renders · el patio de día</div><h2 style="font-size:46px">Un patio con luz de día, <em>y con ganas de quedarse.</em></h2>
+    <ul class="b" style="font-size:16px"><li>Celosía de barro y muro de tabique a la vista.</li><li>Techo de vidrio: luz natural y árboles en maceta.</li><li>Mesas de mosaico, sillones de piel y sillas que no combinan.</li><li>Billar y shuffleboard al fondo, sobre un tapete.</li><li>Barra con caja al fondo y neveras de vidrio.</li></ul>
+    <p style="font-size:12.5px;opacity:.8;margin-top:18px">Render de concepto hecho con IA a partir de las fotos del sitio. No es proyecto ejecutivo ni tiene medidas.</p></div>
+</div><div class="n"></div></div>
+
+<!-- 19 EN USO -->
+<div class="s">
+  <div class="eb">La marca en uso</div>
+  <h2 style="font-size:46px">Todo parece <em>de la misma mesa.</em></h2>
+  <div class="cols c3" style="margin-top:28px">
+    <div class="box" style="background:var(--limon);height:330px;display:grid;place-items:center"><div class="coaster"><i class="ink" style="--src:url(assets/roundel-5.png);width:150px;aspect-ratio:1"></i></div></div>
+    <div class="box" style="background:var(--papel);height:330px;display:grid;place-items:center"><div class="label"><span>Tinto · casa</span><i class="ink" style="--src:url(assets/simon.png);width:96px;aspect-ratio:1058/1245"></i><b style="font-family:var(--serif);font-weight:400;font-size:19px;line-height:1">CALLE<br>CIEGA</b></div></div>
+    <div class="box" style="background:var(--terracota);height:330px;display:grid;place-items:center;color:var(--cobalto)"><div class="menu"><h4>Arma tu tabla</h4><ul style="padding:0"><li>Un queso, el que te mire</li><li>Dos si es viernes</li><li>Algo curado</li><li>Higos, almendras</li><li>Pan, siempre</li></ul></div></div>
+  </div>
+  <p style="font-size:13px;margin-top:16px;opacity:.75">Maquetas de muestra hechas con las piezas aprobadas; los textos no son menú real.</p>
+  <div class="n"></div>
+</div>
+
+
+<!-- DISEÑOS: etiquetas -->
+<div class="s">
+  <div class="eb">La casa en botella</div>
+  <h2 style="font-size:44px;max-width:none">Tinto, blanco y naranja. <em>Todos con Simón.</em></h2>
+  <div class="pic" style="width:1000px;margin:26px auto 0"><img src="assets/dis-etiquetas.jpg" alt="Tres etiquetas de vino de la casa"></div>
+  <div class="sq">“Yo elijo por la etiqueta. Es un método como cualquiera.” <span class="mono" style="font-style:normal;font-size:11px;letter-spacing:.16em;opacity:.7">— SIMÓN</span></div><div class="n"></div>
+</div>
+
+<!-- DISEÑOS: posavasos -->
+<div class="s noche"><div class="mid" style="grid-template-columns:auto 1fr;gap:56px;justify-content:center">
+  <div class="pic" style="width:640px"><img src="assets/dis-posavasos.jpg" alt="Posavasos con los seis sellos"></div>
+  <div><div class="eb">Pequeñas cosas</div><h2 style="font-size:44px">Posavasos <em>para llevarse.</em></h2>
+    <p style="font-size:15.5px">Un sello de azulejo por posavasos: flor, greca, ola, estrella, sol y damero. Se pueden juntar, cambiar y coleccionar.</p></div>
+</div><div class="sq">“Los posavasos son para ignorar.” <span class="mono" style="font-style:normal;font-size:11px;letter-spacing:.16em;opacity:.7">— SIMÓN</span></div><div class="n"></div></div>
+
+<!-- DISEÑOS: carta -->
+<div class="s"><div class="mid" style="grid-template-columns:auto 1fr;gap:64px;justify-content:center">
+  <div class="pic" style="height:580px"><img src="assets/dis-menu.jpg" style="height:100%;width:auto" alt="Carta Arma tu tabla"></div>
+  <div><div class="eb">La carta</div><h2 style="font-size:46px">Arma tu tabla, <em>con lápiz.</em></h2>
+    <p>Una hoja A5 para marcar: un queso, algo curado, algo para acompañar y algo para tomar. Los precios van en pesos mexicanos y se llenan con la operadora.</p>
+    <p style="font-size:14px;opacity:.8">Textos de muestra; precios en blanco.</p></div>
+</div><div class="n"></div></div>
+
+<!-- 24 CIERRE -->
+<div class="s limon nomark"><div class="mid" style="justify-items:center;text-align:center;align-content:center;gap:26px">
+  <i class="ink" style="--src:url(assets/lockup.png);width:520px;aspect-ratio:2000/1054"></i>
+  <div class="eb" style="margin:0;letter-spacing:.3em">Salud.</div>
+  <div>Pablo Bailón · [teléfono] · [correo]</div>
+</div></div>
+
+</div></div>
+<div id="hint">← → para avanzar · F pantalla completa · Ctrl+P para PDF</div>
+<script>
+const slides=[...document.querySelectorAll(".s")],deck=document.getElementById("deck");
+slides.forEach((s,k)=>{const n=s.querySelector(".n");if(n)n.textContent=String(k+1).padStart(2,"0")});
+let i=Math.min(slides.length-1,Math.max(0,(parseInt(location.hash.slice(1))||1)-1));
+function show(n){i=Math.max(0,Math.min(slides.length-1,n));slides.forEach((s,k)=>s.classList.toggle("on",k===i));history.replaceState(null,"","#"+(i+1))}
+function fit(){deck.style.transform=`scale(${Math.min(innerWidth/1280,innerHeight/720)})`}
+addEventListener("resize",fit);fit();show(i);
+addEventListener("keydown",e=>{
+  if(["ArrowRight","PageDown"," ","Enter"].includes(e.key)){e.preventDefault();show(i+1)}
+  else if(["ArrowLeft","PageUp","Backspace"].includes(e.key)){e.preventDefault();show(i-1)}
+  else if(e.key==="Home")show(0);else if(e.key==="End")show(slides.length-1);
+  else if(e.key.toLowerCase()==="f"){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
+});
+document.getElementById("stage").addEventListener("click",e=>{show(e.clientX>innerWidth/2?i+1:i-1)});
+</script>
+</body>
+</html>

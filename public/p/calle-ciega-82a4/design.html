@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.png">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Calle Ciega · diseños de la casa</title>
+<link rel="stylesheet" href="style.css">
+<style>
+body{font-size:16px}
+.gal{max-width:1240px;margin:0 auto;padding:40px 32px 100px}
+.gal h1{font-weight:400;font-size:clamp(40px,6vw,76px);letter-spacing:-.02em;line-height:1}
+.gal .sub{margin:16px 0 40px;max-width:60ch}
+.item{margin-bottom:56px}
+.item .head{display:flex;justify-content:space-between;gap:20px;margin-bottom:10px}
+.frame{border:1.5px solid var(--cobalto);border-radius:18px;overflow:hidden;line-height:0}
+.ab{position:relative;overflow:hidden;background:var(--crema);color:var(--cobalto);font-family:var(--serif);transform-origin:0 0}
+.z{width:100%;aspect-ratio:var(--w)/var(--h);position:relative}
+.z>.ab{position:absolute;left:0;top:0}
+body.solo{margin:0;background:none}
+body.solo .gal{padding:0;max-width:none}
+body.solo .gal>h1,body.solo .gal>.sub,body.solo .item .head,body.solo .item:not(.on){display:none}
+body.solo .frame{border:0;border-radius:0}
+body.solo .z{width:var(--w);height:var(--h);aspect-ratio:auto}
+body.solo .z>.ab{transform:none!important}
+.ink{position:absolute}
+.abs{position:absolute}
+
+/* labels */
+.lab{position:absolute;top:70px;width:520px;height:760px;border:4px solid var(--ink,var(--cobalto));border-radius:260px 260px 30px 30px;background:var(--bg);color:var(--ink,var(--cobalto));display:flex;flex-direction:column;align-items:center;padding:56px 30px 36px;text-align:center}
+.lab .mono{font-size:15px;letter-spacing:.24em}
+.lab .name{font-size:50px;line-height:1;letter-spacing:.02em;margin-top:6px;margin-bottom:16px}.lab>*{flex:none}
+.lab .tag{font-style:italic;font-size:24px;margin-top:auto}
+.lab .var{font-size:34px;letter-spacing:-.01em}
+
+/* menu */
+.menu-ab{padding:80px 84px}
+.menu-ab h2{font-weight:400;font-size:112px;line-height:.9;letter-spacing:-.02em;margin-top:150px}
+.sec{margin-top:32px}
+.sec h3{font-weight:400;font-size:44px;line-height:1.3;font-style:italic;border-bottom:3px solid var(--cobalto);padding-bottom:8px;margin:0}
+.row{display:flex;gap:16px;align-items:baseline;padding:9px 0;border-bottom:2px dashed var(--cobalto);font-size:27px}
+.row i{width:20px;height:20px;border:3px solid var(--cobalto);border-radius:50%;flex:none;transform:translateY(3px)}
+.row b{font-weight:400;flex:1}
+.row small{font-family:var(--mono);font-size:19px;letter-spacing:.08em}
+
+/* coasters */
+.co{position:absolute;width:420px;height:420px;border-radius:50%;border:4px solid var(--cobalto);box-shadow:12px 12px 0 var(--cobalto);display:grid;place-items:center}
+.co>div{position:absolute}
+</style>
+</head>
+<body>
+<div class="gal">
+  <h1>Diseños de la casa</h1>
+  <p class="sub">Composiciones nuevas hechas con las piezas aprobadas: Simón, la letra, los seis sellos y los íconos. Son propuestas para iterar, no producción final.</p>
+
+  <div class="item" id="etiquetas" data-w="1900" data-h="900"><div class="head"><b>Etiquetas de la casa</b><span class="mono">1900 × 900</span></div><div class="frame"><div class="z" style="--w:1900;--h:900"><div class="ab" style="width:1900px;height:900px;background:#E9DCC4">
+    <div class="lab" style="left:80px;--bg:var(--crema)">
+      <i class="ink" style="--src:url(assets/roundel-1.png);width:96px;aspect-ratio:1;position:relative"></i>
+      <div class="mono" style="margin-top:14px">Vino de la casa</div>
+      <i class="ink" style="--src:url(assets/simon.png);width:250px;aspect-ratio:1058/1245;position:relative;margin:14px 0 6px"></i>
+      <div class="name">CALLE<br>CIEGA</div><div class="var">Tinto</div><div class="tag">Para sobremesas largas</div></div>
+    <div class="lab" style="left:690px;--bg:var(--limon)">
+      <i class="ink" style="--src:url(assets/roundel-5.png);width:96px;aspect-ratio:1;position:relative"></i>
+      <div class="mono" style="margin-top:14px">Vino de la casa</div>
+      <i class="ink" style="--src:url(assets/simon.png);width:250px;aspect-ratio:1058/1245;position:relative;margin:14px 0 6px"></i>
+      <div class="name">CALLE<br>CIEGA</div><div class="var">Blanco</div><div class="tag">Para tardes sin prisa</div></div>
+    <div class="lab" style="left:1300px;--bg:var(--terracota);--ink:var(--crema)">
+      <i class="ink" style="--src:url(assets/roundel-3-crema.png);width:96px;aspect-ratio:1;position:relative"></i>
+      <div class="mono" style="margin-top:14px">Vino de la casa</div>
+      <i class="ink" style="--src:url(assets/simon-crema.png);width:250px;aspect-ratio:1058/1245;position:relative;margin:14px 0 6px"></i>
+      <div class="name">CALLE<br>CIEGA</div><div class="var">Naranja</div><div class="tag">Para cuando ya no hay salida</div></div>
+  </div></div></div></div>
+
+  <div class="item" id="menu" data-w="1050" data-h="1480"><div class="head"><b>Carta · Arma tu tabla</b><span class="mono">A5 · 1050 × 1480</span></div><div class="frame"><div class="z" style="--w:1050;--h:1480"><div class="ab menu-ab" style="width:1050px;height:1480px">
+    <i class="ink" style="--src:url(assets/lockup.png);left:84px;top:70px;width:300px;aspect-ratio:2000/1054"></i>
+    <i class="ink" style="--src:url(assets/tabla.png);right:40px;top:30px;width:430px;aspect-ratio:1"></i>
+    <h2>Arma<br><em>tu tabla.</em></h2>
+    <div class="sec"><h3>Un queso</h3>
+      <div class="row"><i></i><b>El suave, para empezar bien</b><small>$ ___ MXN</small></div>
+      <div class="row"><i></i><b>El curado, para quedarte</b><small>$ ___ MXN</small></div>
+      <div class="row"><i></i><b>El azul, para los valientes</b><small>$ ___ MXN</small></div></div>
+    <div class="sec"><h3>Algo curado</h3>
+      <div class="row"><i></i><b>Jamón, el que te mire</b><small>$ ___ MXN</small></div>
+      <div class="row"><i></i><b>Algo con humo</b><small>$ ___ MXN</small></div></div>
+    <div class="sec"><h3>Para acompañar</h3>
+      <div class="row"><i></i><b>Higos, uvas, almendras</b><small>$ ___ MXN</small></div>
+      <div class="row"><i></i><b>Pan, siempre</b><small>$ ___ MXN</small></div>
+      <div class="row"><i></i><b>Mermelada de la casa</b><small>$ ___ MXN</small></div></div>
+    <div class="sec"><h3>Para tomar</h3>
+      <div class="row"><i></i><b>Una copa de la casa</b><small>$ ___ MXN</small></div>
+      <div class="row"><i></i><b>La botella de la pared</b><small>$ ___ MXN</small></div>
+      <div class="row"><i></i><b>Una chela del refri</b><small>$ ___ MXN</small></div></div>
+    <div class="abs mono" style="left:84px;bottom:60px;font-size:19px">Se marca con lápiz. Simón no juzga.</div>
+    <i class="ink" style="--src:url(assets/simon.png);right:84px;bottom:36px;width:120px;aspect-ratio:1058/1245"></i>
+  </div></div></div></div>
+
+  <div class="item" id="posavasos" data-w="1500" data-h="1000"><div class="head"><b>Posavasos · seis sellos</b><span class="mono">1500 × 1000</span></div><div class="frame"><div class="z" style="--w:1500;--h:1000"><div class="ab" style="width:1500px;height:1000px;background:#E9DCC4" id="pos"></div></div></div></div>
+
+  <div class="item" id="patron" data-w="1600" data-h="1600"><div class="head"><b>Patrón repetible</b><span class="mono">1600 × 1600 · se repite en mosaico</span></div><div class="frame"><div class="z" style="--w:1600;--h:1600"><div class="ab" style="width:1600px;height:1600px;background:url(assets/patron-tile.png) 0 0/800px 800px"></div></div></div></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id), svgNS="http://www.w3.org/2000/svg";
+const img=(n,x,y,w,h)=>`<image href="assets/${n}.png" x="${x}" y="${y}" width="${w}" height="${h??w}"/>`;
+const C="#183397",K="#F8EAD0",P="#FCF2DF",L="#F8DF8F",T="#D87146",N="#0F1D63";
+
+/* posavasos */
+(function(){
+  const cfg=[[K,"roundel-1",""],[L,"roundel-5",""],[C,"roundel-4","-crema"],[T,"roundel-3","-crema"],[P,"roundel-6",""],[N,"roundel-2","-crema"]];
+  let h="";cfg.forEach((c,i)=>{const x=80+(i%3)*470,y=70+Math.floor(i/3)*470;
+    h+=`<div class="co" style="left:${x}px;top:${y}px;background:${c[0]}"><i class="ink" style="--src:url(assets/${c[1]}${c[2]}.png);left:70px;top:70px;width:280px;height:280px"></i></div>`});
+  $("pos").innerHTML=h;
+})();
+
+/* solo mode for exports: design.html?d=etiquetas */
+(function(){const d=new URLSearchParams(location.search).get("d");if(!d)return;
+  document.body.classList.add("solo");const it=$(d);it.classList.add("on");
+  it.style.setProperty("--w",it.dataset.w+"px");it.style.setProperty("--h",it.dataset.h+"px");
+  it.querySelector(".z").style.setProperty("--w",it.dataset.w+"px");it.querySelector(".z").style.setProperty("--h",it.dataset.h+"px");})();
+/* gallery: scale artboards to fit their frame */
+(function(){if(new URLSearchParams(location.search).get("d"))return;
+  function fit(){document.querySelectorAll(".item").forEach(it=>{const z=it.querySelector(".z"),ab=z.firstElementChild;const k=z.clientWidth/it.dataset.w;ab.style.transform=`scale(${k})`;z.style.height=(it.dataset.h*k)+"px"})}
+  addEventListener("resize",fit);fit();})();
+</script>
+</body>
+</html>
