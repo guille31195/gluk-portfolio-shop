@@ -1,39 +1,30 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="robots" content="noindex, nofollow">
-<title>Juan Carlos — GLUK</title>
-<link rel="icon" href="/favicon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<!doctype html><html><head><meta charset=utf8><meta name="robots" content="noindex, nofollow"><title>Juan Carlos — GLUK</title><link rel="icon" href="/favicon.png"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=Karla:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     color-scheme:dark;
-    --black:#1e1619;
-    --paper:#f1eee8;
-    --muted:rgba(241,238,232,.62);
-    --line:rgba(241,238,232,.16);
-    --orange:#c34f05;
-    --blue:#0c89d5;
-    --deep:#011458;
-    --gutter:clamp(18px,4.5vw,64px);
-    --display:'Archivo',system-ui,-apple-system,sans-serif;
+    --ink:#120e0d;
+    --paper:#f4efe6;
+    --muted:rgba(244,239,230,.64);
+    --line:rgba(244,239,230,.14);
+    --ember:#c34f05;
+    --ember-soft:rgba(195,79,5,.5);
+    --violet:#463356;
+    --label:#efe8dc;
+    --label-ink:#1b1513;
+    --label-muted:rgba(27,21,19,.62);
     --sans:'Karla',system-ui,-apple-system,sans-serif;
-    --ease:cubic-bezier(.77,0,.18,1);
+    --display:'Archivo',system-ui,-apple-system,sans-serif;
   }
   *{box-sizing:border-box;}
-  html{background:var(--black);}
   body{
     margin:0;
-    background:var(--black);
+    background:var(--ink);
     color:var(--paper);
     font-family:var(--sans);
     font-size:17px;
     line-height:1.6;
     -webkit-font-smoothing:antialiased;
-    overflow-x:clip;
   }
   body::before{
     content:'';
@@ -42,19 +33,25 @@
     z-index:-1;
     pointer-events:none;
     background:
-      radial-gradient(70% 55% at 0% 100%, rgba(195,79,5,.22), transparent 65%),
-      radial-gradient(60% 50% at 100% 0%, rgba(1,20,88,.55), transparent 70%);
+      radial-gradient(120% 90% at 12% 6%, rgba(70,51,86,.55), transparent 60%),
+      radial-gradient(90% 70% at 90% 96%, rgba(195,79,5,.16), transparent 55%),
+      var(--ink);
   }
-  h1,h2,p,figure{margin:0;}
-  .page{padding-inline:var(--gutter);}
-  .top{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:16px;
-    height:88px;
+  h1,h2,h3,p,dl,figure{margin:0;}
+
+  .page{
+    max-width:1200px;
+    margin:0 auto;
+    padding-inline:clamp(16px,5vw,64px);
+    padding-block:clamp(20px,4vw,40px) 0;
+    overflow-x:clip;
   }
-  .logo{height:22px;width:auto;display:block;opacity:.92;}
+  .logo{
+    display:block;
+    height:22px;
+    width:auto;
+    opacity:.92;
+  }
   .eyebrow{
     font-weight:600;
     font-size:12px;
@@ -64,134 +61,205 @@
     color:var(--muted);
   }
 
-  /* Hero: ordered grid, one rupture */
+  /* Hero */
   .hero{
-    position:relative;
     display:grid;
-    grid-template-columns:minmax(0,5fr) minmax(0,7fr);
+    grid-template-columns:minmax(0,5fr) minmax(0,6fr);
+    gap:clamp(28px,6vw,96px);
     align-items:center;
-    min-height:calc(100svh - 88px);
-    padding-block:8px 48px;
+    padding-block:clamp(36px,6vw,72px) clamp(44px,7vw,88px);
   }
-  .name{
-    position:relative;
-    z-index:2;
+  .figure-col{
     grid-column:1;
     grid-row:1;
-    font-family:var(--display);
-    font-weight:800;
-    font-size:clamp(52px,10.5vw,176px);
-    line-height:.88;
-    letter-spacing:-.01em;
-    text-transform:uppercase;
-    white-space:nowrap;
-    text-shadow:0 2px 30px rgba(0,0,0,.45);
-    animation:rise 1.1s var(--ease) .15s both;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
   }
-  .name span{display:block;}
-  .name span:last-child{position:relative;}
-  .name span:last-child::after{
-    content:'';
-    position:absolute;
-    left:calc(-1 * var(--gutter));
-    width:100vw;
-    bottom:-.06em;
-    height:5px;
-    background:url(/brand/rupture-rule.webp) center/cover no-repeat;
-    transform-origin:left center;
-    animation:draw 1.6s var(--ease) 1.2s both;
-  }
-  .figure{
+  .text-col{
     grid-column:2;
     grid-row:1;
-    justify-self:end;
-    width:min(calc(100% + var(--gutter)), calc((100svh - 120px) * .728));
-    margin-right:calc(-1 * var(--gutter));
-    aspect-ratio:1332/1830;
-    position:relative;
-    animation:open 2.1s var(--ease) .35s both;
+    min-width:0;
   }
-  .figure img{
+  .frame{
+    position:relative;
+    width:min(100%, calc(76vh * .728));
+  }
+  .frame img{
     display:block;
     width:100%;
-    height:100%;
-    object-fit:cover;
+    height:auto;
+    border:1px solid var(--line);
+    box-shadow:0 30px 80px rgba(0,0,0,.55);
     cursor:zoom-in;
-    box-shadow:0 40px 100px rgba(0,0,0,.6);
-    animation:settle 2.6s var(--ease) .35s both;
   }
-  .rupture{display:none;}
-  @keyframes open{from{clip-path:inset(100% 0 0 0);}to{clip-path:inset(0 0 0 0);}}
-  @keyframes settle{from{transform:scale(1.08);}to{transform:scale(1);}}
-  @keyframes rise{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:none;}}
-  @keyframes draw{from{transform:scaleX(0);}to{transform:scaleX(1);}}
-
-  /* Wall label */
-  .meta{
-    display:grid;
-    grid-template-columns:repeat(3,auto);
-    justify-content:space-between;
-    gap:12px 24px;
-    border-top:1px solid var(--line);
-    padding-block:22px;
-  }
-  .meta p{font-size:15px;color:var(--muted);}
-  .meta p strong{display:block;font-weight:600;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--paper);margin-bottom:2px;}
-
-  /* Process */
-  .process{
-    border-top:1px solid var(--line);
-    padding-block:clamp(36px,6vw,80px);
-  }
-  .process[hidden]{display:none;}
-  .process h2{
+  .frame .numeral{
+    position:absolute;
+    top:-.6em;
+    left:-.3em;
     font-family:var(--display);
     font-weight:800;
-    font-size:clamp(34px,6vw,84px);
+    font-size:clamp(64px,11vw,132px);
     line-height:1;
+    color:var(--ember);
+    text-shadow:0 2px 24px rgba(0,0,0,.5);
+    pointer-events:none;
+    user-select:none;
+  }
+  .zoom-tip{
+    font-size:11px;
+    letter-spacing:.18em;
     text-transform:uppercase;
-    margin-bottom:clamp(20px,3vw,36px);
+    color:var(--muted);
   }
-  .process video{
-    display:block;
-    width:100%;
-    max-height:82svh;
-    background:#000;
-    box-shadow:0 30px 80px rgba(0,0,0,.55);
+  .name{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:clamp(30px,4vw,64px);
+    line-height:1.02;
+    letter-spacing:.005em;
+    text-transform:uppercase;
+    text-wrap:balance;
+    margin-block:20px 22px;
+    overflow-wrap:break-word;
   }
+  .lead{
+    font-size:clamp(18px,2vw,22px);
+    line-height:1.5;
+    max-width:34ch;
+    margin-bottom:34px;
+  }
+
+  /* Museum wall label */
+  .label{
+    background:var(--label);
+    color:var(--label-ink);
+    padding:22px 24px 24px;
+    max-width:430px;
+    border-radius:2px;
+  }
+  .label-top{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-weight:600;
+    font-size:11px;
+    line-height:1.3;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--label-muted);
+    margin-bottom:18px;
+  }
+  .red-dot{
+    width:14px;
+    height:14px;
+    flex:none;
+    border-radius:50%;
+    background:var(--ember);
+    border:0;
+    padding:0;
+    cursor:pointer;
+    box-shadow:0 0 0 4px rgba(195,79,5,.18);
+  }
+  .red-dot:focus-visible{outline:2px solid var(--label-ink);outline-offset:3px;}
+  .label .artist{
+    font-weight:600;
+    font-size:14px;
+    letter-spacing:.03em;
+    color:var(--label-muted);
+  }
+  .label .work{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:clamp(20px,2.4vw,26px);
+    line-height:1.1;
+    text-transform:uppercase;
+    text-wrap:balance;
+    margin-block:6px 14px;
+  }
+  .label .meta{
+    font-size:15px;
+    line-height:1.55;
+    padding-bottom:14px;
+  }
+  .label .collection{
+    font-size:14px;
+    line-height:1.5;
+    border-top:1px solid rgba(27,21,19,.2);
+    padding-top:14px;
+  }
+  .label .collection strong{font-weight:600;}
+
+  /* Sections */
+  .section{
+    display:grid;
+    grid-template-columns:minmax(0,5fr) minmax(0,6fr);
+    gap:clamp(28px,6vw,96px);
+    border-top:1px solid var(--line);
+    padding-block:clamp(36px,6vw,72px);
+  }
+  .statement p{
+    font-size:clamp(17px,1.9vw,20px);
+    line-height:1.7;
+    max-width:62ch;
+    margin-bottom:1.2em;
+  }
+  .statement p:first-child::first-letter{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:2.6em;
+    float:left;
+    line-height:.85;
+    padding-right:10px;
+    margin-top:4px;
+    color:var(--ember);
+  }
+  .care{display:grid;gap:22px;max-width:62ch;}
+  .care > div + div{border-top:1px solid var(--line);padding-top:22px;}
+  .care h3{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:14px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  .care p{color:var(--muted);}
 
   .thanks{
     border-top:1px solid var(--line);
-    padding-block:clamp(56px,9vw,120px);
+    padding-block:clamp(48px,8vw,104px);
   }
   .thanks p{
     font-family:var(--display);
     font-weight:800;
-    font-size:clamp(34px,6.4vw,92px);
-    line-height:1;
+    font-size:clamp(34px,6vw,76px);
+    line-height:1.02;
     text-transform:uppercase;
     text-wrap:balance;
   }
-  .thanks p span{color:var(--orange);}
+  .thanks p span{color:var(--ember);}
+
   .foot{
     border-top:1px solid var(--line);
-    padding-block:28px 40px;
+    padding-block:32px clamp(28px,5vw,48px);
     display:flex;
     justify-content:space-between;
+    align-items:center;
     gap:14px 24px;
     flex-wrap:wrap;
     color:var(--muted);
     font-size:13px;
     letter-spacing:.03em;
   }
-  .foot a{color:var(--muted);text-decoration:none;}
 
   /* Zoom */
   .zoom{
     position:fixed;
     inset:0;
     z-index:70;
-    background:rgba(14,10,11,.97);
+    background:rgba(8,6,5,.96);
     display:flex;
     overflow:auto;
     opacity:0;
@@ -200,83 +268,251 @@
     cursor:zoom-out;
   }
   .zoom.open{opacity:1;pointer-events:auto;}
-  .zoom img{max-width:none;width:min(200vw,1500px);display:block;margin:auto;}
+  .zoom img{
+    max-width:none;
+    width:min(200vw,1162px);
+    display:block;
+    margin:auto;
+  }
+  .zoom span{
+    position:fixed;
+    left:50%;
+    bottom:calc(20px + env(safe-area-inset-bottom, 0px));
+    transform:translateX(-50%);
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--muted);
+    pointer-events:none;
+  }
+  .confetti{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    z-index:60;
+  }
 
   @media (max-width:820px){
-    .hero{grid-template-columns:minmax(0,1fr);align-items:start;gap:28px;min-height:0;padding-block:12px 36px;}
-    .name{grid-column:1;grid-row:1;font-size:clamp(52px,17vw,120px);}
-    .figure{
-      grid-column:1;
-      grid-row:2;
-      width:calc(100% + var(--gutter) * 2);
-      margin-inline:calc(-1 * var(--gutter));
-    }
-    .name span:last-child::after{display:none;}
-    .rupture{
-      display:block;
-      position:absolute;
-      left:calc(-1 * var(--gutter));
-      right:calc(-1 * var(--gutter));
-      bottom:36px;
-      height:5px;
-      background:url(/brand/rupture-rule.webp) center/cover no-repeat;
-      pointer-events:none;
-    }
-    .meta{grid-template-columns:1fr;}
+    .hero,.section{grid-template-columns:minmax(0,1fr);}
+    .text-col{grid-column:1;grid-row:1;}
+    .figure-col{grid-column:1;grid-row:2;}
+    .frame{width:min(100%, calc(70vh * .728));}
+    .frame .numeral{left:-.1em;}
+    .name{font-size:clamp(30px,10vw,64px);}
+    .lead{max-width:none;}
+    .label{max-width:none;}
   }
-  @media (prefers-reduced-motion:reduce){
-    .name,.figure,.figure img,.name span:last-child::after{animation:none!important;}
-  }
+
+  /* Reveal: painting opens upward */
+  .frame{animation:open 2.1s cubic-bezier(.77,0,.18,1) .3s both;}
+  .frame img{animation:settle 2.6s cubic-bezier(.77,0,.18,1) .3s both;}
+  @keyframes open{from{clip-path:inset(100% 0 0 0);}to{clip-path:inset(0 0 0 0);}}
+  @keyframes settle{from{transform:scale(1.07);}to{transform:scale(1);}}
+  .accent{display:block;width:96px;height:4px;margin:0 0 22px;background:url(/brand/rupture-rule.webp) left center/auto 100% no-repeat;}
+
+  /* Brief and palette */
+  .brief{display:grid;gap:0;max-width:62ch;}
+  .item{display:grid;gap:8px;padding-block:22px;border-top:1px solid var(--line);}
+  .item:first-child{border-top:0;padding-top:0;}
+  .item .ask{font-weight:600;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+  .item .say{font-family:var(--display);font-weight:800;font-size:clamp(20px,2.4vw,28px);line-height:1.15;text-wrap:balance;}
+  .songs{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:4px;font-size:16px;}
+  .songs li{display:flex;justify-content:space-between;gap:16px;}
+  .songs li span:last-child{color:var(--muted);}
+  .gauge{width:100%;max-width:340px;display:block;margin-top:10px;}
+  .gauge text{font-family:var(--sans);}
+  .swatches{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:6px;}
+  .swatches.eight{grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;}
+  .swatch{display:grid;gap:6px;font-size:12px;letter-spacing:.04em;color:var(--muted);}
+  .swatch b{display:block;aspect-ratio:1;border:1px solid var(--line);}
+  .swatch em{font-style:normal;color:var(--paper);font-weight:600;}
+  .palette{display:grid;gap:30px;max-width:62ch;}
+  .palette h3{font-weight:600;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+  .ref{display:grid;gap:12px;max-width:340px;}
+  .ref img{display:block;width:100%;height:auto;border:1px solid var(--line);}
+  .process[hidden]{display:none!important;}
+  .process video{display:block;width:100%;max-height:82vh;background:#000;box-shadow:0 30px 80px rgba(0,0,0,.55);}
+  .section.process{display:block;}
+  .section.process .eyebrow{margin-bottom:20px;}
+  @media (max-width:560px){.swatches.eight{grid-template-columns:repeat(4,minmax(0,1fr));}}
+  @media (prefers-reduced-motion:reduce){.frame,.frame img{animation:none!important;}}
 </style>
-</head>
-<body>
+
 <div class="page">
-  <header class="top">
-    <img class="logo" src="img/wordmark-white.png" alt="GLUK">
-    <span class="eyebrow">Commission · 2026</span>
-  </header>
+  <img class="logo" src="img/logo-white.png" alt="GLUK">
 
   <section class="hero">
-    <h1 class="name"><span>Juan</span><span>Carlos</span><span>Feo</span></h1>
-    <figure class="figure">
-      <img id="art" src="img/painting.jpg" alt="Oil painting: a surfer seated on his board against a yellow wall, between blue, red and burgundy planes, with a framed sky above and the sea beyond" width="1332" height="1830">
+    <div class="text-col">
+      <p class="eyebrow">Your commission</p>
+      <h1 class="name">Juan Carlos Feo</h1>
+      <span class="accent" aria-hidden="true"></span>
+      <p class="lead">Your painting is finished.</p>
+
+      <div class="label">
+        <div class="label-top">
+          <button class="red-dot" id="dot" type="button" aria-label="Celebrate again"></button>
+          <span>Finished, November 2026</span>
+        </div>
+        <p class="artist">GLUK (Guillermo Carrasquero)</p>
+        <p class="meta">2026<br>Oil on canvas</p>
+        <p class="collection">Commissioned by <strong>Juan Carlos Feo</strong></p>
+      </div>
+    </div>
+
+    <figure class="figure-col">
+      <div class="frame">
+        <img id="art" src="img/painting.jpg" alt="Oil painting: a surfer sits on his board against a yellow wall between blue, red and burgundy planes, with a framed sky above and the sea beyond." width="1332" height="1830">
+      </div>
+      <figcaption class="zoom-tip">Click the painting to zoom</figcaption>
     </figure>
-    <span class="rupture" aria-hidden="true"></span>
   </section>
 
-  <div class="meta">
-    <p><strong>Artist</strong>GLUK (Guillermo Carrasquero)</p>
-    <p><strong>Medium</strong>Oil on canvas</p>
-    <p><strong>Year</strong>2026</p>
-  </div>
-
-  <section class="process" id="process" hidden>
-    <h2>Process</h2>
+  <section class="section process" id="process" hidden>
+    <p class="eyebrow">Process</p>
     <video id="vid" controls playsinline preload="metadata" poster="img/painting.jpg">
       <source src="process.mp4" type="video/mp4">
     </video>
   </section>
 
+  <section class="section">
+    <p class="eyebrow">The brief</p>
+    <div class="brief">
+      <div class="item"><p class="ask">Symbolism</p><p class="say">Open. Above all the noise of the day to day. Elevated. Flowy.</p></div>
+      <div class="item"><p class="ask">Time of day</p><p class="say">Sunset.</p></div>
+      <div class="item"><p class="ask">If it were a song</p><p class="say">Smooth, cool vibe.</p>
+        <ul class="songs"><li><span>Hans Zimmer</span><span>score</span></li><li><span>Lovely Day</span><span>Bill Withers</span></li><li><span>Free Bird</span><span>Lynyrd Skynyrd</span></li><li><span>American Pie</span><span>Don McLean</span></li><li><span>Pedro Navaja</span><span>Rubén Blades</span></li><li><span>Sweet Disposition</span><span>The Temper Trap</span></li><li><span>Lovelee Dae</span><span>Blockhead</span></li></ul></div>
+      <div class="item"><p class="ask">Cruising speed</p><p class="say">Vibin’ top down at 85 mph.</p><svg class="gauge" viewBox="0 0 340 196" role="img" aria-label="Speedometer at 137 km/h, 85 mph"><path d="M40 160 A130 130 0 0 1 300 160" fill="none" stroke="#F1EEE8" stroke-opacity=".22" stroke-width="3"/><path d="M40 160 A130 130 0 0 1 241.0 51.1" fill="none" stroke="#C34F05" stroke-width="3"/><line x1="40.0" y1="160.0" x2="54.0" y2="160.0" stroke="#F1EEE8" stroke-opacity="1" stroke-width="1.5"/><text x="70.0" y="164.0" fill="#F1EEE8" fill-opacity=".55" font-size="11" text-anchor="middle">0</text><line x1="41.6" y1="139.7" x2="48.5" y2="140.8" stroke="#F1EEE8" stroke-opacity="0.35" stroke-width="1"/><line x1="46.4" y1="119.8" x2="53.0" y2="122.0" stroke="#F1EEE8" stroke-opacity="0.35" stroke-width="1"/><line x1="54.2" y1="101.0" x2="60.4" y2="104.2" stroke="#F1EEE8" stroke-opacity="0.35" stroke-width="1"/><line x1="64.8" y1="83.6" x2="70.5" y2="87.7" stroke="#F1EEE8" stroke-opacity="0.35" stroke-width="1"/><line x1="78.1" y1="68.1" x2="88.0" y2="78.0" stroke="#F1EEE8" stroke-opacity="1" stroke-width="1.5"/><text x="99.3" y="93.3" fill="#F1EEE8" fill-opacity=".55" font-size="11" text-anchor="middle">50</text><line x1="93.6" y1="54.8" x2="97.7" y2="60.5" stroke="#F1EEE8" stroke-opacity="0.35" stroke-width="1"/><line x1="111.0" y1="44.2" x2="114.2" y2="50.4" stroke="#F1EEE8" stroke-opacity="0.35" stroke-width="1"/><line x1="129.8" y1="36.4" x2="132.0" y2="43.0" stroke="#F1EEE8" stroke-opacity="0.35" stroke-width="1"/><line x1="149.7" y1="31.6" x2="150.8" y2="38.5" stroke="#F1EEE8" stroke-opacity="0.35" stroke-width="1"/><line x1="170.0" y1="30.0" x2="170.0" y2="44.0" stroke="#F1EEE8" stroke-opacity="1" stroke-width="1.5"/><text x="170.0" y="64.0" fill="#F1EEE8" fill-opacity=".55" font-size="11" text-anchor="middle">100</text><line x1="190.3" y1="31.6" x2="189.2" y2="38.5" stroke="#F1EEE8" stroke-opacity="0.35" stroke-width="1"/><line x1="210.2" y1="36.4" x2="208.0" y2="43.0" stroke="#F1EEE8" stroke-opacity="0.35" stroke-width="1"/><line x1="229.0" y1="44.2" x2="225.8" y2="50.4" stroke="#F1EEE8" stroke-opacity="0.35" stroke-width="1"/><line x1="246.4" y1="54.8" x2="242.3" y2="60.5" stroke="#F1EEE8" stroke-opacity="0.35" stroke-width="1"/><line x1="261.9" y1="68.1" x2="252.0" y2="78.0" stroke="#F1EEE8" stroke-opacity="1" stroke-width="1.5"/><text x="240.7" y="93.3" fill="#F1EEE8" fill-opacity=".55" font-size="11" text-anchor="middle">150</text><line x1="275.2" y1="83.6" x2="269.5" y2="87.7" stroke="#F1EEE8" stroke-opacity="0.35" stroke-width="1"/><line x1="285.8" y1="101.0" x2="279.6" y2="104.2" stroke="#F1EEE8" stroke-opacity="0.35" stroke-width="1"/><line x1="293.6" y1="119.8" x2="287.0" y2="122.0" stroke="#F1EEE8" stroke-opacity="0.35" stroke-width="1"/><line x1="298.4" y1="139.7" x2="291.5" y2="140.8" stroke="#F1EEE8" stroke-opacity="0.35" stroke-width="1"/><line x1="300.0" y1="160.0" x2="286.0" y2="160.0" stroke="#F1EEE8" stroke-opacity="1" stroke-width="1.5"/><text x="270.0" y="164.0" fill="#F1EEE8" fill-opacity=".55" font-size="11" text-anchor="middle">200</text><circle cx="31.7" cy="138.1" r="3.5" fill="#1E1619" stroke="#F1EEE8" stroke-opacity=".55"/><circle cx="87.7" cy="46.7" r="3.5" fill="#1E1619" stroke="#F1EEE8" stroke-opacity=".55"/><circle cx="310.0" cy="160.0" r="3.5" fill="#1E1619" stroke="#F1EEE8" stroke-opacity=".55"/><line x1="170" y1="160" x2="230.1" y2="67.9" stroke="#C34F05" stroke-width="2.5" stroke-linecap="round"/><circle cx="170" cy="160" r="5" fill="#C34F05"/><text x="170" y="190" fill="#F1EEE8" font-size="12" letter-spacing="1.5" text-anchor="middle">137 KM/H · 85 MPH</text></svg></div>
+      <div class="item"><p class="ask">Squirtle, Charmander or Bulbasaur</p><p class="say">Bulbasaur.</p></div>
+      <div class="item"><p class="ask">One word from a stranger</p><p class="say">Sick / ¡chingón, wey!</p></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <p class="eyebrow">The palette</p>
+    <div class="palette">
+      <div><h3>His answer: yellow, blue, green, white, black</h3>
+        <div class="swatches"><div class="swatch"><b style="background:#C8934E"></b><em>Yellow</em><span>#C8934E</span></div><div class="swatch"><b style="background:#4D82BE"></b><em>Blue</em><span>#4D82BE</span></div><div class="swatch"><b style="background:#277705"></b><em>Green</em><span>#277705</span></div><div class="swatch"><b style="background:#F1EEE8"></b><em>White</em><span>#F1EEE8</span></div><div class="swatch"><b style="background:#1E1619"></b><em>Black</em><span>#1E1619</span></div></div></div>
+      <div><h3>Sampled from the painting</h3>
+        <div class="swatches eight"><div class="swatch"><b style="background:#A44125"></b><span>#A44125</span></div><div class="swatch"><b style="background:#C7B3A7"></b><span>#C7B3A7</span></div><div class="swatch"><b style="background:#4B6698"></b><span>#4B6698</span></div><div class="swatch"><b style="background:#E89803"></b><span>#E89803</span></div><div class="swatch"><b style="background:#582A32"></b><span>#582A32</span></div><div class="swatch"><b style="background:#817F80"></b><span>#817F80</span></div><div class="swatch"><b style="background:#698EB9"></b><span>#698EB9</span></div><div class="swatch"><b style="background:#B9955E"></b><span>#B9955E</span></div></div></div>
+      <div><h3>Sampled from the reference he chose</h3>
+        <div class="swatches eight"><div class="swatch"><b style="background:#3F5771"></b><span>#3F5771</span></div><div class="swatch"><b style="background:#8799A6"></b><span>#8799A6</span></div><div class="swatch"><b style="background:#5D7788"></b><span>#5D7788</span></div><div class="swatch"><b style="background:#B5712E"></b><span>#B5712E</span></div><div class="swatch"><b style="background:#C8934E"></b><span>#C8934E</span></div><div class="swatch"><b style="background:#C2BAA9"></b><span>#C2BAA9</span></div><div class="swatch"><b style="background:#9B5A3C"></b><span>#9B5A3C</span></div><div class="swatch"><b style="background:#277705"></b><span>#277705</span></div></div></div>
+      <figure class="ref"><img src="img/reference.jpg" alt="The reference painting Juan Carlos chose for the aesthetic: an ochre street, a green door and a blue ground with coloured stripes." loading="lazy"><figcaption class="zoom-tip">The aesthetic he chose</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="section">
+    <p class="eyebrow">Caring for your painting</p>
+    <div class="care">
+      <div>
+        <h3>Light</h3>
+        <p>Keep it out of direct sunlight. Strong light fades pigment over time.</p>
+      </div>
+      <div>
+        <h3>Air</h3>
+        <p>Hang it away from heat sources, kitchens and damp walls. Steady room conditions are best for oil on canvas.</p>
+      </div>
+      <div>
+        <h3>Cleaning</h3>
+        <p>Dust gently with a dry, soft brush or cloth. Don't use water or cleaning products on the surface.</p>
+      </div>
+    </div>
+  </section>
+
   <section class="thanks">
-    <p>Thank you, <span>Juan Carlos.</span></p>
+    <p>Thank you, Juan Carlos<span>.</span></p>
   </section>
 
   <footer class="foot">
-    <span>GLUK — Oil, ink and code</span>
-    <a href="https://glukart.com">glukart.com</a>
+    <img class="logo" src="img/logo-white.png" alt="GLUK">
+    <span>GLUK, Guillermo Carrasquero</span>
+    <span>Commission for Juan Carlos Feo, 2026</span>
   </footer>
 </div>
 
-<div class="zoom" id="zoom" aria-hidden="true"><img src="img/painting.jpg" alt=""></div>
+<div class="zoom" id="zoom">
+  <img id="zoom-img" src="" alt="">
+  <span>Click to close</span>
+</div>
 
 <script>
-  var zoom=document.getElementById('zoom');
-  document.getElementById('art').addEventListener('click',function(){zoom.classList.add('open');});
-  zoom.addEventListener('click',function(){zoom.classList.remove('open');});
-  document.addEventListener('keydown',function(e){if(e.key==='Escape')zoom.classList.remove('open');});
-  // The process section appears only when the video file exists.
-  var vid=document.getElementById('vid'),proc=document.getElementById('process');
-  vid.addEventListener('loadedmetadata',function(){proc.hidden=false;});
+(function(){
+  var zoom = document.getElementById('zoom');
+  var zoomImg = document.getElementById('zoom-img');
+  var art = document.getElementById('art');
+
+  art.addEventListener('click', function(){
+    zoomImg.src = art.getAttribute('src');
+    zoomImg.alt = art.alt;
+    zoom.classList.add('open');
+  });
+  function closeZoom(){ zoom.classList.remove('open'); }
+  zoom.addEventListener('click', closeZoom);
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') closeZoom();
+  });
+
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var colors = ['#e89803', '#a44125', '#4b6698', '#582a32', '#f4efe6'];
+
+  function burst(){
+    if (reduce) return;
+    var c = document.createElement('canvas');
+    c.className = 'confetti';
+    document.body.appendChild(c);
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = window.innerWidth, h = window.innerHeight;
+    c.width = w * dpr;
+    c.height = h * dpr;
+    var ctx = c.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    var ps = [];
+    for (var i = 0; i < 150; i++){
+      var left = i % 2 === 0;
+      var ang = (left ? -60 : -120) * Math.PI / 180 + (Math.random() - .5) * .7;
+      var sp = 9 + Math.random() * 9;
+      ps.push({
+        x: left ? 0 : w, y: h,
+        vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp,
+        r: Math.random() * Math.PI, vr: (Math.random() - .5) * .3,
+        s: 5 + Math.random() * 6, c: colors[i % colors.length], life: 0
+      });
+    }
+
+    function tick(){
+      ctx.clearRect(0, 0, w, h);
+      var alive = false;
+      ps.forEach(function(p){
+        p.vy += .35;
+        p.vx *= .992;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.r += p.vr;
+        p.life++;
+        var a = Math.max(0, 1 - p.life / 150);
+        if (a > 0 && p.y < h + 20){
+          alive = true;
+          ctx.save();
+          ctx.globalAlpha = a;
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.r);
+          ctx.fillStyle = p.c;
+          ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2);
+          ctx.restore();
+        }
+      });
+      if (alive) requestAnimationFrame(tick); else c.remove();
+    }
+    requestAnimationFrame(tick);
+  }
+
+  document.getElementById('dot').addEventListener('click', burst);
+  setTimeout(burst, 500);
+  var vid = document.getElementById('vid'), proc = document.getElementById('process');
+  vid.addEventListener('loadedmetadata', function(){ proc.hidden = false; });
+})();
 </script>
-</body>
-</html>
+
+</body></html>
