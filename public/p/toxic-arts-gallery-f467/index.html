@@ -1,0 +1,561 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>GLUK × Toxic Arts Gallery</title><link rel="icon" href="/favicon.png"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=Karla:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:dark;
+    --ink:#120e0d;
+    --paper:#f4efe6;
+    --muted:rgba(244,239,230,.64);
+    --line:rgba(244,239,230,.14);
+    --ember:#c34f05;
+    --blue:#1f8fe0;
+    --sans:'Karla',system-ui,-apple-system,sans-serif;
+    --display:'Archivo',system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--paper);
+    font-family:var(--sans);
+    font-size:17px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:'';
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 12% 6%, rgba(70,51,86,.55), transparent 60%),
+      radial-gradient(90% 70% at 90% 96%, rgba(195,79,5,.16), transparent 55%),
+      var(--ink);
+  }
+  h1,h2,h3,p,figure,ul,blockquote{margin:0;}
+  img{max-width:100%;display:block;}
+  a{color:inherit;}
+
+  .page{
+    max-width:1240px;
+    margin:0 auto;
+    padding-inline:clamp(16px,5vw,64px);
+    padding-block:clamp(20px,4vw,40px) 0;
+    overflow-x:clip;
+  }
+  .top{display:flex;justify-content:space-between;align-items:center;gap:16px;}
+  .logo{height:22px;width:auto;opacity:.92;}
+  .eyebrow{
+    font-weight:600;
+    font-size:12px;
+    line-height:1.3;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  /* The brand's rupture rule: ember breaking into blue. */
+  .rupture{
+    height:2px;
+    width:10rem;
+    background:linear-gradient(90deg,var(--ember) 0 38%,transparent 38% 46%,var(--blue) 46%);
+  }
+
+  /* Hero */
+  .hero{
+    display:grid;
+    grid-template-columns:minmax(0,7fr) minmax(0,5fr);
+    gap:clamp(28px,6vw,88px);
+    align-items:end;
+    padding-block:clamp(40px,7vw,96px) clamp(48px,7vw,96px);
+  }
+  .hero h1{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:clamp(44px,8.4vw,128px);
+    line-height:.92;
+    text-transform:uppercase;
+    margin-block:22px 28px;
+  }
+  .hero h1 .x{color:var(--ember);}
+  .hero .lead{font-size:clamp(19px,2vw,24px);line-height:1.45;max-width:30ch;margin-top:26px;}
+  .hero figure img{
+    width:100%;
+    height:auto;
+    border:1px solid var(--line);
+    box-shadow:0 30px 80px rgba(0,0,0,.55);
+    cursor:zoom-in;
+  }
+  .hero figcaption{margin-top:12px;color:var(--muted);font-size:14px;}
+
+  /* Fit: why Toxic Arts */
+  .fit{
+    display:grid;
+    grid-template-columns:minmax(0,4fr) minmax(0,8fr);
+    gap:clamp(28px,6vw,96px);
+    border-top:1px solid var(--line);
+    padding-block:clamp(40px,6vw,80px);
+  }
+  .fit blockquote{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:clamp(28px,4vw,52px);
+    line-height:1.04;
+    text-transform:uppercase;
+    text-wrap:balance;
+  }
+  .fit blockquote span{color:var(--ember);}
+  .fit .cite{color:var(--muted);margin-top:16px;font-size:15px;}
+  .fit .body p{max-width:60ch;margin-bottom:1em;}
+  .fit .body p:last-child{margin-bottom:0;}
+
+  /* Portfolio */
+  .group{border-top:1px solid var(--line);padding-block:clamp(36px,6vw,72px);}
+  .group-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:clamp(24px,4vw,40px);}
+  .group-head h2{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:clamp(26px,3.4vw,44px);
+    line-height:1;
+    text-transform:uppercase;
+  }
+  .grid{display:grid;gap:clamp(36px,5vw,64px) clamp(20px,3vw,40px);}
+  .grid.c2{grid-template-columns:repeat(2,minmax(0,1fr));max-width:820px;}
+  .grid.c3{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .grid.c4{grid-template-columns:repeat(4,minmax(0,1fr));}
+  .work{display:flex;flex-direction:column;gap:14px;}
+  .work.wide{grid-column:1 / -1;}
+  .plates{display:flex;gap:8px;align-items:flex-end;}
+  .plates img{
+    flex:1 1 0;
+    min-width:0;
+    height:auto;
+    border:1px solid var(--line);
+    box-shadow:0 20px 56px rgba(0,0,0,.5);
+    cursor:zoom-in;
+  }
+  .work h3{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:clamp(17px,1.6vw,21px);
+    line-height:1.12;
+    text-transform:uppercase;
+    text-wrap:balance;
+  }
+  .meta{color:var(--muted);font-size:14px;line-height:1.5;margin-top:4px;}
+  .price{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:10px;
+    flex-wrap:wrap;
+    border-top:1px solid var(--line);
+    padding-top:10px;
+    margin-top:auto;
+    font-variant-numeric:tabular-nums;
+  }
+  .status{
+    font-weight:600;
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .status.open{color:var(--ember);}
+  .amount{font-family:var(--display);font-weight:600;font-size:18px;}
+  .amount.quiet{font-family:var(--sans);font-weight:500;font-size:15px;color:var(--muted);}
+
+  /* Lists */
+  .section{
+    display:grid;
+    grid-template-columns:minmax(0,4fr) minmax(0,8fr);
+    gap:clamp(28px,6vw,96px);
+    border-top:1px solid var(--line);
+    padding-block:clamp(36px,6vw,72px);
+  }
+  .rows{list-style:none;padding:0;max-width:680px;}
+  .rows li{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:4px 24px;
+    padding-block:14px;
+    border-top:1px solid var(--line);
+    font-variant-numeric:tabular-nums;
+  }
+  .rows li:first-child{border-top:0;padding-top:0;}
+  .rows .sub{grid-column:1 / -1;color:var(--muted);font-size:15px;line-height:1.5;}
+  .rows .year{color:var(--muted);margin-right:14px;}
+  .refs{list-style:none;padding:0;margin:0;max-width:720px;}
+  .ref{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;padding-block:18px;border-top:1px solid var(--line);}
+  .ref:first-child{border-top:0;padding-top:0;}
+  .ref.has-img{grid-template-columns:88px minmax(0,1fr);}
+  .ref-img{width:88px;height:88px;object-fit:cover;border:1px solid var(--line);}
+  .ref-img[data-caption]{cursor:zoom-in;}
+  .ref p{margin:0;}
+  .ref .year{color:var(--muted);margin-right:14px;font-variant-numeric:tabular-nums;}
+  .ref .sub{color:var(--muted);font-size:15px;line-height:1.5;margin-top:4px;}
+  .ref .src{display:inline-block;margin-top:8px;font-size:13px;letter-spacing:.04em;color:var(--paper);text-decoration:none;border-bottom:1px solid var(--ember);}
+  .fineprint{color:var(--muted);font-size:15px;margin-top:20px;max-width:60ch;}
+
+  /* Closing */
+  .close{
+    border-top:1px solid var(--line);
+    padding-block:clamp(56px,9vw,120px);
+  }
+  .close p.big{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:clamp(36px,6.4vw,92px);
+    line-height:.98;
+    text-transform:uppercase;
+    text-wrap:balance;
+    margin-bottom:clamp(28px,4vw,48px);
+  }
+  .close p.big span{color:var(--ember);}
+  .contacts{display:flex;flex-wrap:wrap;gap:12px 40px;font-size:18px;}
+  .contacts a{text-decoration:none;border-bottom:1px solid var(--ember);padding-bottom:2px;}
+
+  .foot{
+    border-top:1px solid var(--line);
+    padding-block:28px clamp(28px,5vw,48px);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:14px 24px;
+    flex-wrap:wrap;
+    color:var(--muted);
+    font-size:13px;
+    letter-spacing:.03em;
+  }
+
+  /* Zoom */
+  .zoom{
+    position:fixed;
+    inset:0;
+    z-index:70;
+    background:rgba(8,6,5,.96);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    padding:clamp(16px,4vw,48px);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease;
+    cursor:zoom-out;
+  }
+  .zoom.open{opacity:1;pointer-events:auto;}
+  .zoom img{max-width:100%;max-height:calc(100vh - 110px);width:auto;height:auto;}
+  .zoom p{font-size:14px;color:var(--muted);text-align:center;}
+
+  @media (max-width:980px){
+    .grid.c4{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .grid.c3{grid-template-columns:repeat(2,minmax(0,1fr));}
+  }
+  @media (max-width:760px){
+    .hero,.fit,.section{grid-template-columns:minmax(0,1fr);}
+    .grid.c2,.grid.c3{grid-template-columns:minmax(0,1fr);}
+  }
+  @media (prefers-reduced-motion:reduce){.zoom{transition:none;}}
+</style></head><body>
+
+<div class="page">
+  <div class="top">
+    <img class="logo" src="img/logo-white.png" alt="GLUK" width="480" height="224">
+    <p class="eyebrow">Private · for Toxic Arts Gallery</p>
+  </div>
+
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Prepared for Toxic Arts Gallery, London · October 2026</p>
+      <h1>GLUK <span class="x">×</span><br>Toxic Arts</h1>
+      <div class="rupture" aria-hidden="true"></div>
+      <p class="lead">Oil, ink and code, put in friction. A Caribbean painter from Caracas, working in Mexico City.</p>
+    </div>
+    <figure>
+      <img src="img/motopirueta-4.jpg" width="1400" height="1750" alt="Motopirueta 4: a woman in a yellow tracksuit and sneakers rides a bending chrome motorcycle, against a yellow ground." data-caption="Motopirueta 4, 2026 · Oil on canvas · 120 × 150 cm">
+      <figcaption>Motopirueta 4, 2026</figcaption>
+    </figure>
+  </header>
+
+  <section class="fit">
+    <div>
+      <blockquote>“I bend luxury until it fits our <span>streets</span>.”</blockquote>
+      <p class="cite">Gluk</p>
+    </div>
+    <div class="body">
+      <p>Toxic Arts shows work where it has energy: a former public toilet on Commercial Street, a garage. Gluk’s work lives in the same place. This month he painted a Ferrari on a truck tarpaulin and showed it in a working Manchester garage.</p>
+      <p>His aesthetic is both precise and streetwise: elegant without being domesticated. Oil paintings of Caribbean street life, tattooed hides, and new media that has reached the Louvre.</p>
+    </div>
+  </section>
+
+  <section class="group" aria-labelledby="g-moto">
+    <div class="group-head">
+      <h2 id="g-moto">Motopirueta</h2>
+      <p class="eyebrow">Series of four · oil on canvas · 120 × 150 cm each</p>
+    </div>
+    <div class="grid c4">
+      <article class="work">
+        <div class="plates"><img src="img/motopirueta-1.jpg" width="1400" height="1750" alt="Motopirueta 1" data-caption="Motopirueta 1, 2025 · Oil on canvas · 120 × 150 cm"></div>
+        <div><h3>Motopirueta 1</h3><p class="meta">2025</p></div>
+        <p class="price"><span class="status open">Available</span><span class="amount quiet">Price on request</span></p>
+      </article>
+      <article class="work">
+        <div class="plates"><img src="img/motopirueta-2.jpg" width="1400" height="1746" alt="Motopirueta 2" data-caption="Motopirueta 2, 2025 · Oil on canvas · 120 × 150 cm"></div>
+        <div><h3>Motopirueta 2</h3><p class="meta">2025</p></div>
+        <p class="price"><span class="status open">Available</span><span class="amount quiet">Price on request</span></p>
+      </article>
+      <article class="work">
+        <div class="plates"><img src="img/motopirueta-3.jpg" width="1400" height="1750" alt="Motopirueta 3" data-caption="Motopirueta 3, 2026 · Oil on canvas · 120 × 150 cm"></div>
+        <div><h3>Motopirueta 3</h3><p class="meta">2026</p></div>
+        <p class="price"><span class="status open">Available</span><span class="amount quiet">Price on request</span></p>
+      </article>
+      <article class="work">
+        <div class="plates"><img src="img/motopirueta-4.jpg" width="1400" height="1750" alt="Motopirueta 4" data-caption="Motopirueta 4, 2026 · Oil on canvas · 120 × 150 cm"></div>
+        <div><h3>Motopirueta 4</h3><p class="meta">2026</p></div>
+        <p class="price"><span class="status open">Available</span><span class="amount quiet">Price on request</span></p>
+      </article>
+    </div>
+  </section>
+
+  <section class="group" aria-labelledby="g-violenta">
+    <div class="group-head">
+      <h2 id="g-violenta">Violenta</h2>
+      <p class="eyebrow">2026 · oil on canvas</p>
+    </div>
+    <div class="grid c3">
+      <article class="work">
+        <div class="plates">
+          <img src="img/violenta-i.jpg" width="1400" height="2423" alt="Violenta I" data-caption="Violenta I, 2026 · Oil on canvas · 105 × 60 cm">
+          <img src="img/violenta-ii.jpg" width="1400" height="2447" alt="Violenta II" data-caption="Violenta II, 2026 · Oil on canvas · 105 × 60 cm">
+        </div>
+        <div><h3>Violenta I &amp; II</h3><p class="meta">Diptych · two panels, 105 × 60 cm each</p></div>
+        <p class="price"><span class="status">Sold</span><span class="amount">USD 6,000</span></p>
+      </article>
+      <article class="work">
+        <div class="plates"><img src="img/contemplacion-violenta-1.jpg" width="1400" height="1807" alt="Contemplación Violenta 1" data-caption="Contemplación Violenta 1, 2026 · Oil on canvas · 70 × 90 cm"></div>
+        <div><h3>Contemplación Violenta 1</h3><p class="meta">70 × 90 cm</p></div>
+        <p class="price"><span class="status">Sold</span><span class="amount">USD 4,000</span></p>
+      </article>
+      <article class="work">
+        <div class="plates"><img src="img/contemplacion-violenta-2.jpg" width="1400" height="893" alt="Contemplación Violenta 2" data-caption="Contemplación Violenta 2, 2026 · Oil on canvas · 140 × 90 cm"></div>
+        <div><h3>Contemplación Violenta 2</h3><p class="meta">140 × 90 cm</p></div>
+        <p class="price"><span class="status open">Available</span><span class="amount quiet">Price on request</span></p>
+      </article>
+    </div>
+  </section>
+
+  <section class="group" aria-labelledby="g-oils">
+    <div class="group-head">
+      <h2 id="g-oils">Paintings</h2>
+      <p class="eyebrow">2024–2026</p>
+    </div>
+    <div class="grid c3">
+      <article class="work wide">
+        <div class="plates"><img src="img/de-chirico-en-la-guaira.jpg" width="1400" height="535" alt="De Chirico en La Guaira" data-caption="De Chirico en La Guaira, 2025 · Oil on canvas · 235 × 90 cm"></div>
+        <div><h3>De Chirico en La Guaira</h3><p class="meta">2025 · Oil on canvas · 235 × 90 cm</p></div>
+        <p class="price"><span class="status">Sold</span><span class="amount">USD 8,000</span></p>
+      </article>
+      <article class="work">
+        <div class="plates"><img src="img/paso-guerito.jpg" width="1400" height="1794" alt="Paso Guerito" data-caption="Paso Guerito, 2025 · Oil on canvas · 90 × 70 cm"></div>
+        <div><h3>Paso Guerito</h3><p class="meta">2025 · Oil on canvas · 90 × 70 cm</p></div>
+        <p class="price"><span class="status">Sold</span><span class="amount">USD 6,000</span></p>
+      </article>
+      <article class="work">
+        <div class="plates"><img src="img/anestesia-para-invierno.jpg" width="1400" height="1755" alt="Anestesia para invierno" data-caption="Anestesia para invierno, 2024 · Oil on canvas · 120 × 150 cm"></div>
+        <div><h3>Anestesia para invierno</h3><p class="meta">2024 · Oil on canvas · 120 × 150 cm</p></div>
+        <p class="price"><span class="status">Sold</span><span class="amount">USD 6,000</span></p>
+      </article>
+      <article class="work">
+        <div class="plates"><img src="img/johnny-efectivo.jpg" width="1400" height="1750" alt="Johnny Efectivo" data-caption="Johnny Efectivo, 2026 · Oil on canvas · 120 × 150 cm"></div>
+        <div><h3>Johnny Efectivo</h3><p class="meta">2026 · Oil on canvas · 120 × 150 cm</p></div>
+        <p class="price"><span class="status open">Available</span><span class="amount quiet">Price on request</span></p>
+      </article>
+      <article class="work">
+        <div class="plates"><img src="img/perdi-el-coco-en-un-pueblo-caribeno.jpg" width="1400" height="1807" alt="Perdí el coco en un pueblo caribeño" data-caption="Perdí el coco en un pueblo caribeño, 2026 · Oil on canvas · 70 × 90 cm"></div>
+        <div><h3>Perdí el coco en un pueblo caribeño</h3><p class="meta">2026 · Oil on canvas · 70 × 90 cm</p></div>
+        <p class="price"><span class="status">Sold</span><span class="amount">USD 4,000</span></p>
+      </article>
+      <article class="work">
+        <div class="plates"><img src="img/i-love-u-2.jpg" width="1400" height="1915" alt="I Love U 2" data-caption="I Love U 2, 2024 · Oil, acrylic and pastels on canvas · 190 × 140 cm"></div>
+        <div><h3>I Love U 2</h3><p class="meta">2024 · Oil, acrylic and pastels on canvas · 190 × 140 cm</p></div>
+        <p class="price"><span class="status open">Available</span><span class="amount quiet">Price on request</span></p>
+      </article>
+      <article class="work">
+        <div class="plates"><img src="img/amor-de-primavera.jpg" width="1400" height="1944" alt="Amor de primavera" data-caption="Amor de primavera, 2024 · Oil, acrylic and pastels on canvas · 190 × 140 cm"></div>
+        <div><h3>Amor de primavera</h3><p class="meta">2024 · Oil, acrylic and pastels on canvas · 190 × 140 cm</p></div>
+        <p class="price"><span class="status">Sold</span></p>
+      </article>
+      <article class="work">
+        <div class="plates"><img src="img/bajale-2-gallito.jpg" width="1400" height="1165" alt="Bájale 2 Gallito" data-caption="Bájale 2 Gallito, 2026 · Oil on canvas · 50 × 60 cm"></div>
+        <div><h3>Bájale 2 Gallito</h3><p class="meta">2026 · Oil on canvas · 50 × 60 cm</p></div>
+        <p class="price"><span class="status open">Available</span><span class="amount quiet">Price on request</span></p>
+      </article>
+      <article class="work">
+        <div class="plates"><img src="img/valet-parking-en-las-mercedes.jpg" width="1400" height="1405" alt="Valet parking en Las Mercedes" data-caption="Valet parking en Las Mercedes, 2026 · Oil on truck tarpaulin · 70 × 70 cm"></div>
+        <div><h3>Valet parking en Las Mercedes</h3><p class="meta">2026 · Oil on truck tarpaulin · 70 × 70 cm · shown in THE GARAGE, Manchester</p></div>
+        <p class="price"><span class="status open">At auction</span><a class="amount quiet" href="https://fairart.com/auctions/group/4bysix-vehicles-for-change-auction-1/gluk-guillermo-carrasquero-valet-parking-en-las-mercedes-15" rel="noopener">FairArt, until 25 Oct</a></p>
+      </article>
+    </div>
+  </section>
+
+  <section class="group" aria-labelledby="g-hide">
+    <div class="group-head">
+      <h2 id="g-hide">Tattoo on hide</h2>
+      <p class="eyebrow">2026 · 100 × 100 cm each</p>
+    </div>
+    <div class="grid c2">
+      <article class="work">
+        <div class="plates"><img src="img/pobrecita-la-vaquita-que-bonita-la-cartera.jpg" width="1400" height="1750" alt="Pobrecita la vaquita, qué bonita la cartera" data-caption="Pobrecita la vaquita, qué bonita la cartera, 2026 · Tattoo on hide · 100 × 100 cm"></div>
+        <div><h3>Pobrecita la vaquita, qué bonita la cartera</h3></div>
+        <p class="price"><span class="status open">Available</span><span class="amount">USD 4,000</span></p>
+      </article>
+      <article class="work">
+        <div class="plates"><img src="img/pobrecita-la-vaquita-que-bonita-la-cartera-invertido.jpg" width="1400" height="1750" alt="Pobrecita la vaquita, qué bonita la cartera (invertido)" data-caption="Pobrecita la vaquita, qué bonita la cartera (invertido), 2026 · Tattoo on hide · 100 × 100 cm"></div>
+        <div><h3>Pobrecita la vaquita, qué bonita la cartera (invertido)</h3></div>
+        <p class="price"><span class="status open">Available</span><span class="amount">USD 4,000</span></p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section">
+    <p class="eyebrow">Representation</p>
+    <ul class="rows">
+      <li><span>West Chelsea Contemporary</span><span class="sub">Austin, Texas</span></li>
+      <li><span>Mooni Gallery</span><span class="sub">New York and Mexico City</span></li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <p class="eyebrow">Selected projects &amp; exhibitions</p>
+    <ul class="refs">
+      <li class="ref has-img">
+        <img class="ref-img" src="img/valet-parking-en-las-mercedes.jpg" alt="Valet parking en Las Mercedes">
+        <div>
+          <p><span class="year">2026</span>THE GARAGE, 4BYSIX Vehicles For Change, Manchester</p>
+          <p class="sub">Group show and charity auction. 18 artists from 11 countries, with SLAWN, Chito, Marcus Jansen and Super Future Kid. Shown: <em>Valet parking en Las Mercedes</em>.</p>
+          <a class="src" href="https://fairart.com/auctions/group/4bysix-vehicles-for-change-auction-1" rel="noopener">Auction on FairArt ↗</a>
+        </div>
+      </li>
+      <li class="ref has-img">
+        <img class="ref-img" src="img/orestes-gomez-no-me-fui-porque-quise.jpg" alt="No me fui porque quise, album cover" data-caption="Orestes Gómez, No me fui porque quise · album cover by Gluk">
+        <div>
+          <p><span class="year">2026</span>Orestes Gómez, <em>No me fui porque quise</em></p>
+          <p class="sub">Album cover.</p>
+          <a class="src" href="https://eldiario.com/2026/04/22/orestes-gomez-no-me-fui-porque-quise/" rel="noopener">El Diario ↗</a>
+        </div>
+      </li>
+      <li class="ref has-img">
+        <img class="ref-img" src="img/viniloversus-mi-mejor-enemigo.jpg" alt="Mi Mejor Enemigo, album cover" data-caption="Viniloversus, Mi Mejor Enemigo · album cover by Gluk">
+        <div>
+          <p><span class="year">2024</span>Viniloversus, <em>Mi Mejor Enemigo</em></p>
+          <p class="sub">Album cover. Latin Grammy nominee, Best Rock Album (25th Latin Grammy Awards).</p>
+          <a class="src" href="https://cms.latingrammy.com/en/artists/viniloversus-23904/" rel="noopener">Latin Grammy ↗</a>
+        </div>
+      </li>
+      <li class="ref has-img">
+        <img class="ref-img" src="img/onde-du-midi-louvre.jpg" alt="L’Onde du Midi by Elias Crespin at the Louvre" data-caption="L’Onde du Midi, Elias Crespin, Musée du Louvre · visual: Pascal Maillard">
+        <div>
+          <p><span class="year">2020</span><em>L’Onde du Midi</em>, Elias Crespin, Musée du Louvre, Paris</p>
+          <p class="sub">Production and installation team. Permanent kinetic sculpture, 128 suspended tubes, installed January 2020. Visual: Pascal Maillard.</p>
+          <a class="src" href="https://presse.louvre.fr/elias-crespinbr-londe-du-midibr-a-new-permanent-installationbr-for-the-louvre" rel="noopener">Louvre press release ↗</a>
+        </div>
+      </li>
+      <li class="ref">
+        <div>
+          <p><span class="year">2019</span>Art Biesenthal 2019, Wehrmühle Biesenthal, near Berlin</p>
+          <p class="sub">Group exhibition, 17 August – 7 September 2019. Curated by Tjioe Meyer-Hecken.</p>
+          <a class="src" href="https://www.wehrmuehle.de/exhibition/2019" rel="noopener">Artist list, Wehrmühle ↗</a>
+        </div>
+      </li>
+      <li class="ref">
+        <div>
+          <p><span class="year">2019</span>eyeart – SENSEation, Brandenburger Tor Museum, Berlin</p>
+          <p class="sub">Interactive installation, 6 February 2019.</p>
+        </div>
+      </li>
+      <li class="ref has-img">
+        <img class="ref-img" src="img/solomun-plus-1.jpg" alt="Solomun +1 logo">
+        <div>
+          <p><span class="year">2018</span>Solomun +1, Pacha Ibiza</p>
+          <p class="sub">Visuals for the season.</p>
+        </div>
+      </li>
+      <li class="ref">
+        <div>
+          <p><span class="year">2017</span>Salón ACME No. 5, Mexico City</p>
+          <p class="sub">Production and fabrication of Carlos García-Noriega Bueno’s piece, a guest project with Galería de Arte Mexicano. 9–12 February 2017.</p>
+          <a class="src" href="https://salonacme.com/en/editions" rel="noopener">Salón ACME editions ↗</a>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <p class="eyebrow">Commissions · price reference</p>
+    <div>
+      <ul class="rows">
+        <li><span>Up to 100 × 100 cm</span><span>USD 0.50 per cm²</span><span class="sub">Up to 10,000 cm²</span></li>
+        <li><span>Up to 150 × 150 cm</span><span>USD 0.45 per cm²</span><span class="sub">Up to 22,500 cm²</span></li>
+        <li><span>Larger than 150 × 150 cm</span><span>USD 0.40 per cm²</span><span class="sub">Over 22,500 cm²</span></li>
+      </ul>
+      <p class="fineprint">Price = width × height × rate. For example: 70 × 90 cm, USD 3,150 · 100 × 100 cm, USD 5,000 · 120 × 150 cm, USD 8,100 · 200 × 150 cm, USD 12,000.</p>
+    </div>
+  </section>
+
+  <section class="close">
+    <p class="big">Let’s bring Caracas to <span>London</span>.</p>
+    <div class="contacts">
+      <a href="mailto:gluk.caribe@gmail.com">gluk.caribe@gmail.com</a>
+      <a href="https://www.instagram.com/gluk______/" rel="noopener">Instagram</a>
+      <a href="https://glukart.com">glukart.com</a>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <img class="logo" src="img/logo-white.png" alt="GLUK" width="480" height="224">
+    <span>GLUK, Guillermo Carrasquero · Mexico City</span>
+    <span>Prices in USD</span>
+  </footer>
+</div>
+
+<div class="zoom" id="zoom" role="dialog" aria-modal="true" aria-label="Artwork" hidden>
+  <img id="zoom-img" src="" alt="">
+  <p id="zoom-cap"></p>
+</div>
+
+<script>
+(function(){
+  var zoom = document.getElementById('zoom');
+  var img = document.getElementById('zoom-img');
+  var cap = document.getElementById('zoom-cap');
+  var last = null;
+  function open(src){
+    last = src;
+    img.src = src.getAttribute('src');
+    img.alt = src.alt;
+    cap.textContent = src.dataset.caption || src.alt;
+    zoom.hidden = false;
+    requestAnimationFrame(function(){ zoom.classList.add('open'); });
+    zoom.focus();
+  }
+  function close(){
+    zoom.classList.remove('open');
+    zoom.hidden = true;
+    if (last) last.focus();
+  }
+  document.querySelectorAll('img[data-caption]').forEach(function(el){
+    el.tabIndex = 0;
+    el.addEventListener('click', function(){ open(el); });
+    el.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(el); }
+    });
+  });
+  zoom.tabIndex = -1;
+  zoom.addEventListener('click', close);
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !zoom.hidden) close(); });
+})();
+</script>
+</body></html>

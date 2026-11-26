@@ -5,9 +5,9 @@ import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 const PAGE = `
   <header class="site-nav">
     <a class="brand" href="/">GLUK</a>
-    <nav class="nav-desktop"><a href="/portfolio">Work</a></nav>
+    <nav class="nav-desktop"><a href="/work">Work</a></nav>
     <button type="button" aria-expanded="false" data-menu-toggle hidden><span data-menu-label>Menu</span></button>
-    <div data-mobile-menu hidden><a href="/portfolio">Work</a></div>
+    <div data-mobile-menu hidden><a href="/work">Work</a></div>
   </header>
   <main><a href="/x">Content</a></main>
   <footer><a href="/y">Footer</a></footer>

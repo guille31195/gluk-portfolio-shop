@@ -22,3 +22,31 @@
   for = "/p/*"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
+
+# Print checkout API (Stripe, Sanity orders dataset, Resend).
+[functions]
+  directory = "netlify/functions"
+  # Certificate PDF fonts and brand images, read at runtime (see netlify/lib/certificate-pdf.ts).
+  included_files = ["netlify/assets/**"]
+
+# Collector order pages are reached by an unguessable token link only.
+[[headers]]
+  for = "/collector"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/collector/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+# The Portfolio section was renamed Work (2026-11-18); keep old links alive.
+[[redirects]]
+  from = "/portfolio"
+  to = "/work"
+  status = 301
+
+[[redirects]]
+  from = "/portfolio/*"
+  to = "/work/:splat"
+  status = 301

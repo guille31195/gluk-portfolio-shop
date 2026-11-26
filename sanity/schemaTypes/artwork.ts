@@ -92,6 +92,7 @@ export const artwork = defineType({
         list: [
           { title: 'Available — show "Inquire"', value: 'available' },
           { title: 'Sold — show "Sold"', value: 'sold' },
+          { title: 'At auction — link to the lot', value: 'auction' },
           { title: 'Not for sale — hide', value: 'notForSale' },
         ],
         layout: 'radio',
@@ -99,10 +100,30 @@ export const artwork = defineType({
       initialValue: 'notForSale',
     }),
     defineField({
-      name: 'printOptions',
-      title: 'Print Options',
-      type: 'array',
-      of: [{ type: 'printOption' }],
+      name: 'auctionUrl',
+      title: 'Auction lot link',
+      type: 'url',
+      hidden: ({ document }) => document?.originalStatus !== 'auction',
+      validation: (Rule) =>
+        Rule.custom((url, context) =>
+          (context.document as { originalStatus?: string })?.originalStatus === 'auction' && !url
+            ? 'Add the lot link, or pick another status.'
+            : true
+        ),
+    }),
+    defineField({
+      name: 'printPriceLarge',
+      title: 'Large print price (USD)',
+      description: 'Whole dollars. Leave empty if no large print is for sale. Size is derived from the dimensions.',
+      type: 'number',
+      validation: (Rule) => Rule.integer().min(1),
+    }),
+    defineField({
+      name: 'printPriceSmall',
+      title: 'Small print price (USD)',
+      description: 'Whole dollars. Leave empty if no small print is for sale. Size is derived from the dimensions.',
+      type: 'number',
+      validation: (Rule) => Rule.integer().min(1),
     }),
   ],
 });

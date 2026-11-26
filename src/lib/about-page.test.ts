@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { ABOUT_PORTRAIT_WIDTHS, DEFAULT_ABOUT, DEFAULT_ABOUT_BODY_HTML, focalPoint, mapAboutPage } from './about-page';
+import {
+  ABOUT_PORTRAIT_WIDTHS,
+  DEFAULT_ABOUT,
+  DEFAULT_ABOUT_BODY_HTML,
+  SELECTED_PROJECTS,
+  focalPoint,
+  mapAboutPage,
+} from './about-page';
 
 const deps = {
   imageUrl: (_image: unknown, width: number) => `https://cdn.test/p.jpg?w=${width}`,
@@ -96,5 +103,17 @@ describe('focalPoint', () => {
 
   it('converts a hotspot to a CSS object-position', () => {
     expect(focalPoint({ x: 0.25, y: 0.333 })).toBe('25% 33.3%');
+  });
+});
+
+describe('SELECTED_PROJECTS', () => {
+  it('lists projects newest first', () => {
+    const years = SELECTED_PROJECTS.map((p) => p.year);
+    expect(years).toEqual([...years].sort((a, b) => b - a));
+  });
+
+  it('spells Solomun correctly in the BIO and the list', () => {
+    expect(DEFAULT_ABOUT.body[2]).toContain('Nicola Cruz, and Solomun');
+    expect(SELECTED_PROJECTS.some((p) => p.title.startsWith('Solomun +1'))).toBe(true);
   });
 });

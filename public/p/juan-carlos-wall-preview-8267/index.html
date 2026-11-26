@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="robots" content="noindex">
+<meta name="robots" content="noindex, nofollow">
 <style>*,*::before,*::after{box-sizing:border-box}body{margin:0}</style>
 <title>Wall Size Preview — GLUK</title>
 <link rel="icon" href="/favicon.png">
@@ -121,8 +121,8 @@ svg text{font-family:var(--body)}
       <div class="custom">
         <div class="label">Custom size</div>
         <form class="row" id="cform">
-          <label for="cw" class="label">Width (cm)<input id="cw" type="number" min="13" max="152" step="1" value="89"></label>
-          <label for="ch" class="label">Height (cm)<input id="ch" type="number" min="13" max="254" step="1" value="127"></label>
+          <label for="cw" class="label">Width (in)<input id="cw" type="number" min="5" max="60" step="0.5" value="40"></label>
+          <label for="ch" class="label">Height (in)<input id="ch" type="number" min="5" max="100" step="0.5" value="55"></label>
           <button type="submit">Show on wall</button>
         </form>
       </div>
@@ -135,11 +135,11 @@ svg text{font-family:var(--body)}
           <dt>Inches</dt><dd id="q-in">—</dd>
           <dt>Area</dt><dd id="q-area">—</dd>
           <dt>Rate</dt><dd>$0.45 / cm²</dd>
-          <dt>Wall left / right</dt><dd id="q-side">—</dd>
+          <dt>Wall left and right</dt><dd id="q-side">—</dd>
           <dt>Share of wall width</dt><dd id="q-cov">—</dd>
           <dt class="total">Price (USD)</dt><dd class="total" id="q-price">—</dd>
         </dl>
-        <p class="note">All preset sizes keep the proportion of the requested 35 × 50 in (89 × 127 cm), rounded to whole centimetres. Oil on canvas by GLUK.</p>
+        <p class="note">All preset sizes are rounded to the nearest 5 cm and keep roughly the 7:10 proportion of the requested 35 × 50 in. Oil on canvas by GLUK.</p>
       </div>
     </aside>
   </div>
@@ -151,9 +151,10 @@ svg text{font-family:var(--body)}
 </div>
 
 <script>
-const IN=2.54, RATE=0.45, WALL_W=152, WALL_H=254;
+const IN=2.54, RATE=0.45, WALL_W=60*IN, WALL_H=100*IN;
 const C={wall:"#2a2124",floor:"#4a3a3c",line:"#f1eee855",dim:"#f1eee88c",fg:"#f1eee8",acc:"#e8732b",frame:"#0d0a0b",person:"#f1eee840"};
-const sizes=[{w:89,h:127,tag:"Requested"},{w:98,h:140},{w:107,h:152},{w:116,h:165},{w:124,h:178,tag:"Largest"}];
+// Sizes are in centimetres, rounded to the nearest 5; inches are derived for reference only.
+const sizes=[{w:90,h:125,tag:"Requested"},{w:100,h:140},{w:105,h:150},{w:115,h:165},{w:125,h:180,tag:"Largest"}];
 let sel={...sizes[0]}, orient="port", centre=145, showPerson=true, custom=false;
 const fmt=(n,d=0)=>n.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
 const money=n=>"$"+n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -186,9 +187,8 @@ function renderWall(){
   svg.appendChild(el("rect",{x:wx,y:wy,width:ww,height:wh,fill:"url(#glow)"}));
   svg.appendChild(el("rect",{x:wx-20,y:floorY,width:ww+40,height:6,fill:C.floor}));
   const d=dims(sel),pw=d.w*sc,ph=d.h*sc;
-  const bottom=Math.min(Math.max(Math.round(centre-d.h/2),2),WALL_H-d.h-2),cy=bottom+d.h/2;
-  const gapL=Math.floor((WALL_W-d.w)/2),gapR=WALL_W-d.w-gapL;
-  const px=wx+gapL*sc,py=floorY-cy*sc-ph/2;
+  const cy=Math.min(Math.max(centre,d.h/2+2),WALL_H-d.h/2-2);
+  const px=wx+(ww-pw)/2,py=floorY-cy*sc-ph/2;
   svg.appendChild(el("rect",{x:px+4,y:py+8,width:pw,height:ph,fill:"#000",opacity:.45}));
   svg.appendChild(el("rect",{x:px,y:py,width:pw,height:ph,fill:"url(#cv)",stroke:C.frame,"stroke-width":3}));
   if(showPerson){
@@ -208,23 +208,23 @@ function renderWall(){
   svg.appendChild(el("text",{x:px+pw/2,y:ty-6,"text-anchor":"middle","font-size":13,"font-weight":700,fill:C.fg},fmt(d.w)+" cm"));
   const rx=px+pw+12;line(rx,py,rx,py+ph,C.acc);tick(rx,py,true,C.acc);tick(rx,py+ph,true,C.acc);
   svg.appendChild(el("text",{x:rx+9,y:py+ph/2,"text-anchor":"middle","font-size":13,"font-weight":700,fill:C.fg,transform:`rotate(90 ${rx+9} ${py+ph/2})`},fmt(d.h)+" cm"));
-  const gy=py+ph+18;
-  if(gapL>=0&&gapR>=0){line(wx,gy,px,gy);line(px+pw,gy,wx+ww,gy);
-    svg.appendChild(el("text",{x:wx+(px-wx)/2,y:gy+14,"text-anchor":"middle","font-size":10,fill:C.dim},fmt(gapL)));
-    svg.appendChild(el("text",{x:px+pw+(wx+ww-px-pw)/2,y:gy+14,"text-anchor":"middle","font-size":10,fill:C.dim},fmt(gapR)));}
-  const fx=px+pw/2;
+  const gap=(WALL_W-d.w)/2,gy=py+ph+18;
+  if(gap>0){line(wx,gy,px,gy);line(px+pw,gy,wx+ww,gy);
+    svg.appendChild(el("text",{x:wx+(px-wx)/2,y:gy+14,"text-anchor":"middle","font-size":10,fill:C.dim},fmt(gap)));
+    svg.appendChild(el("text",{x:px+pw+(wx+ww-px-pw)/2,y:gy+14,"text-anchor":"middle","font-size":10,fill:C.dim},fmt(gap)));}
+  const bottom=cy-d.h/2,fx=px+pw/2;
   line(fx,py+ph+28,fx,floorY);
   svg.appendChild(el("text",{x:fx+6,y:(py+ph+28+floorY)/2+4,"font-size":10,fill:C.dim},fmt(bottom)+" cm to floor"));
   line(fx,wy,fx,py-30);
-  svg.appendChild(el("text",{x:wx+ww/2,y:wy-12,"text-anchor":"middle","font-size":10,fill:C.dim},fmt(WALL_H-bottom-d.h)+" cm to top of wall"));
+  svg.appendChild(el("text",{x:wx+ww/2,y:wy-12,"text-anchor":"middle","font-size":10,fill:C.dim},fmt(WALL_H-(cy+d.h/2))+" cm to top of wall"));
 }
 function renderQuote(){
-  const d=dims(sel),area=d.w*d.h,gapL=Math.floor((WALL_W-d.w)/2),gapR=WALL_W-d.w-gapL;
+  const d=dims(sel),area=sel.w*sel.h,gap=(WALL_W-d.w)/2;
   document.getElementById("qtitle").textContent=custom?"Custom size":(sel.tag==="Requested"?"Requested size":"Selected size");
   document.getElementById("q-size").textContent=`${fmt(d.w)} × ${fmt(d.h)} cm`;
   document.getElementById("q-in").textContent=`${inch(d.wi)} × ${inch(d.hi)} in`;
   document.getElementById("q-area").textContent=`${fmt(area)} cm²`;
-  document.getElementById("q-side").textContent=gapL>=0&&gapR>=0?(gapL===gapR?`${fmt(gapL)} cm each`:`${fmt(gapL)} / ${fmt(gapR)} cm`):"Wider than wall";
+  document.getElementById("q-side").textContent=gap>=0?`${fmt(gap)} cm each`:"Wider than wall";
   document.getElementById("q-cov").textContent=fmt(d.w/WALL_W*100,0)+"%";
   document.getElementById("q-price").textContent=money(area*RATE);
 }
@@ -235,8 +235,8 @@ document.getElementById("o-land").onclick=()=>{orient="land";setSeg();update()};
 document.getElementById("h").oninput=e=>{centre=+e.target.value;document.getElementById("hv").textContent=centre+" cm";renderWall()};
 document.getElementById("person").onchange=e=>{showPerson=e.target.checked;renderWall()};
 document.getElementById("cform").addEventListener("submit",e=>{e.preventDefault();
-  const w=Math.round(parseFloat(document.getElementById("cw").value)),h=Math.round(parseFloat(document.getElementById("ch").value));
-  if(!(w>0&&h>0))return;sel={w,h};custom=true;orient=h>=w?"port":"land";setSeg();update();});
+  const w=parseFloat(document.getElementById("cw").value),h=parseFloat(document.getElementById("ch").value);
+  if(!(w>0&&h>0))return;sel={w:Math.round(w*IN),h:Math.round(h*IN)};custom=true;orient=h>=w?"port":"land";setSeg();update();});
 update();
 </script>
 </body>

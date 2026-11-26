@@ -1,0 +1,168 @@
+---
+import { DETAIL_WIDTH, imageAspect, sizedImage } from '../lib/image-url';
+
+interface Props {
+  src: string;
+  title: string;
+}
+
+const { src, title } = Astro.props;
+// Each piece keeps its own proportions; fall back to a 4:5 sheet when the file name carries none.
+const aspect = imageAspect(src) ?? 0.8;
+---
+<div class="float-stage" data-float style={`--aspect: ${aspect}`}>
+  <div class="float-bob">
+    <div class="float-sheet" data-float-sheet>
+      <img src={sizedImage(src, DETAIL_WIDTH)} alt={`${title}, limited edition print`} loading="lazy" decoding="async" />
+      <span class="float-sheen" aria-hidden="true"></span>
+    </div>
+  </div>
+  <span class="float-shadow" aria-hidden="true"></span>
+</div>
+
+<script>
+  // Tilts the sheet toward a fine pointer. Touch and reduced-motion get no tracking
+  // (touch sways on its own in CSS). The CSS transition smooths every update.
+  const MAX_TILT = 9;
+  let dispose: (() => void) | null = null;
+
+  document.addEventListener('astro:page-load', () => {
+    dispose?.();
+    dispose = null;
+    const stage = document.querySelector<HTMLElement>('[data-float]');
+    const sheet = stage?.querySelector<HTMLElement>('[data-float-sheet]');
+    if (!stage || !sheet) return;
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const aim = (event: PointerEvent) => {
+      const box = stage.getBoundingClientRect();
+      const x = (event.clientX - box.left) / box.width - 0.5;
+      const y = (event.clientY - box.top) / box.height - 0.5;
+      const clamp = (n: number) => Math.max(-0.5, Math.min(0.5, n));
+      sheet.style.setProperty('--ry', `${(clamp(x) * 2 * MAX_TILT).toFixed(2)}deg`);
+      sheet.style.setProperty('--rx', `${(-clamp(y) * 2 * MAX_TILT).toFixed(2)}deg`);
+      sheet.style.setProperty('--mx', `${((clamp(x) + 0.5) * 100).toFixed(1)}%`);
+      sheet.style.setProperty('--my', `${((clamp(y) + 0.5) * 100).toFixed(1)}%`);
+    };
+    const rest = () => {
+      for (const name of ['--rx', '--ry', '--mx', '--my']) sheet.style.removeProperty(name);
+    };
+    stage.dataset.tracking = 'true';
+    stage.addEventListener('pointermove', aim);
+    stage.addEventListener('pointerleave', rest);
+    dispose = () => {
+      stage.removeEventListener('pointermove', aim);
+      stage.removeEventListener('pointerleave', rest);
+      delete stage.dataset.tracking;
+    };
+  });
+  document.addEventListener('astro:before-swap', () => {
+    dispose?.();
+    dispose = null;
+  });
+</script>
+
+<style>
+  .float-stage {
+    --stage-height: min(26rem, 62vw);
+    position: relative;
+    width: min(100%, calc(var(--stage-height) * var(--aspect)));
+    margin: 0 auto 1.6rem;
+    padding: 1.4rem 0 2.2rem;
+    perspective: 1100px;
+  }
+  .float-bob {
+    animation: float-bob 7s ease-in-out infinite;
+    transform-style: preserve-3d;
+  }
+  .float-sheet {
+    --rx: 0deg;
+    --ry: 0deg;
+    --mx: 30%;
+    --my: 20%;
+    position: relative;
+    aspect-ratio: var(--aspect);
+    transform-style: preserve-3d;
+    transform: rotateX(var(--rx)) rotateY(var(--ry));
+    transition: transform 0.6s var(--ease-out);
+    box-shadow:
+      0 0 0 1px rgba(241, 238, 232, 0.14),
+      0 2.2rem 3.4rem rgba(0, 0, 0, 0.5);
+  }
+  .float-sheet img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  /* Light that slides across the surface as the sheet turns. */
+  .float-sheet .float-sheen {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(circle at var(--mx) var(--my), rgba(255, 255, 255, 0.38), transparent 55%);
+    mix-blend-mode: soft-light;
+    transition: opacity 0.6s var(--ease-out);
+  }
+  [data-tracking='true']:hover .float-sheen {
+    opacity: 1;
+  }
+  .float-shadow {
+    position: absolute;
+    left: 12%;
+    right: 12%;
+    bottom: 0.2rem;
+    height: 1.1rem;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    filter: blur(0.9rem);
+    animation: float-shadow 7s ease-in-out infinite;
+  }
+  @keyframes float-bob {
+    0%,
+    100% {
+      transform: translateY(0.3rem);
+    }
+    50% {
+      transform: translateY(-0.5rem);
+    }
+  }
+  @keyframes float-shadow {
+    0%,
+    100% {
+      transform: scaleX(1);
+      opacity: 0.9;
+    }
+    50% {
+      transform: scaleX(0.88);
+      opacity: 0.6;
+    }
+  }
+  /* Touch has no pointer to follow, so the sheet turns slowly on its own. */
+  @media (hover: none), (pointer: coarse) {
+    .float-sheet {
+      animation: float-sway 9s ease-in-out infinite;
+    }
+  }
+  @keyframes float-sway {
+    0%,
+    100% {
+      transform: rotateX(2deg) rotateY(-7deg);
+    }
+    50% {
+      transform: rotateX(-2deg) rotateY(7deg);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .float-bob,
+    .float-shadow,
+    .float-sheet {
+      animation: none;
+    }
+    .float-sheet {
+      transition: none;
+    }
+  }
+</style>

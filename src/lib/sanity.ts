@@ -17,7 +17,7 @@ import { mapSiteSettings, type RawSiteSettings, type SiteSettings } from './site
 import { mapTattooInfo, type RawTattooInfo, type TattooInfo } from './tattoo-info';
 
 export { MEDIUMS, mediumLabel } from './artwork-map';
-export type { Artwork, HaloSetting, Medium, OriginalStatus, PrintOption, SeriesInfo, SeriesKind } from './artwork-map';
+export type { Artwork, HaloSetting, Medium, OriginalStatus, SeriesInfo, SeriesKind } from './artwork-map';
 export type { AboutPage, HomePage, SiteSettings, TattooInfo };
 
 const imageBuilder = imageUrlBuilder(sanityClient);

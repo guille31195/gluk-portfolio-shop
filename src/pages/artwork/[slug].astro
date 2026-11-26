@@ -24,7 +24,7 @@ const siblings = (room?.works ?? []).map((work) => ({
 <BaseLayout title={artwork.title}>
   <section class="detail page">
     {/* Default target; the script below points it at Collect when the URL says so. */}
-    <a class="back label" href="/portfolio" data-back-link>← <span data-back-label>Portfolio</span></a>
+    <a class="back label" href="/work" data-back-link>← <span data-back-label>Work</span></a>
     <div class="gallery">
       {/* Visually hidden, not display:none, so keyboards can reach them: Tab
           into the group, arrows switch images. A lone image has nothing to
@@ -74,7 +74,7 @@ const siblings = (room?.works ?? []).map((work) => ({
     const target = backLink(location.search);
     link.href = target.href;
     label.textContent = target.label;
-    // The nav marks Portfolio active on artwork pages at build time; follow the visitor's road.
+    // The nav marks Work active on artwork pages at build time; follow the visitor's road.
     if (target.href === '/collect') {
       for (const a of document.querySelectorAll<HTMLAnchorElement>('.nav-desktop a')) {
         const on = a.getAttribute('href') === '/collect';

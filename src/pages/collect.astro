@@ -3,14 +3,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Painting from '../components/Painting.astro';
 import RuptureRule from '../components/RuptureRule.astro';
 import { getAllArtworks } from '../lib/sanity';
-import { collectable, inquiryHref } from '../lib/collect';
+import { collectable, inquiryHref, offersPrints } from '../lib/collect';
 import { formatPrice } from '../data/format-price';
 import { pad2 } from '../lib/numerals';
 import { CARD_WIDTH, CARD_WIDTHS } from '../lib/image-url';
 
 const works = collectable(await getAllArtworks());
 const available = works.filter((w) => w.originalStatus === 'available').length;
-// Lowest price among print sizes still in stock; null until prices exist in Sanity.
+// Lowest offered print price; null when the piece has no offers.
 const printsFrom = (prices: number[]) => (prices.length ? formatPrice(Math.min(...prices)) : null);
 ---
 <BaseLayout title="Collect">
@@ -23,37 +23,49 @@ const printsFrom = (prices: number[]) => (prices.length ? formatPrice(Math.min(.
 
     <ul class="collect-list">
       {works.map((artwork) => {
-        const from = printsFrom(artwork.printOptions.filter((o) => !o.soldOut).map((o) => o.price));
+        const from = printsFrom(artwork.printOffers.map((o) => o.priceCents));
         return (
           <li class="collect-item" data-reveal>
             <a class="collect-link" href={`/artwork/${artwork.slug}?from=collect`} data-cursor="view">
               <Painting artwork={artwork} width={CARD_WIDTH} widths={CARD_WIDTHS} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 45vw, 30vw" />
               <p class="collect-title">{artwork.title}</p>
             </a>
-            <dl class="collect-offer">
+            <ul class='collect-offer'>
               {artwork.originalStatus !== 'notForSale' && (
-                <div>
-                  <dt class="label dim">Original</dt>
-                  <dd>
-                    {artwork.originalStatus === 'available' ? (
-                      <a href={inquiryHref('original', artwork.title)}>Available · Inquire</a>
-                    ) : (
-                      <span class="dim">Sold</span>
-                    )}
-                  </dd>
-                </div>
-              )}
-              <div>
-                <dt class="label dim">Prints</dt>
-                <dd>
-                  {from ? (
-                    <a href={`/artwork/${artwork.slug}?from=collect`}>From {from}</a>
+                <li>
+                  {artwork.originalStatus === 'available' ? (
+                    <a class='offer-row' href={inquiryHref('original', artwork.title)}>
+                      <span class='label offer-kind'>Original</span>
+                      <span class='offer-what'>Available · Inquire</span>
+                      <span class='offer-arrow' aria-hidden='true'>→</span>
+                    </a>
+                  ) : artwork.originalStatus === 'auction' && artwork.auctionUrl ? (
+                    <a class='offer-row' href={artwork.auctionUrl} rel='noopener'>
+                      <span class='label offer-kind'>Original</span>
+                      <span class='offer-what'>At auction · View lot</span>
+                      <span class='offer-arrow' aria-hidden='true'>↗</span>
+                    </a>
                   ) : (
-                    <a href={inquiryHref('print', artwork.title)}>Inquire</a>
+                    <div class='offer-row is-static'>
+                      <span class='label offer-kind'>Original</span>
+                      <span class='offer-what'>Sold</span>
+                    </div>
                   )}
-                </dd>
-              </div>
-            </dl>
+                </li>
+              )}
+              {offersPrints(artwork) && (
+                <li>
+                  <a class='offer-row' href={from ? `/artwork/${artwork.slug}?from=collect` : inquiryHref('print', artwork.title)}>
+                    <span class='label offer-kind'>Print</span>
+                    <span class='offer-what'>
+                      {from ? `From ${from}` : 'Inquire'}
+                      <small class='offer-paper'>Hahnemühle 100% cotton rag paper<br />Signed, numbered, with certificate</small>
+                    </span>
+                    <span class='offer-arrow' aria-hidden='true'>→</span>
+                  </a>
+                </li>
+              )}
+            </ul>
           </li>
         );
       })}
@@ -97,23 +109,36 @@ const printsFrom = (prices: number[]) => (prices.length ? formatPrice(Math.min(.
   }
   .collect-offer {
     margin: 0;
-  }
-  .collect-offer div {
-    display: grid;
-    grid-template-columns: 6.5rem 1fr;
-    align-items: baseline;
-    gap: 1rem;
-    padding: 0.55rem 0;
+    padding: 0;
+    list-style: none;
     border-top: var(--rule-hair) solid var(--color-hairline);
   }
-  .collect-offer div:last-child {
+  .collect-offer li {
     border-bottom: var(--rule-hair) solid var(--color-hairline);
   }
-  .collect-offer dd {
-    margin: 0;
+  .offer-row {
+    display: grid;
+    grid-template-columns: 5rem 1fr auto;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 1rem 0.9rem;
+    color: inherit;
+    text-decoration: none;
+    transition: background-color 0.4s var(--ease-out), color 0.4s var(--ease-out);
   }
-  .collect-offer a {
-    text-underline-offset: 0.25em;
+  .offer-kind { opacity: 0.55; }
+  .offer-what { display: flex; flex-direction: column; gap: 0.35rem; }
+  .offer-paper { font-size: var(--text-label); letter-spacing: 0.08em; opacity: 0.6; }
+  .offer-arrow { transition: transform 0.4s var(--ease-out); }
+  a.offer-row:hover, a.offer-row:focus-visible {
+    background: var(--color-bone);
+    color: var(--color-black);
+    outline-offset: -1px;
+  }
+  a.offer-row:hover .offer-arrow, a.offer-row:focus-visible .offer-arrow { transform: translateX(0.35rem); }
+  .offer-row.is-static { opacity: 0.55; }
+  @media (prefers-reduced-motion: reduce) {
+    .offer-row, .offer-arrow { transition: none; }
   }
   @media (max-width: 1100px) {
     .collect-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }

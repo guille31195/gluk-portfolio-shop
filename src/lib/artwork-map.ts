@@ -1,3 +1,6 @@
+import { printOffers } from './prints/offer';
+import type { PrintOffer } from './prints/offer';
+
 // Artwork types and the pure raw→view mapping. Free of `sanity:client` so it can
 // be unit-tested; src/lib/sanity.ts supplies the image URL builder.
 
@@ -8,9 +11,10 @@ export type SeriesKind = 'series' | 'diptych';
 
 const HALO_SETTINGS: readonly HaloSetting[] = ['auto', 'always', 'never'];
 
-// available → "Inquire"; sold → "Sold"; notForSale → the Original block is hidden.
-export type OriginalStatus = 'available' | 'sold' | 'notForSale';
-const ORIGINAL_STATUSES: readonly OriginalStatus[] = ['available', 'sold', 'notForSale'];
+// available → "Inquire"; sold → "Sold"; auction → "At auction" linking to the lot;
+// notForSale → the Original block is hidden.
+export type OriginalStatus = 'available' | 'sold' | 'auction' | 'notForSale';
+const ORIGINAL_STATUSES: readonly OriginalStatus[] = ['available', 'sold', 'auction', 'notForSale'];
 
 export interface SeriesInfo {
   slug: string;
@@ -18,20 +22,6 @@ export interface SeriesInfo {
   order: number;
   kind: SeriesKind;
   halo: HaloSetting;
-}
-
-export interface PrintOption {
-  size: string;
-  price: number;
-  stripePriceId: string;
-  soldOut: boolean;
-}
-
-export interface RawPrintOption {
-  size: string;
-  price: number;
-  stripePriceId: string;
-  soldOut: boolean | null;
 }
 
 export interface Artwork {
@@ -44,7 +34,9 @@ export interface Artwork {
   description: string | null;
   images: string[];
   originalStatus: OriginalStatus;
-  printOptions: PrintOption[];
+  // Set only while originalStatus is 'auction'.
+  auctionUrl: string | null;
+  printOffers: PrintOffer[];
   series: SeriesInfo | null;
   seriesPosition: number | null;
   haloSetting: HaloSetting;
@@ -85,9 +77,11 @@ export interface RawArtwork {
   description: string | null;
   images: RawImageSlot[] | null;
   originalStatus: string | null;
+  auctionUrl: string | null;
   // Legacy checkbox, read only as a fallback for documents edited before originalStatus.
   availableAsOriginal: boolean | null;
-  printOptions: RawPrintOption[] | null;
+  printPriceLarge: number | null;
+  printPriceSmall: number | null;
   series: RawSeries | null;
   seriesPosition: number | null;
   haloSetting: string | null;
@@ -104,8 +98,10 @@ export const ARTWORK_PROJECTION = `{
   description,
   images,
   originalStatus,
+  auctionUrl,
   availableAsOriginal,
-  printOptions[]{size, price, stripePriceId, soldOut},
+  printPriceLarge,
+  printPriceSmall,
   "series": series->{ "slug": slug.current, name, order, kind, halo },
   seriesPosition,
   "haloSetting": halo
@@ -116,6 +112,8 @@ function haloSetting(value: string | null | undefined): HaloSetting {
 }
 
 function originalStatus(raw: RawArtwork): OriginalStatus {
+  // An auction with no lot link has nothing to show, so it reads as not for sale.
+  if (raw.originalStatus === 'auction' && !raw.auctionUrl) return 'notForSale';
   if (ORIGINAL_STATUSES.includes(raw.originalStatus as OriginalStatus)) return raw.originalStatus as OriginalStatus;
   return raw.availableAsOriginal ? 'available' : 'notForSale';
 }
@@ -143,7 +141,12 @@ export function mapArtwork(raw: RawArtwork, urlFor: (image: RawImage) => string)
     description: raw.description ?? null,
     images: (raw.images ?? []).filter(hasAsset).map(urlFor),
     originalStatus: originalStatus(raw),
-    printOptions: (raw.printOptions ?? []).map((option) => ({ ...option, soldOut: option.soldOut ?? false })),
+    auctionUrl: raw.originalStatus === 'auction' ? (raw.auctionUrl ?? null) : null,
+    printOffers: printOffers({
+      dimensions: raw.dimensions ?? null,
+      printPriceLarge: raw.printPriceLarge ?? null,
+      printPriceSmall: raw.printPriceSmall ?? null,
+    }),
     series,
     seriesPosition: series ? (raw.seriesPosition ?? null) : null,
     haloSetting: haloSetting(raw.haloSetting),

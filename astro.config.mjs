@@ -11,6 +11,11 @@ const { PUBLIC_SANITY_PROJECT_ID, PUBLIC_SANITY_DATASET } = loadEnv(
 
 export default defineConfig({
   site: 'https://glukart.com',
+  vite: {
+    // Dev only: the print block reads live stock, which `astro dev` does not serve.
+    // Read-only; checkout is deliberately not proxied.
+    server: { proxy: { '/api/stock': { target: 'https://glukart.com', changeOrigin: true } } },
+  },
   integrations: [
     react(),
     sanity({

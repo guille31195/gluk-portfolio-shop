@@ -4,7 +4,12 @@
 import type { Artwork } from './artwork-map';
 
 export function collectable(artworks: Artwork[]): Artwork[] {
-  return artworks.filter((a) => a.originalStatus !== 'notForSale' || a.printOptions.length > 0);
+  return artworks.filter((a) => a.originalStatus !== 'notForSale' || a.printOffers.length > 0);
+}
+
+// Prints are made of oil paintings only; mixed-media and other pieces are sold as originals.
+export function offersPrints(artwork: Pick<Artwork, 'medium'>): boolean {
+  return artwork.medium === 'oil-painting';
 }
 
 // Artwork pages opened from Collect carry ?from=collect, so "back" returns there.
@@ -12,7 +17,7 @@ export function collectable(artworks: Artwork[]): Artwork[] {
 export function backLink(search: string): { href: string; label: string } {
   return new URLSearchParams(search).get('from') === 'collect'
     ? { href: '/collect', label: 'Collect' }
-    : { href: '/portfolio', label: 'Portfolio' };
+    : { href: '/work', label: 'Work' };
 }
 
 export function inquiryHref(interest: 'original' | 'print', title: string): string {
