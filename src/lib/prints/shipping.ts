@@ -1,15 +1,22 @@
 export type RegionId = 'MX' | 'US_CA' | 'LATAM' | 'EU_UK' | 'ROW';
 
 // Flat USD rates for a rolled print in a tube (about 100 x 12 x 12 cm, 2-3 kg billable) shipped
-// from Mexico by DHL Express. Estimates from published retail-rate ranges (2026-10-30), not a
-// quote: check against DHL's online calculator before going live.
+// from Mexico by DHL Express, for a work up to 100 cm on its long side. Re-set 2026-11-27 so
+// United States & Canada is about 115 USD (Guillermo's figure); every other region keeps its old
+// ratio to US_CA (115 / 70), rounded to the nearest 5 USD. Estimates, not a DHL quote.
 export const SHIPPING_RATES_USD: Record<RegionId, number> = {
-  MX: 25,
-  US_CA: 70,
-  LATAM: 85,
-  EU_UK: 95,
-  ROW: 120,
+  MX: 40,
+  US_CA: 115,
+  LATAM: 140,
+  EU_UK: 155,
+  ROW: 195,
 };
+
+// Anything longer than 1 m is shipped in a bigger package: one flat price, whatever the region.
+// Prints stop at MAX_LONG_SIDE_CM = 100 (print-sizes.ts), so today only the server can reach this;
+// the price shown on artwork pages is the regional rate above, which is right for every print.
+export const OVERSIZE_LONG_SIDE_CM = 100;
+export const OVERSIZE_SHIPPING_USD = 200;
 
 export const REGION_NAMES: Record<RegionId, string> = {
   MX: 'Mexico',
@@ -73,6 +80,7 @@ export function countriesInRegion(region: RegionId): string[] {
   return [...COUNTRIES[region]];
 }
 
-export function shippingCents(region: RegionId): number {
+export function shippingCents(region: RegionId, size?: { widthCm: number; heightCm: number }): number {
+  if (size && Math.max(size.widthCm, size.heightCm) > OVERSIZE_LONG_SIDE_CM) return OVERSIZE_SHIPPING_USD * 100;
   return SHIPPING_RATES_USD[region] * 100;
 }
