@@ -126,7 +126,7 @@ export async function handleCheckout(body: unknown, deps: CheckoutDeps): Promise
           shipping_rate_data: {
             type: 'fixed_amount',
             display_name: `DHL Express — ${REGION_NAMES[region]}`,
-            fixed_amount: { amount: shippingCents(region), currency: 'usd' },
+            fixed_amount: { amount: shippingCents(region, offer.size), currency: 'usd' },
           },
         },
       ],

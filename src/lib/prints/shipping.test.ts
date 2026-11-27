@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { printSizes } from './print-sizes';
 import {
   EXCLUDED_COUNTRIES,
+  OVERSIZE_LONG_SIDE_CM,
+  OVERSIZE_SHIPPING_USD,
   SHIPPING_RATES_USD,
   countriesInRegion,
   regionForCountry,
@@ -51,12 +54,32 @@ describe('regionForCountry', () => {
 
 describe('shipping rates', () => {
   it('converts USD to cents', () => {
-    expect(shippingCents('US_CA')).toBe(7000);
-    expect(shippingCents('MX')).toBe(2500);
+    expect(shippingCents('US_CA')).toBe(11500);
+    expect(shippingCents('MX')).toBe(4000);
+  });
+
+  it('charges a flat 200 USD in every region for a work longer than 1 m', () => {
+    for (const region of REGIONS) {
+      expect(shippingCents(region, { widthCm: 90, heightCm: 100.5 })).toBe(20000);
+      expect(shippingCents(region, { widthCm: 101, heightCm: 40 })).toBe(OVERSIZE_SHIPPING_USD * 100);
+    }
+  });
+
+  it('keeps the regional rate at exactly 1 m and below', () => {
+    expect(shippingCents('US_CA', { widthCm: 70, heightCm: 100 })).toBe(11500);
+    expect(shippingCents('EU_UK', { widthCm: 50, heightCm: 60 })).toBe(15500);
+  });
+
+  it('never meets the oversize rule for a print, so the price on artwork pages is always right', () => {
+    for (const [w, h] of [[70, 90], [235, 90], [300, 300], [120, 150], [40, 40]]) {
+      for (const size of Object.values(printSizes(w, h))) {
+        expect(Math.max(size.widthCm, size.heightCm)).toBeLessThanOrEqual(OVERSIZE_LONG_SIDE_CM);
+      }
+    }
   });
 
   it('defines a rate for every region', () => {
-    expect(SHIPPING_RATES_USD).toEqual({ MX: 25, US_CA: 70, LATAM: 85, EU_UK: 95, ROW: 120 });
+    expect(SHIPPING_RATES_USD).toEqual({ MX: 40, US_CA: 115, LATAM: 140, EU_UK: 155, ROW: 195 });
   });
 });
 
