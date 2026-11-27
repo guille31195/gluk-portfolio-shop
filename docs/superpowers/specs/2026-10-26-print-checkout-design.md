@@ -31,11 +31,13 @@ DHL Express only, charged at checkout, USD, flat per destination region. Padded 
 
 | Region | Charged (USD) |
 |---|---|
-| Mexico | 20 |
-| US & Canada | 50 |
-| Latin America | 60 |
-| Europe & UK | 60 |
-| Rest of the world | 80 |
+| Mexico | 40 |
+| US & Canada | 115 |
+| Latin America | 140 |
+| Europe & UK | 155 |
+| Rest of the world | 195 |
+
+Updated 2026-11-27 (supersedes the earlier table): US & Canada is about 115 USD per Guillermo, and every other region keeps its ratio to it, rounded to 5 USD. Anything longer than 1 m is a flat 200 USD in every region (`OVERSIZE_SHIPPING_USD` in `src/lib/prints/shipping.ts`); prints stop at 100 cm, so only the server reaches that rule today.
 
 These live in one editable place (not scattered in code). Before launch they must be checked against a real DHL quote for a 100 cm tube. Guillermo's own source table (Express ranges: MX 10–14, US/CA 28–38, LatAm 38–48, EU/UK 35–48, RoW 45–65) is estimates via aggregators.
 
